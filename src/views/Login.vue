@@ -327,7 +327,7 @@ export default {
             this.editedItem = Object.assign({}, this.defaultItem);
             // Manejo en caso de éxito
             setTimeout(() => {
-              router.push({ name: 'Dashboard' });
+              router.push({ name: 'Home' });
             }, 1000);
           } else {
             // Manejo de errores definidos por la API

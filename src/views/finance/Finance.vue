@@ -215,7 +215,6 @@
         </v-chip>
       </div>
     </div>
-
     <!-- Barra de progreso -->
    <v-progress-linear
   :model-value="currentUsageAsNumber"
@@ -223,14 +222,14 @@
   :color="progressColor"
   :bg-color="progressBgColor"
   :buffer-value="projectedUsage"
-  buffer-opacity="3"
+  buffer-opacity="0.3"
   height="16"
   rounded
   class="mt-2"
   style="height: 16px !important;"
 >
   <template v-slot:default>
-    <span class="text-white text-caption font-weight-bold">
+    <span class="text-caption font-weight-bold">
       {{ currentUsageAsNumber }}%
     </span>
   </template>
@@ -333,13 +332,13 @@
           </v-col>
 
           <v-col cols="12" md="6" class="d-flex">
-              <IncomeSpentChart
+              <IncomeSpentChart v-if="initializated"
                   :incomeData="customIncomeData"
                   :spentData="customSpentData"
-                  :year="2025"
+                  :year="new Date().getFullYear()"
                 />
           </v-col>
-
+          <v-col cols="12" class="d-flex">
           <v-alert
             color="warning"
             icon="mdi-alert-circle"
@@ -347,13 +346,14 @@
             theme="dark"
             border
             density="compact"
-            class="py-1 px-4"
+            class="py-1 px-4 mt-1"
           >
             <div class="text-body2 text-black">
               Comparación rápida: “Este mes gastaste 15% más en supermercado que el
               anterior”..
             </div>
           </v-alert>
+          </v-col>
         </v-row>
 
         <br />
@@ -1335,6 +1335,7 @@ export default {
   },
   data() {
     return {
+      initializated: false,
       tools: [
         {
           name: this.$t("finances.fields.income"),
@@ -1633,21 +1634,22 @@ export default {
     };
   },
   computed: {
-    currentUsageAsNumber() {
-      const str = this.budget?.currentUsage || '0';
-      const cleaned = str.replace(/\./g, ''); // elimina puntos de miles
-      const num = parseFloat(cleaned);
-      return isNaN(num) ? 0 : num;
-    },
+   currentUsageAsNumber() {
+  const str = this.budget?.currentUsage || '0';
+  const num = parseFloat(str);
+  return isNaN(num) ? 0 : num;
+},
     progressColor() {
-      const usage = this.currentUsageAsNumber;
-      if (usage >= 100) return 'red-darken-2';
-      if (usage >= 80) return 'orange-darken-2';
-      return 'teal-darken-2';
-    },
-    progressBgColor() {
-      return this.currentUsageAsNumber >= 100 ? 'red-darken-4' : 'teal-darken-2';
-    },
+    const usage = this.currentUsageAsNumber;
+    if (usage >= 100) return 'red-darken-4';     // 🔴 Rojo muy oscuro
+    if (usage >= 80) return 'deep-orange-darken-3'; // 🟠 Naranja intenso
+    if (usage > 0) return 'orange-darken-3';
+    return 'grey-darken-1';                      // ⚪ Gris oscuro
+  },
+  progressBgColor() {
+    // ✅ Teal para el fondo no utilizado
+    return this.currentUsageAsNumber >= 100 ? 'red-lighten-3' : 'teal-darken-2';
+  },
     projectedUsage() {
       const usage = this.currentUsageAsNumber;
       return Math.min(100, usage * 1.2);
@@ -2250,6 +2252,7 @@ export default {
         this.data.home_id = this.home_id;
         //this.data.type = 'Todas';
         this.loading = true;
+        this.initializated = false;
         const result = await handleRequest({
           endpoint: "finance-statistics-month",
           method: "POST",
@@ -2269,6 +2272,7 @@ export default {
           this.customSpentData = result.data?.financeData.customSpentData || Array(12).fill(0);
           console.log("customIncomeData:", this.customIncomeData);
           console.log("movent:", this.movent);
+          this.initializated = true;
         } else {
           // Si no hay datos, asignamos un array vacío
           this.spent = [];

@@ -62,45 +62,11 @@ export default {
   props: {
     incomeData: {
       type: Array,
-      default: () => [
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-      ],
+      default: () => Array(12).fill(0),
     },
     spentData: {
       type: Array,
-      default: () => [
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-      ],
-    },
-    showControls: {
-      type: Boolean,
-      default: true,
-    },
-    allowDemo: {
-      type: Boolean,
-      default: true,
+      default: () => Array(12).fill(0),
     },
     year: {
       type: Number,
@@ -112,6 +78,14 @@ export default {
       chartInstance: null,
     };
   },
+  watch: {
+  incomeData() {
+    this.updateChart();
+  },
+  spentData() {
+    this.updateChart();
+  }
+},
   computed: {
     currentYear() {
       return this.year;
@@ -246,33 +220,16 @@ export default {
       };
     },
   },
-  watch: {
-    incomeData: {
-      handler() {
-        this.updateChart();
-      },
-      deep: true,
-    },
-    spentData: {
-      handler() {
-        this.updateChart();
-      },
-      deep: true,
-    },
-  },
   mounted() {
     this.$nextTick(() => {
-    // Puede que el componente se desmonte antes de que se ejecute $nextTick
-    if (this.$refs.chartCanvas && !this.chartInstance) {
       this.initChart();
-    }
-  });
+    });
   },
   beforeUnmount() {
-   if (this.chartInstance) {
-    this.chartInstance.destroy();
-    this.chartInstance = null; // 🔴 Muy importante
-  }
+    if (this.chartInstance) {
+      this.chartInstance.destroy();
+      this.chartInstance = null;
+    }
   },
   methods: {
     initChart() {
@@ -283,29 +240,36 @@ export default {
           this.chartInstance.destroy();
         }
 
-        this.chartInstance = new Chart(this.$refs.chartCanvas, this.chartConfig);
+        // Usar toRaw desde el inicio
+        const config = { ...this.chartConfig };
+        config.data.datasets[0].data = [...toRaw(this.incomeData)];
+        config.data.datasets[1].data = [...toRaw(this.spentData)];
+
+        this.chartInstance = new Chart(this.$refs.chartCanvas, config);
       }
     },
 
-    updateChart() {
-  // 🔴 Verifica que el chartInstance exista y no sea null
-  if (!this.chartInstance) {
-    console.warn('updateChart llamado, pero chartInstance es null (quizás el componente ya se desmontó)');
-    return;
+   updateChart() {
+  if (!this.chartInstance) return;
+
+  try {
+    // Usar structuredClone para mayor seguridad
+    const incomeData = structuredClone(toRaw(this.incomeData));
+    const spentData = structuredClone(toRaw(this.spentData));
+    
+    this.chartInstance.data.datasets[0].data = incomeData;
+    this.chartInstance.data.datasets[1].data = spentData;
+    
+    this.chartInstance.update('none');
+  } catch (error) {
+    console.error('Error updating chart:', error);
+    // Fallback seguro
+    this.chartInstance.data.datasets[0].data = Array(12).fill(0);
+    this.chartInstance.data.datasets[1].data = Array(12).fill(0);
+    this.chartInstance.update('none');
   }
-
-  // ✅ Validar y usar toRaw
-  const incomeData = Array.isArray(this.incomeData) ? toRaw(this.incomeData) : Array(12).fill(0);
-  const spentData = Array.isArray(this.spentData) ? toRaw(this.spentData) : Array(12).fill(0);
-
-  // ✅ Actualizar datos
-  this.chartInstance.data.datasets[0].data = incomeData;
-  this.chartInstance.data.datasets[1].data = spentData;
-
-  // ✅ Actualizar gráfico
-  this.chartInstance.update();
 },
-  },
+  }
 };
 </script>
 
