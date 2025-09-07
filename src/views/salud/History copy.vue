@@ -1,6 +1,14 @@
 <template>
-  <v-snackbar class="mt-12" location="right top" :timeout="sb_timeout" :color="sb_type" elevation="24"
-    :multi-line="true" vertical v-model="snackbar">
+  <v-snackbar
+    class="mt-12"
+    location="right top"
+    :timeout="sb_timeout"
+    :color="sb_type"
+    elevation="24"
+    :multi-line="true"
+    vertical
+    v-model="snackbar"
+  >
     <v-row>
       <v-col md="2">
         <v-avatar :icon="sb_icon" color="sb_type" size="40"></v-avatar>
@@ -20,7 +28,10 @@
           <!-- Foto del usuario -->
           <v-col cols="auto">
             <v-avatar size="80" class="me-4">
-              <v-img :src="`${this.$axios.defaults.baseURL}images/${imageUrl}`" alt="Foto del paciente" />
+              <v-img
+                :src="`${this.$axios.defaults.baseURL}images/${imageUrl}`"
+                alt="Foto del paciente"
+              />
             </v-avatar>
           </v-col>
 
@@ -39,8 +50,8 @@
               {{
                 person.documentType
                   ? $t("personDetails.documentType.withValue", {
-                    type: person.documentType,
-                  })
+                      type: person.documentType,
+                    })
                   : $t("personDetails.documentType.withoutValue")
               }}
             </div>
@@ -49,16 +60,21 @@
               {{
                 person.documentNumber !== null
                   ? $t("personDetails.documentNumber.withValue", {
-                    number: person.documentNumber,
-                  })
+                      number: person.documentNumber,
+                    })
                   : $t("personDetails.documentNumber.withoutValue")
               }}
             </div>
           </v-col>
 
           <v-col cols="12" sm="6" md="3">
-            <v-card class="pa-2 d-flex align-center signo-card" elevation="1" rounded="lg" @click="dialogAlerta = true"
-              style="cursor: pointer">
+            <v-card
+              class="pa-2 d-flex align-center signo-card"
+              elevation="1"
+              rounded="lg"
+              @click="dialogAlerta = true"
+              style="cursor: pointer"
+            >
               <!-- Ícono -->
               <v-avatar size="40" class="me-3" color="purple-lighten-4" variant="tonal">
                 <v-icon color="warning">mdi-lightbulb-on-outline</v-icon>
@@ -79,164 +95,45 @@
         <v-row no-gutters class="mt-2">
           <v-col cols="12">
             <div class="d-flex flex-wrap gap-1">
-              <v-btn v-for="tool in tools" :key="tool.name" @click="tool.action" size="small" color="primary"
-                variant="text" prepend-icon="mdi-plus" class="text-capitalize">
+              <v-btn
+                v-for="tool in tools"
+                :key="tool.name"
+                @click="tool.action"
+                size="small"
+                color="primary"
+                variant="text"
+                prepend-icon="mdi-plus"
+                class="text-capitalize"
+              >
                 {{ tool.name }}
               </v-btn>
             </div>
           </v-col>
         </v-row>
         <v-divider class="my-4" />
-
-   
-
-       <v-row dense>
-          <v-col cols="12" sm="12" md="12">
-            <v-card class="mx-auto" elevation="1" rounded="lg" border flat>
-              <v-list-item height="60">
-                <template v-slot:prepend>
-                  <v-avatar size="40" color="teal">
-                    <v-icon icon="mdi-calendar"></v-icon>
-                  </v-avatar>
-                </template>
-
-                <template v-slot:title> Salud Familiar</template>
-                <template v-slot:subtitle>     {{ new Date().toLocaleDateString() }} </template>
-                <template v-slot:append>
-                  <v-chip class="ma-2" color="teal" label rounded="lg">
-                    <v-icon icon="mdi-emoticon" start></v-icon>
-                    <div class="text-subtitle-2">Estable</div>
-                  </v-chip>
-                </template>
-              </v-list-item>
-
-
-
-
-
-      <v-divider></v-divider>
-
-          <v-card-text class="pa-4">
-        <!-- Bloque de alerta -->
-        <v-alert color="warning" variant="tonal" border="start" icon="mdi-alert-circle" rounded="lg" class="mb-4">
-          ⚠️ 1 miembro con control pendiente. Revisa la alerta.
-        </v-alert>
-
-        <!-- Fila Estado General + KPI Circulares -->
-        <v-row dense>
-          <!-- Estado General -->
-          <v-col cols="12" sm="4">
-            <v-sheet color="teal-lighten-5" rounded="lg" class="pa-4 h-100">
-              <div class="d-flex align-center mb-3">
-                <v-icon color="teal" class="mr-2">mdi-stethoscope</v-icon>
-                <span class="text-subtitle-1 font-weight-bold">Estado General</span>
-              </div>
-              <v-list density="compact">
-                <v-list-item prepend-icon="mdi-heart-outline" title="Salud general: Estable"></v-list-item>
-                <v-list-item prepend-icon="mdi-account-group" title="4 miembros en control"></v-list-item>
-              </v-list>
-            </v-sheet>
-          </v-col>
-
-          <!-- KPI Circulares -->
-          <v-col cols="12" sm="8">
-            <v-row dense justify="space-between">
-              <!-- Peso saludable -->
-              <v-col cols="6" sm="6" md="3">
-                <v-tooltip top>
-                  <template v-slot:activator="{ props }">
-                    <v-card class="pa-4 text-center" rounded="lg" outlined v-bind="props">
-                      <v-progress-circular
-                        :value="75"
-                        size="80"
-                        width="8"
-                        color="indigo"
-                      >
-                        <strong>3/4</strong>
-                      </v-progress-circular>
-                      <div class="mt-2 font-weight-medium">Peso saludable</div>
-                    </v-card>
-                  </template>
-                  <span>3 de 4 miembros tienen peso saludable</span>
-                </v-tooltip>
-              </v-col>
-
-              <!-- Presión arterial -->
-              <v-col cols="6" sm="6" md="3">
-                <v-tooltip top>
-                  <template v-slot:activator="{ props }">
-                    <v-card class="pa-4 text-center" rounded="lg" outlined v-bind="props">
-                      <v-progress-circular
-                        :value="75"
-                        size="80"
-                        width="8"
-                        color="red-darken-2"
-                      >
-                        <strong>3/4</strong>
-                      </v-progress-circular>
-                      <div class="mt-2 font-weight-medium">Presión normal</div>
-                    </v-card>
-                  </template>
-                  <span>3 de 4 miembros tienen presión arterial dentro del rango normal</span>
-                </v-tooltip>
-              </v-col>
-
-              <!-- Vacunas completas -->
-              <v-col cols="6" sm="6" md="3">
-                <v-tooltip top>
-                  <template v-slot:activator="{ props }">
-                    <v-card class="pa-4 text-center" rounded="lg" outlined v-bind="props">
-                      <v-progress-circular
-                        :value="50"
-                        size="80"
-                        width="8"
-                        color="green-darken-2"
-                      >
-                        <strong>2/4</strong>
-                      </v-progress-circular>
-                      <div class="mt-2 font-weight-medium">Vacunas</div>
-                    </v-card>
-                  </template>
-                  <span>2 de 4 miembros tienen vacunas completas</span>
-                </v-tooltip>
-              </v-col>
-
-              <!-- Citas médicas -->
-              <v-col cols="6" sm="6" md="3">
-                <v-tooltip top>
-                  <template v-slot:activator="{ props }">
-                    <v-card class="pa-4 text-center" rounded="lg" outlined v-bind="props">
-                      <v-progress-circular
-                        :value="50"
-                        size="80"
-                        width="8"
-                        color="amber-darken-3"
-                      >
-                        <strong>2</strong>
-                      </v-progress-circular>
-                      <div class="mt-2 font-weight-medium">Citas esta semana</div>
-                    </v-card>
-                  </template>
-                  <span>2 miembros tienen citas médicas programadas esta semana</span>
-                </v-tooltip>
-              </v-col>
-            </v-row>
-          </v-col>
-        </v-row>
-      </v-card-text>
-    </v-card>
-  </v-col>
-</v-row>
-
-
-
         <div class="text-body-2 font-weight-medium mb-2">{{ $t("vitalSigns") }}</div>
         <v-row dense>
           <template v-if="signosVitalesTransformados.length > 0">
-            <v-col v-for="(signo, index) in signosVitalesTransformados" :key="index" cols="12" sm="6" md="3">
-              <v-card class="pa-2 d-flex align-center signo-card" elevation="1" rounded="lg" @click="abrirModal(signo)"
-                style="cursor: pointer">
-                <v-avatar size="40" class="me-3" :color="signo.color + ' lighten-4'" variant="tonal">
+            <v-col
+              v-for="(signo, index) in signosVitalesTransformados"
+              :key="index"
+              cols="12"
+              sm="6"
+              md="3"
+            >
+              <v-card
+                class="pa-2 d-flex align-center signo-card"
+                elevation="1"
+                rounded="lg"
+                @click="abrirModal(signo)"
+                style="cursor: pointer"
+              >
+                <v-avatar
+                  size="40"
+                  class="me-3"
+                  :color="signo.color + ' lighten-4'"
+                  variant="tonal"
+                >
                   <v-icon :color="signo.color">{{ signo.icon }}</v-icon>
                 </v-avatar>
 
@@ -248,7 +145,10 @@
 
                   <v-tooltip location="bottom">
                     <template v-slot:activator="{ props }">
-                      <div v-bind="props" class="text-caption text-grey-darken-1 text-truncate">
+                      <div
+                        v-bind="props"
+                        class="text-caption text-grey-darken-1 text-truncate"
+                      >
                         {{ signo.valor }} {{ signo.unidad }}
                       </div>
                     </template>
@@ -277,11 +177,27 @@
         </div>
         <v-row dense>
           <template v-if="informacionMedica.length > 0">
-            <v-col v-for="(info, index) in informacionMedicaTransformada" :key="index" cols="12" sm="6" md="3">
-              <v-card class="pa-2 d-flex align-center signo-card" elevation="1" rounded="lg" @click="abrirModal(info)"
-                style="cursor: pointer">
+            <v-col
+              v-for="(info, index) in informacionMedicaTransformada"
+              :key="index"
+              cols="12"
+              sm="6"
+              md="3"
+            >
+              <v-card
+                class="pa-2 d-flex align-center signo-card"
+                elevation="1"
+                rounded="lg"
+                @click="abrirModal(info)"
+                style="cursor: pointer"
+              >
                 <!-- Ícono a la izquierda -->
-                <v-avatar size="40" class="me-3" :color="info.color + ' lighten-4'" variant="tonal">
+                <v-avatar
+                  size="40"
+                  class="me-3"
+                  :color="info.color + ' lighten-4'"
+                  variant="tonal"
+                >
                   <v-icon :color="info.color">{{ info.icon }}</v-icon>
                 </v-avatar>
 
@@ -293,7 +209,10 @@
 
                   <v-tooltip location="bottom">
                     <template v-slot:activator="{ props }">
-                      <div v-bind="props" class="text-caption text-grey-darken-1 text-truncate">
+                      <div
+                        v-bind="props"
+                        class="text-caption text-grey-darken-1 text-truncate"
+                      >
                         {{ info.valor }} {{ info.unidad }}
                       </div>
                     </template>
@@ -322,11 +241,27 @@
         </div>
         <v-row dense>
           <template v-if="datosComplementariosTransformados.length > 0">
-            <v-col v-for="(info, index) in datosComplementariosTransformados" :key="index" cols="12" sm="6" md="3">
-              <v-card class="pa-2 d-flex align-center signo-card" elevation="1" rounded="lg" @click="abrirModal(info)"
-                style="cursor: pointer">
+            <v-col
+              v-for="(info, index) in datosComplementariosTransformados"
+              :key="index"
+              cols="12"
+              sm="6"
+              md="3"
+            >
+              <v-card
+                class="pa-2 d-flex align-center signo-card"
+                elevation="1"
+                rounded="lg"
+                @click="abrirModal(info)"
+                style="cursor: pointer"
+              >
                 <!-- Ícono -->
-                <v-avatar size="40" class="me-3" :color="info.color + ' lighten-4'" variant="tonal">
+                <v-avatar
+                  size="40"
+                  class="me-3"
+                  :color="info.color + ' lighten-4'"
+                  variant="tonal"
+                >
                   <v-icon :color="info.color">{{ info.icon }}</v-icon>
                 </v-avatar>
 
@@ -338,7 +273,10 @@
 
                   <v-tooltip location="bottom">
                     <template v-slot:activator="{ props }">
-                      <div v-bind="props" class="text-caption text-grey-darken-1 text-truncate">
+                      <div
+                        v-bind="props"
+                        class="text-caption text-grey-darken-1 text-truncate"
+                      >
                         {{ info.valor }} {{ info.unidad }}
                       </div>
                     </template>
@@ -361,20 +299,34 @@
           </template>
         </v-row>
         <v-divider class="my-4" />
-        <SuggestionsList :items="suggestions" :title="$t('finances.sections.suggestions')" icon="mdi-finance">
-          <template #detail="{ taskData, onClose }">
-            <ChatTaskSalud :taskData="taskData" @close-dialog="onClose" />
-          </template>
-        </SuggestionsList>
+        <SuggestionsList
+    :items="suggestions"
+    :title="$t('finances.sections.suggestions')"
+    icon="mdi-finance"
+  >
+    <template #detail="{ taskData, onClose }">
+      <ChatTaskSalud
+        :taskData="taskData"
+        @close-dialog="onClose"  
+      />
+    </template>
+  </SuggestionsList>
       </v-card-text>
     </v-card>
 
     <!-- Modal para editar signo vital -->
     <v-dialog v-model="dialog" max-width="400">
       <v-card>
-        <v-card-title class="text-h6">Editar {{ signoSeleccionado?.nombre }}</v-card-title>
+        <v-card-title class="text-h6"
+          >Editar {{ signoSeleccionado?.nombre }}</v-card-title
+        >
         <v-card-text>
-          <v-text-field v-model="nuevoValor" label="Nuevo valor" type="number" append-inner-icon="mdi-pencil" />
+          <v-text-field
+            v-model="nuevoValor"
+            label="Nuevo valor"
+            type="number"
+            append-inner-icon="mdi-pencil"
+          />
         </v-card-text>
         <v-card-actions>
           <v-spacer />
@@ -390,24 +342,29 @@
       <v-card-title class="text-body-2">Alertas para Hoy</v-card-title>
       <v-card-text>
         <v-list v-if="suggestions.length">
-          <v-list-item v-for="(alerta, i) in suggestions" :key="i">
-            <template v-slot:prepend>
-              <v-icon color="deep-orange" icon="mdi-alert"></v-icon>
-            </template>
-
-            <v-list-item-title class="text-subtitle-2">
-              {{ alerta.title }}
-            </v-list-item-title>
-            <v-list-item-subtitle class="text-caption text-truncate">
-              {{ alerta.description }}
-              <v-tooltip activator="parent" location="bottom" max-width="350px" class="custom-tooltip">
-                <span style="white-space: normal; word-break: break-word">
-                  {{ alerta.description }}
-                </span>
-              </v-tooltip>
-            </v-list-item-subtitle>
-          </v-list-item>
-        </v-list>
+        <v-list-item v-for="(alerta, i) in suggestions" :key="i">
+          <template v-slot:prepend>
+            <v-icon color="deep-orange" icon="mdi-alert"></v-icon>
+          </template>
+          
+          <v-list-item-title class="text-subtitle-2">
+            {{ alerta.title }}
+          </v-list-item-title>
+                   <v-list-item-subtitle class="text-caption text-truncate">
+  {{ alerta.description }}
+  <v-tooltip
+    activator="parent"
+    location="bottom"
+    max-width="350px"
+    class="custom-tooltip"
+  >
+    <span style="white-space: normal; word-break: break-word">
+      {{ alerta.description }}
+    </span>
+  </v-tooltip>
+</v-list-item-subtitle>
+        </v-list-item>
+      </v-list>
         <div v-else class="text-caption text-grey">No hay alertas para hoy.</div>
       </v-card-text>
       <v-card-actions>
@@ -427,7 +384,9 @@
       <v-divider></v-divider>
       <v-card-actions>
         <v-spacer></v-spacer>
-        <v-btn text @click="closeDialogPhysicalExam">Cerrar</v-btn>
+        <v-btn text @click="closeDialogPhysicalExam"
+          >Cerrar</v-btn
+        >
       </v-card-actions>
     </v-card>
   </v-dialog>
@@ -442,7 +401,9 @@
       <v-divider></v-divider>
       <v-card-actions>
         <v-spacer></v-spacer>
-        <v-btn text @click="closeDialogTreatment">Cerrar</v-btn>
+        <v-btn text @click="closeDialogTreatment"
+          >Cerrar</v-btn
+        >
       </v-card-actions>
     </v-card>
   </v-dialog>
@@ -457,7 +418,9 @@
       <v-divider></v-divider>
       <v-card-actions>
         <v-spacer></v-spacer>
-        <v-btn text @click="closeDialogPerson">Cerrar</v-btn>
+        <v-btn text @click="closeDialogPerson"
+          >Cerrar</v-btn
+        >
       </v-card-actions>
     </v-card>
   </v-dialog>
@@ -472,7 +435,9 @@
       <v-divider></v-divider>
       <v-card-actions>
         <v-spacer></v-spacer>
-        <v-btn text @click="closeDialogFamily">Cerrar</v-btn>
+        <v-btn text @click="closeDialogFamily"
+          >Cerrar</v-btn
+        >
       </v-card-actions>
     </v-card>
   </v-dialog>
@@ -487,7 +452,9 @@
       <v-divider></v-divider>
       <v-card-actions>
         <v-spacer></v-spacer>
-        <v-btn text @click="closeDialogExadialogExams">Cerrar</v-btn>
+        <v-btn text @click="closeDialogExadialogExams"
+          >Cerrar</v-btn
+        >
       </v-card-actions>
     </v-card>
   </v-dialog>
@@ -502,13 +469,15 @@
       <v-divider></v-divider>
       <v-card-actions>
         <v-spacer></v-spacer>
-        <v-btn text @click="closeDialogDiagnosis">Cerrar</v-btn>
+        <v-btn text @click="closeDialogDiagnosis"
+          >Cerrar</v-btn
+        >
       </v-card-actions>
     </v-card>
   </v-dialog>
 
   <!--Datos de las consultas-->
-  <v-dialog v-model="dialogConsultations" fullscreen transition="dialog-bottom-transition">
+  <v-dialog v-model="dialogConsultations" fullscreen transition="dialog-bottom-transition" >
     <v-card>
       <v-card-text>
         <!-- Aquí pasamos el 'selectedWorker' al componente dentro del diálogo -->
@@ -517,7 +486,9 @@
       <v-divider></v-divider>
       <v-card-actions>
         <v-spacer></v-spacer>
-        <v-btn text @click="closeDialogConsultations">Cerrar</v-btn>
+        <v-btn text @click="closeDialogConsultations"
+          >Cerrar</v-btn
+        >
       </v-card-actions>
     </v-card>
   </v-dialog>
@@ -526,7 +497,7 @@
     <v-card>
       <v-card-text>
         <!-- Pasamos los parámetros al componente ChatTask -->
-        <ChatTaskSalud :taskData="currentTask" @close-dialog="closeDialgChat()" />
+        <ChatTaskSalud :taskData="currentTask" @close-dialog="closeDialgChat()"  />
       </v-card-text>
       <v-divider></v-divider>
       <v-card-actions>
@@ -573,7 +544,7 @@ export default {
     dialogAlerta: false,
     dialogConsultations: false,
     dialogChatTask: false,
-    currentTask: null,
+      currentTask: null,
     listaAlertas: [
       {
         titulo: "Cita médica en 1 hora",
@@ -888,118 +859,118 @@ export default {
     },
     //card de signos vitales
     signosVitalesTransformados() {
-      const signosConfig = {
-        bloodPressure: {
-          nombre: this.$t("physicalExam.fields.blood_pressure"),
-          unidad: "mmHg",
-          icon: "mdi-heart-pulse",
-          color: "indigo-darken-2",
-          type: "physicalExam",
-        },
-        pulse: {
-          nombre: this.$t("physicalExam.fields.pulse"),
-          unidad: "bpm",
-          icon: "mdi-heart",
-          color: "indigo-darken-2",
-          type: "physicalExam",
-        },
-        temperature: {
-          nombre: this.$t("physicalExam.fields.temperature"),
-          unidad: "°C",
-          icon: "mdi-thermometer",
-          color: "indigo-darken-2",
-          type: "physicalExam",
-        },
-        respiratoryRate: {
-          nombre: this.$t("physicalExam.fields.respiratory_rate"),
-          unidad: "rpm",
-          icon: "mdi-lungs",
-          color: "indigo-darken-2",
-          type: "physicalExam",
-        },
-        weight: {
-          nombre: this.$t("physicalExam.fields.weight"),
-          unidad: "kg",
-          icon: "mdi-scale-bathroom",
-          color: "indigo-darken-2",
-          type: "physicalExam",
-        },
-      };
+    const signosConfig = {
+      bloodPressure: {
+        nombre: this.$t("physicalExam.fields.blood_pressure"),
+        unidad: "mmHg",
+        icon: "mdi-heart-pulse",
+        color: "indigo-darken-2",
+        type: "physicalExam",
+      },
+      pulse: {
+        nombre: this.$t("physicalExam.fields.pulse"),
+        unidad: "bpm",
+        icon: "mdi-heart",
+        color: "indigo-darken-2",
+        type: "physicalExam",
+      },
+      temperature: {
+        nombre: this.$t("physicalExam.fields.temperature"),
+        unidad: "°C",
+        icon: "mdi-thermometer",
+        color: "indigo-darken-2",
+        type: "physicalExam",
+      },
+      respiratoryRate: {
+        nombre: this.$t("physicalExam.fields.respiratory_rate"),
+        unidad: "rpm",
+        icon: "mdi-lungs",
+        color: "indigo-darken-2",
+        type: "physicalExam",
+      },
+      weight: {
+        nombre: this.$t("physicalExam.fields.weight"),
+        unidad: "kg",
+        icon: "mdi-scale-bathroom",
+        color: "indigo-darken-2",
+        type: "physicalExam",
+      },
+    };
 
-      const result = [];
-      const examData = this.physicalExam || {};
+  const result = [];
+  const examData = this.physicalExam || {};
 
-      // Transformar cada propiedad relevante, mostrando "No definido" si no hay valor
-      Object.keys(signosConfig).forEach((key) => {
-        const valor = examData[key];
-        const tieneValor = valor !== null && valor !== undefined && valor !== '';
-
-        result.push({
-          ...signosConfig[key],
-          valor: tieneValor ? valor : this.$t("no_definido"),
-          unidad: tieneValor ? signosConfig[key].unidad : "", // No mostrar unidad si no hay valor
-          fecha: (examData.examDate || examData.exam_date) || new Date().toISOString().split("T")[0],
-          originalKey: key,
-        });
-      });
-
-      // Añadir medicamentos si existen
-      /*if (this.treatment && this.treatment.medication) {
-        const medInfo = [
-          this.treatment.medication,
-          this.treatment.dosage,
-          this.treatment.frequency,
-        ]
-          .filter(Boolean)
-          .join(" - ");
+  // Transformar cada propiedad relevante, mostrando "No definido" si no hay valor
+  Object.keys(signosConfig).forEach((key) => {
+   const valor = examData[key];
+    const tieneValor = valor !== null && valor !== undefined && valor !== '';
     
-        result.push({
-          nombre: this.$t("cardMedicamento"),
-          valor: medInfo || this.$t("no_definido"),
-          unidad: "",
-          icon: "mdi-pill",
-          color: "purple",
-          fecha: this.treatment.startDate || new Date().toISOString().split("T")[0],
-          originalKey: "medication",
-          type: "treatment",
-        });
-      }*/
-      // Añadir medicamentos SIEMPRE, incluso si está vacío
-      // 1. Normalizar los tratamientos (asegurar que siempre sea un array)
-      const treatments = Array.isArray(this.treatment) ? this.treatment : [this.treatment || {}];
+    result.push({
+      ...signosConfig[key],
+      valor: tieneValor ? valor : this.$t("no_definido"),
+      unidad: tieneValor ? signosConfig[key].unidad : "", // No mostrar unidad si no hay valor
+      fecha: (examData.examDate || examData.exam_date) || new Date().toISOString().split("T")[0],
+      originalKey: key,
+    });
+  });
 
-      // 2. Obtener el primer tratamiento para mostrar en la card
-      const firstTreatment = treatments[0] || {};
+  // Añadir medicamentos si existen
+  /*if (this.treatment && this.treatment.medication) {
+    const medInfo = [
+      this.treatment.medication,
+      this.treatment.dosage,
+      this.treatment.frequency,
+    ]
+      .filter(Boolean)
+      .join(" - ");
 
-      // 3. Construir la información médica (medicamento, dosis, tipo)
-      const medInfo = [
-        firstTreatment.medication,
-        firstTreatment.dosage,
-        firstTreatment.typeName
-      ].filter(Boolean).join(" - ");
+    result.push({
+      nombre: this.$t("cardMedicamento"),
+      valor: medInfo || this.$t("no_definido"),
+      unidad: "",
+      icon: "mdi-pill",
+      color: "purple",
+      fecha: this.treatment.startDate || new Date().toISOString().split("T")[0],
+      originalKey: "medication",
+      type: "treatment",
+    });
+  }*/
+ // Añadir medicamentos SIEMPRE, incluso si está vacío
+ // 1. Normalizar los tratamientos (asegurar que siempre sea un array)
+const treatments = Array.isArray(this.treatment) ? this.treatment : [this.treatment || {}];
 
-      const tieneInfoMedicamento = medInfo.trim() !== '';
-      const isSingleTreatment = treatments.length <= 1;
+// 2. Obtener el primer tratamiento para mostrar en la card
+const firstTreatment = treatments[0] || {};
 
-      // 4. Agregar al resultado final
-      result.push({
-        nombre: isSingleTreatment
-          ? this.$t("treatment.cardMedicamento")
-          : this.$t("treatment.cardMedicamentosPlural", { count: treatments.length }),
-        valor: isSingleTreatment
-          ? (tieneInfoMedicamento ? medInfo : this.$t("treatment.no_definido"))
-          : this.$t("treatment.medicamentosActivos", { count: treatments.length }),
-        unidad: "",
-        icon: "mdi-pill",
-        color: "purple",
-        fecha: firstTreatment.startDate || new Date().toISOString().split('T')[0],
-        originalKey: "medication",
-        type: "treatment",
-      });
+// 3. Construir la información médica (medicamento, dosis, tipo)
+const medInfo = [
+  firstTreatment.medication,
+  firstTreatment.dosage,
+  firstTreatment.typeName
+].filter(Boolean).join(" - ");
+
+const tieneInfoMedicamento = medInfo.trim() !== '';
+const isSingleTreatment = treatments.length <= 1;
+
+// 4. Agregar al resultado final
+result.push({
+  nombre: isSingleTreatment 
+    ? this.$t("treatment.cardMedicamento") 
+    : this.$t("treatment.cardMedicamentosPlural", { count: treatments.length }),
+  valor: isSingleTreatment 
+    ? (tieneInfoMedicamento ? medInfo : this.$t("treatment.no_definido"))
+    : this.$t("treatment.medicamentosActivos", { count: treatments.length }),
+  unidad: "",
+  icon: "mdi-pill",
+  color: "purple",
+  fecha: firstTreatment.startDate || new Date().toISOString().split('T')[0],
+  originalKey: "medication",
+  type: "treatment",
+});
 
 
-      return result;
-    },
+  return result;
+},
     examenesMedicosTransformados() {
       // Mapeo de tipos a iconos (case insensitive)
       const iconMapping = {
@@ -1056,7 +1027,7 @@ export default {
           (item) => item?.type && item.type.toLowerCase().includes("alergia")
         ) || [];
 
-      const alergiasText = alergias.length > 0
+      const alergiasText = alergias.length > 0 
         ? alergias.map((a) => a.description).join(", ")
         : "";
 
@@ -1114,7 +1085,7 @@ export default {
       // 3. Talla - Mostrar siempre
       const height = physicalExam?.height;
       const tieneHeight = height !== null && height !== undefined && height !== '';
-
+      
       complementarios.push({
         nombre: this.$t("physicalExam.fields.height"),
         valor: tieneHeight ? parseFloat(height).toFixed(2) : this.$t("no_definido"),
@@ -1134,9 +1105,9 @@ export default {
               (parseFloat(physicalExam.height) * parseFloat(physicalExam.height))).toFixed(2)
             : null);
       }
-
+      
       const tieneImc = imc !== null && imc !== undefined && imc !== '';
-
+      
       complementarios.push({
         nombre: this.$t("physicalExam.fields.bmi"),
         valor: tieneImc ? imc : this.$t("no_definido"),
@@ -1152,7 +1123,7 @@ export default {
         (item) => item?.type && item.type.toLowerCase().includes("vacunación")
       ) || [];
 
-      const vacunasText = vacunas.length > 0
+      const vacunasText = vacunas.length > 0 
         ? vacunas.map((v) => v.description).join(", ")
         : "";
 
@@ -1167,7 +1138,7 @@ export default {
       });
 
       // 1. Diagnóstico Principal - Mostrar siempre
-      const diagnosisInfo = diagnosis?.typeName
+      const diagnosisInfo = diagnosis?.typeName 
         ? `${diagnosis.typeName} (${diagnosis.cie10Code || "Sin código"})`
         : "";
 
@@ -1210,7 +1181,7 @@ export default {
     this.initialize();
   },
   methods: {
-    handleCloseDialog() {
+     handleCloseDialog() {
       // Lógica adicional al cerrar el diálogo si es necesaria
       console.log("Diálogo cerrado");
       this.closeDialgChat();
@@ -1663,13 +1634,11 @@ export default {
 .gap-1 {
   gap: 4px;
 }
-
 .tools-bar {
   overflow-x: auto;
   white-space: nowrap;
   gap: 8px;
 }
-
 /* Estilos para personalizar el scroll */
 .v-list {
   scrollbar-width: thin;

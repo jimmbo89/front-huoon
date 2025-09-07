@@ -11,8 +11,8 @@
       </v-col>
     </v-row>
   </v-snackbar>
-  <!--<v-container fluid fill-height>-->
-    <v-card elevation="6" class="mx-2">
+  <v-container>
+    <v-card class="pa-4" elevation="4" rounded="lg">
       <v-toolbar color="#03626C">
         <v-row align="center">
           <v-col cols="12" md="8" class="grow ml-4">
@@ -60,8 +60,13 @@
             </v-avatar>
           </template>
           <template v-slot:item.color="{ item }">
-            <v-avatar class="mr-1 avatar-border" elevation="3" size="large" :color="`#${item.color}`"></v-avatar>
-          </template>
+  <v-avatar 
+    class="mr-1 avatar-border" 
+    elevation="3" 
+    size="large" 
+    :color="item.color.startsWith('#') ? item.color : '#' + item.color"
+  ></v-avatar>
+</template>
           <template v-slot:[`item.name`]="{ item }">
             <div class="d-flex align-center">
               <v-avatar size="24" class="mr-2">
@@ -80,7 +85,7 @@
         </v-data-table>
       </v-card-text>
     </v-card>
-  <!--</v-container>-->
+  </v-container>
 
   <v-dialog v-model="dialog" max-width="600px">
     <v-form ref="form" v-model="valid">
@@ -151,7 +156,7 @@
               <v-col cols="12" md="6">
                 <v-card elevation="6" class="mx-auto" max-width="210" max-height="120" v-if="this.editedItem.icon">
                   <img v-if="imagenDisponible()" :src="imgedit" height="120" width="210">
-                  <v-icon v-else class="d-flex align-center justify-center"
+                  <v-icon v-else class="d-flex align-center justify-center" :color="editedItem.color"
                   style="height: 120px; width: 210px; font-size: 120px;">{{ getIconName(this.editedItem.icon) }}</v-icon>
                 </v-card>
               </v-col>

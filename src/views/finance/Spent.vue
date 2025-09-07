@@ -81,7 +81,7 @@
                         {{ formatCurrency(spent.spent) }}
                       </span>
                       <v-tooltip activator="parent" location="bottom">
-                        <span>{{ $t('finances.fields.currency') }}: {{ formatCurrency(spent.spent) }}</span>
+                        <span>{{ $t('finances.fields.spent') }}: {{ formatCurrency(spent.spent) }}</span>
                       </v-tooltip>
               </div>
           </v-col>
@@ -263,8 +263,6 @@
                     v-model="editedItem.spent"
                     :label="$t('finances.fields.spent')"
                     variant="underlined"
-                    type="number"
-                    step="0.01"
                     :rules="incomeRules"
                     required
                   />
@@ -320,7 +318,7 @@
                     name="file"
                     accept=".png, .jpg, .jpeg"
                     @change="onFileSelected"
-                    :prepend-icon="false"
+                    :prepend-icon="null"
                   ></v-file-input>
                 </v-col>
                 <v-col cols="12" md="6">
@@ -358,7 +356,7 @@
                 <v-col cols="12">
                   <v-menu
                     v-model="dateMenu"
-                    :close-on-content-click="false"
+                    :close-on-content-click="true"
                     transition="scale-transition"
                     offset-y
                     min-width="auto"
@@ -376,6 +374,7 @@
                       color="#03626C"
                       :model-value="parseDateString(dateInput)"
                       @update:model-value="updateDate"
+                      :max="maxDate"
                     ></v-date-picker>
                   </v-menu>
                 </v-col>
@@ -559,6 +558,14 @@ export default {
   }),
 
   computed: {
+     maxDate() {
+    const today = new Date();
+      const year = today.getFullYear();
+      const month = String(today.getMonth() + 1).padStart(2, "0");
+      const day = String(today.getDate()).padStart(2, "0");
+      return `${year}-${month}-${day}`;
+    // Esto asegura que sea el inicio del día (evita problemas de hora/minuto)
+  },
     filteredSpents() {
       return this.financialRecords.filter((record) => record.spent && record.spent > 0);
     },
@@ -723,18 +730,24 @@ export default {
 
     // Método para convertir string a Date (solo cuando sea necesario)
     parseDateString(dateString) {
-      if (!dateString) return null;
-      const [year, month, day] = dateString.split("-");
-      return new Date(year, month - 1, day);
-    },
+    if (!dateString) {
+      const today = new Date();
+      // Aseguramos que sea el inicio del día (evita problemas de zona horaria)
+      return new Date(today.getFullYear(), today.getMonth(), today.getDate());
+    }
+    const [year, month, day] = dateString.split('-');
+    return new Date(parseInt(year), parseInt(month) - 1, parseInt(day));
+  },
     formatCurrency(value) {
-      if (value === null || value === undefined) return "";
-      return new Intl.NumberFormat("es-ES", {
-        style: "currency",
-        currency: "EUR",
-        minimumFractionDigits: 2,
-        maximumFractionDigits: 2,
-      }).format(value);
+      if (value === null || value === undefined || value === '') return "";
+      
+      const number = parseFloat(value);
+      if (isNaN(number)) return "";
+
+      return '$' + number.toLocaleString('es-CL', {
+        minimumFractionDigits: 0,
+        maximumFractionDigits: 0
+      });
     },
     openModal(imageUrl) {
       this.dialogPhoto = true;
@@ -773,6 +786,12 @@ export default {
       this.originalItem = Object.assign({}, this.defaultItem);
       this.file = null;
       this.imgMiniatura = "";
+       const today = new Date();
+      const year = today.getFullYear();
+      const month = String(today.getMonth() + 1).padStart(2, "0");
+      const day = String(today.getDate()).padStart(2, "0");
+      this.dateInput = `${year}-${month}-${day}`;
+      this.editedItem.date = this.dateInput;
       this.data = {};
       this.data.home_id = this.home_id;
       try {
@@ -785,6 +804,9 @@ export default {
         if (result.success) {
           this.types = result.data?.types || [];
           this.budgets = result.data?.budgets || [];
+          if (!this.editedItem.type && this.types.length > 0) {
+            this.editedItem.type = this.types[0].id;
+          }
         } else {
           this.types = [];
           this.butgets = [];
@@ -1173,7 +1195,7 @@ export default {
 };
 </script>
 
-<style scoped>
+<style>
 .icono-concavo {
   width: 50px;
   height: 50px;
@@ -1219,14 +1241,6 @@ export default {
   border-radius: 4px;
 }
 
-.v-card {
-  transition: all 0.2s ease;
-}
-
-.v-card:hover {
-  transform: translateY(-3px);
-  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.1) !important;
-}
 
 .fullscreen-dialog {
   height: 100vh !important;

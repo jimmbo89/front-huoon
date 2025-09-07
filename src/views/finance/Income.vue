@@ -50,7 +50,7 @@
                 {{ formatCurrency(income.income) }}
               </span>
               <v-tooltip activator="parent" location="bottom">
-                <span>{{ $t('finances.fields.currency') }}: {{ formatCurrency(income.income) }}</span>
+                <span>{{ $t('finances.fields.income') }}: {{ formatCurrency(income.income) }}</span>
               </v-tooltip>
             </div>
           </v-col>
@@ -179,14 +179,13 @@
                 </v-col>-->
 
                 <v-col cols="12" sm="6">
-                  <v-text-field v-model="editedItem.income" :label="$t('finances.fields.income')" variant="underlined"
-                    type="number" step="0.01" :rules="incomeRules" required />
+                  <v-text-field v-model="editedItem.income" :label="$t('finances.fields.income')" variant="underlined" :rules="incomeRules" required />
                 </v-col>
 
                 <v-col cols="12" md="6">
                   <v-file-input v-model="file" ref="fileInput" :label="$t('finances.fields.attach_file')"
                     variant="underlined" name="file" accept=".png, .jpg, .jpeg" @change="onFileSelected"
-                    :prepend-icon="false"></v-file-input>
+                    :prepend-icon="null"></v-file-input>
                 </v-col>
                 <v-col cols="12" md="6">
                   <v-card elevation="6" class="mx-auto" max-width="210" max-height="120">
@@ -207,14 +206,28 @@
 
                 <v-col cols="12">
                 <v-locale-provider>
-                  <v-menu v-model="dateMenu" :close-on-content-click="false" transition="scale-transition" offset-y
-                    min-width="auto">
+                  <v-menu
+                    v-model="dateMenu"
+                    :close-on-content-click="true"
+                    transition="scale-transition"
+                    offset-y
+                    min-width="auto"
+                  >
                     <template v-slot:activator="{ props }">
-                      <v-text-field v-bind="props" :model-value="dateInput" :label="$t('finances.fields.date')"
-                        variant="underlined" readonly></v-text-field>
+                      <v-text-field
+                        v-bind="props"
+                        :model-value="dateInput"
+                        :label="$t('finances.fields.date')"
+                        variant="underlined"
+                        readonly
+                      ></v-text-field>
                     </template>
-                    <v-date-picker color="#03626C" :model-value="parseDateString(dateInput)"
-                      @update:model-value="updateDate"></v-date-picker>
+                    <v-date-picker
+                      color="#03626C"
+                      :model-value="parseDateString(dateInput)"
+                      @update:model-value="updateDate"
+                      :max="maxDate"
+                    ></v-date-picker>
                   </v-menu>
                   </v-locale-provider>
                 </v-col>
@@ -375,6 +388,14 @@ export default {
   }),
 
   computed: {
+    maxDate() {
+    const today = new Date();
+      const year = today.getFullYear();
+      const month = String(today.getMonth() + 1).padStart(2, "0");
+      const day = String(today.getDate()).padStart(2, "0");
+      return `${year}-${month}-${day}`;
+    // Esto asegura que sea el inicio del día (evita problemas de hora/minuto)
+  },
      filteredIncomes() {
       return this.financialRecords.filter(record => record.income && record.income > 0);
     },
@@ -498,19 +519,25 @@ export default {
   
   // Método para convertir string a Date (solo cuando sea necesario)
   parseDateString(dateString) {
-    if (!dateString) return null;
-    const [year, month, day] = dateString.split('-');
-    return new Date(year, month - 1, day);
-  },
+  if (!dateString) {
+    const today = new Date();
+    // Aseguramos que sea el inicio del día (evita problemas de zona horaria)
+    return new Date(today.getFullYear(), today.getMonth(), today.getDate());
+  }
+  const [year, month, day] = dateString.split('-');
+  return new Date(parseInt(year), parseInt(month) - 1, parseInt(day));
+},
     formatCurrency(value) {
-      if (value === null || value === undefined) return "";
-      return new Intl.NumberFormat('es-ES', { 
-        style: 'currency', 
-        currency: 'EUR',
-        minimumFractionDigits: 2,
-        maximumFractionDigits: 2
-      }).format(value);
-    },
+  if (value === null || value === undefined || value === '') return "";
+  
+  const number = parseFloat(value);
+  if (isNaN(number)) return "";
+
+  return '$' + number.toLocaleString('es-CL', {
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 0
+  });
+},
     openModal(imageUrl) {
       this.dialogPhoto = true;
       this.loadingImage = true;
@@ -548,6 +575,12 @@ export default {
       this.originalItem = Object.assign({}, this.defaultItem);
       this.file = null;
       this.imgMiniatura = "";
+       const today = new Date();
+      const year = today.getFullYear();
+      const month = String(today.getMonth() + 1).padStart(2, "0");
+      const day = String(today.getDate()).padStart(2, "0");
+      this.dateInput = `${year}-${month}-${day}`;
+      this.editedItem.date = this.dateInput;
       try {
         const result = await handleRequest({
           endpoint: 'get-finances-data',
@@ -929,15 +962,6 @@ export default {
   border-radius: 4px;
 }
 
-.v-card {
-  transition: all 0.2s ease;
-}
-
-.v-card:hover {
-  transform: translateY(-3px);
-  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.1) !important;
-}
-
 .fullscreen-dialog {
   height: 100vh !important;
   max-height: 100vh !important;
@@ -967,11 +991,4 @@ export default {
   margin-bottom: 12px;
 }
 
-.v-btn--icon {
-  transition: all 0.2s ease;
-}
-
-.v-btn--icon:hover {
-  transform: scale(1.1);
-}
 </style>

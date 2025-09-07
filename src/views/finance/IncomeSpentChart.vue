@@ -9,46 +9,6 @@
       <div class="chart-container">
         <canvas ref="chartCanvas"></canvas>
       </div>
-
-      <!-- Resumen estadístico 
-      <v-row class="mt-1">
-        <v-col cols="12" md="4">
-          <v-card class="pa-0 d-flex align-center" elevation="1" rounded="lg">
-            <v-card-text class="text-center">
-              <div class="text-subtitle-2 text-green">
-                {{ $t("finances.charts.totalIncome") }}
-              </div>
-              <div class="text-subtitle-2 text-green font-weight-bold">
-                ${{ totalIncome.toLocaleString() }}
-              </div>
-            </v-card-text>
-          </v-card>
-        </v-col>
-        <v-col cols="12" md="4">
-          <v-card class="pa-0 d-flex align-center" elevation="1" rounded="lg">
-            <v-card-text class="text-center">
-              <div class="text-subtitle-2 text-red">
-                {{ $t("finances.charts.totalSpent") }}
-              </div>
-              <div class="text-subtitle-2 text-red font-weight-bold">
-                ${{ totalSpent.toLocaleString() }}
-              </div>
-            </v-card-text>
-          </v-card>
-        </v-col>
-        <v-col cols="12" md="4">
-          <v-card class="pa-0 d-flex align-center" elevation="1" rounded="lg">
-            <v-card-text class="text-center">
-              <div class="text-subtitle-2" :class="balanceTextColor">
-                {{ $t("finances.charts.balance") }}
-              </div>
-              <div class="text-subtitle-2 font-weight-bold" :class="balanceTextColor">
-                ${{ totalBalance.toLocaleString() }}
-              </div>
-            </v-card-text>
-          </v-card>
-        </v-col>
-      </v-row>-->
     </v-card-text>
   </v-card>
 </template>

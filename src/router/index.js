@@ -1,6 +1,5 @@
 // Composables
 import { createRouter, createWebHistory } from "vue-router";
-
 const routes = [
   {
     path: "/",
@@ -11,22 +10,12 @@ const routes = [
     name: "Login",
     component: () => import(/* webpackChunkName: "home" */ "@/views/Login.vue"),
   },
-
   {
     path: "/dashboard",
     name: "Dashboard",
     component: () =>
       import(/* webpackChunkName: "home" */ "@/views/DashboardView.vue"),
     children: [
-      {
-        path: "/onboarding",
-        name: "Onboarding",
-        component: () =>
-          import(
-            /* webpackChunkName: "onboarding" */ "@/views/onboarding/Onboarding.vue"
-          ),
-        //meta: { requiresAuth: true } // Si usas protección de rutas
-      },
       {
         path: "/home",
         name: "Home",
@@ -102,26 +91,6 @@ const routes = [
           import(/* webpackChunkName: "home" */ "@/views/salud/History.vue"),
       },
       {
-        path: "/consultation",
-        name: "Consultas",
-        component: () =>
-          import(
-            /* webpackChunkName: "home" */ "@/views/salud/Consultation.vue"
-          ),
-      },
-      {
-        path: "/exam",
-        name: "Examenes",
-        component: () =>
-          import(/* webpackChunkName: "home" */ "@/views/salud/Exams.vue"),
-      },
-      {
-        path: "/emergency",
-        name: "Emergencias",
-        component: () =>
-          import(/* webpackChunkName: "home" */ "@/views/salud/Emergency.vue"),
-      },
-      {
         path: "/finance",
         name: "Finance",
         component: () =>
@@ -146,20 +115,6 @@ const routes = [
           import(/* webpackChunkName: "home" */ "@/views/chat/Chat.vue"),
       },
       {
-        path: "/chatTask",
-        name: "ChatTask",
-        component: () =>
-          import(/* webpackChunkName: "home" */ "@/views/chat/ChatTask.vue"),
-      },
-      {
-        path: "/suggestions",
-        name: "Suggestions",
-        component: () =>
-          import(
-            /* webpackChunkName: "home" */ "@/views/suggestion/Suggestion.vue"
-          ),
-      },
-      {
         path: "/homes",
         name: "Homes",
         component: () =>
@@ -174,24 +129,24 @@ const routes = [
           ),
       },
       {
-        path: "/type",
-        name: "Type",
-        component: () =>
-          import(/* webpackChunkName: "home" */ "@/views/type/Types.vue"),
-      },
-      {
         path: "/pets",
         name: "Pets",
         component: () =>
           import(/* webpackChunkName: "home" */ "@/views/pet/Pet.vue"),
       },
+      {
+        path: "/suggestions",
+        name: "Suggestions",
+        component: () =>
+          import(
+            /* webpackChunkName: "home" */ "@/views/suggestion/Suggestion.vue"
+          ),
+      },
     ],
   },
 ];
-
 const router = createRouter({
   history: createWebHistory(process.env.BASE_URL),
   routes,
 });
-
 export default router;

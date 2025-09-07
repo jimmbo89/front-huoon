@@ -40,7 +40,7 @@
             <v-btn
               v-for="tool in tools"
               :key="tool.name"
-              @click="tool.action"
+              @click="tool.action()"
               size="small"
               color="primary"
               variant="text"
@@ -130,9 +130,9 @@
                   <div>
                     <div class="font-weight-bold text-body-2">
                       <span>
-                        <v-icon :color="getTypeColor(budget.budget_type)"
+                        <v-icon :color=" getPeriodColor(budget.typeName)"
                           style="font-size: 10px; filter: drop-shadow(0 0 2px currentColor)" icon="mdi-circle"
-                          class="mr-0"></v-icon>
+                          class="mr-1"></v-icon>
                       </span>
                       <span class="text-grey-darken-1 text-body-2">{{
                         budget.budget_type
@@ -149,7 +149,7 @@
                   <div>
                     <div class="font-weight-bold text-body-2">
                       <span>
-                        <v-icon :color="getCurrencyColor(budget.currency)"
+                        <v-icon :color=" getPeriodColor(budget.typeName)"
                           style="font-size: 10px; filter: drop-shadow(0 0 2px currentColor)" icon="mdi-currency-sign"
                           class="mr-1"></v-icon>
                       </span>
@@ -273,32 +273,129 @@
 
               <!-- Paso 1: Información básica -->
               <v-row dense v-if="step === 0">
+                <!--<v-col cols="12" md="6">
+                  <v-autocomplete
+                  v-model="editedItem.category_id"
+                  :items="categories"
+                  :label="$t('budget.fields.category')"
+                  item-title="nameCategory"
+                  item-value="id"
+                  variant="underlined"
+                  :rules="selectRules"
+                >
+                  <template v-slot:item="{ props, item }">
+                    <v-list-item
+                      v-bind="props"
+                      :style="{ 'margin-left': `${item.raw.level * 10}px` }"
+                    >
+                      <template v-slot:prepend>
+                        <v-avatar size="24">
+                          <template v-if="isImage(item.raw.iconCategory)">
+                            <img
+                              :src="`${$axios.defaults.baseURL}images/${item.raw.iconCategory}`"
+                              alt="icon"
+                              style="width: 100%; height: 100%; object-fit: cover;"
+                            />
+                          </template>
+                          <template v-else>
+                            <v-icon size="small">{{ getIconName(item.raw.iconCategory) }}</v-icon>
+                          </template>
+                        </v-avatar>
+                      </template>
+
+                      <v-list-item-subtitle>
+                        Descripción: {{ item.raw.descriptionCategory }}
+                      </v-list-item-subtitle>
+                    </v-list-item>
+                  </template>
+                </v-autocomplete>
+                </v-col>-->
                 <v-col cols="12" md="6">
-                  <v-autocomplete v-model="editedItem.category_id" :items="categories"
-                    :label="$t('budget.fields.category')" item-title="nameCategory" item-value="id" variant="underlined"
-                    :rules="selectRules">
-                    <template v-slot:item="{ props, item }">
-                      <v-list-item v-bind="props">
-                        <template v-slot:prepend>
-                          <v-avatar size="24">
-                            <!-- Verifica si es URL o ícono -->
-                            <template v-if="isImage(item.raw.iconCategory)">
-                              <img :src="`${this.$axios.defaults.baseURL}images/${
-                                  item.raw.iconCategory
-                                }`" alt="icon" />
-                            </template>
-                            <template v-else>
-                              <v-icon>{{ getIconName(item.raw.iconCategory) }}</v-icon>
-                            </template>
-                          </v-avatar>
-                        </template>
-                        <v-list-item-subtitle class="d-flex flex-column">
-                          <div>Descripción: {{ item.raw.descriptionCategory }}</div>
-                        </v-list-item-subtitle>
-                      </v-list-item>
-                    </template>
-                  </v-autocomplete>
-                </v-col>
+  <v-autocomplete
+    v-model="selectedParent"
+    :items="categoryParents"
+    :label="$t('budget.fields.category')"
+    item-title="nameCategory"
+    item-value="id"
+    variant="underlined"
+    :rules="selectRules"
+    clearable
+    :menu-props="{ contentClass: 'dropdown-limited' }"
+  >
+    <template v-slot:item="{ props, item }">
+      <v-list-item v-bind="props" class="dropdown-item">
+        <!-- Ícono -->
+        <template v-slot:prepend>
+          <v-avatar size="24">
+            <img
+              v-if="isImage(item.raw.iconCategory)"
+              :src="`${$axios.defaults.baseURL}images/${item.raw.iconCategory}`"
+              alt="icon"
+              class="object-fit-cover"
+            />
+            <v-icon v-else size="small">{{ getIconName(item.raw.iconCategory) }}</v-icon>
+          </v-avatar>
+        </template>
+
+        <!-- Descripción truncada con tooltip -->
+        <v-tooltip location="top" :text="`Descripción: ${item.raw.descriptionCategory}`">
+          <template v-slot:activator="{ props: tooltipProps }">
+            <v-list-item-subtitle
+              v-bind="tooltipProps"
+              class="text-truncate"
+            >
+              Descripción: {{ item.raw.descriptionCategory }}
+            </v-list-item-subtitle>
+          </template>
+        </v-tooltip>
+      </v-list-item>
+    </template>
+  </v-autocomplete>
+</v-col>
+
+<!-- === SUBCATEGORÍA === -->
+<v-col cols="12" md="6">
+  <v-autocomplete
+    v-model="editedItem.category_id"
+    :items="categoryChildren"
+    :label="$t('budget.fields.category')"
+    item-title="nameCategory"
+    item-value="id"
+    variant="underlined"
+    :rules="selectRules"
+    :disabled="!selectedParent"
+    clearable
+    :menu-props="{ contentClass: 'dropdown-limited' }"
+  >
+    <template v-slot:item="{ props, item }">
+      <v-list-item v-bind="props" class="dropdown-item">
+        <!-- Ícono -->
+        <template v-slot:prepend>
+          <v-avatar size="24">
+            <img
+              v-if="isImage(item.raw.iconCategory)"
+              :src="`${$axios.defaults.baseURL}images/${item.raw.iconCategory}`"
+              alt="icon"
+              class="object-fit-cover"
+            />
+            <v-icon v-else size="small">{{ getIconName(item.raw.iconCategory) }}</v-icon>
+          </v-avatar>
+        </template>
+        <!-- Descripción con tooltip -->
+        <v-tooltip location="top" :text="`Descripción: ${item.raw.descriptionCategory}`">
+          <template v-slot:activator="{ props: tooltipProps }">
+            <v-list-item-subtitle
+              v-bind="tooltipProps"
+              class="text-truncate"
+            >
+              Descripción: {{ item.raw.descriptionCategory }}
+            </v-list-item-subtitle>
+          </template>
+        </v-tooltip>
+      </v-list-item>
+    </template>
+  </v-autocomplete>
+</v-col>
 
                 <v-col cols="12" sm="6">
                   <v-autocomplete v-model="editedItem.budget_type" :items="types"
@@ -326,8 +423,7 @@
                 </v-col>
 
                 <v-col cols="12" sm="6">
-                  <v-text-field v-model="editedItem.amount" :label="$t('budget.fields.amount')" variant="underlined"
-                    type="number" step="0.01" min="0" :rules="amountRules" />
+                  <v-text-field v-model="editedItem.amount" :label="$t('budget.fields.amount')" variant="underlined" min="0" :rules="amountRules" />
                 </v-col>
 
                 <v-col cols="12" sm="6">
@@ -501,6 +597,9 @@ export default {
     dialogDelete: false,
     budgets: [],
     types: [],
+    
+    categoryChildren: [], // hijas de la categoría seleccionada
+    selectedParent: null, // categoría padre seleccionada
     categories: [],
     typesPeriodo: [],
     //budgetTypes: ["Mensual", "Trimestral", "Semestral", "Anual", "Personalizado"],
@@ -524,15 +623,11 @@ export default {
       type_id: null,
     },
     messages:[],
-    tools:[
+    /*tools:[
       {
         name: "Crear Presupuestos",
-        action: () =>
-          this.messages.push({
-            text: "📝 ¿Cuál es la tarea que deseas crear?",
-            from: "bot",
-          }),
-      }],
+        action: () => this.showAdd()
+      }],*/
       
     defaultItem: {
       id: "",
@@ -566,6 +661,9 @@ export default {
     ],
   }),
   computed: {
+     categoryParents() {
+    return this.categories.filter(cat => cat.parent_id === null);
+  },
     formTitle() {
       return this.editedIndex === -1
         ? this.$t("budget.titles.new")
@@ -604,6 +702,50 @@ export default {
           !v || v.length <= 50 || this.$t("finances.validationMessages.type.maxLength"), // Validación de longitud máxima*/
       ];
     },
+  },
+  watch: {
+  selectedParent(newParentId) {
+    if (newParentId) {
+      // Filtrar subcategorías cuyo parent_id === newParentId
+      this.categoryChildren = this.categories.filter(cat => cat.parent_id === newParentId);
+      // Si no hay selección, limpiar subcategoría
+      if (!this.editedItem.category_id || !this.categoryChildren.some(c => c.id === this.editedItem.category_id)) {
+        this.editedItem.category_id = null;
+      }
+    } else {
+      this.categoryChildren = [];
+      this.editedItem.category_id = null;
+    }
+  },
+
+  // Cuando editedItem.category_id cambia (por carga en edición)
+  'editedItem.category_id'(newChildId) {
+    if (newChildId) {
+      const child = this.categories.find(c => c.id === newChildId);
+      if (child && child.parent_id) {
+        // Sincronizar el padre
+        this.selectedParent = child.parent_id;
+      }
+    }
+  }
+},
+   created() {
+    this.tools = [
+      {
+        name: "Crear Presupuestos",
+        action: () => this.showAdd()
+      }
+    ],
+    this.categoryParents = this.categories.filter(cat => cat.parent_id === null);
+
+  // Si estamos editando y ya hay un category_id, sincronizar
+  if (this.editedItem.category_id) {
+    const child = this.categories.find(c => c.id === this.editedItem.category_id);
+    if (child && child.parent_id) {
+      this.selectedParent = child.parent_id;
+      // categoryChildren se llenará por el watcher de selectedParent
+    }
+  }
   },
   mounted() {
     this.home_id = JSON.parse(LocalStorageService.getItem("home_id"));
@@ -1030,7 +1172,38 @@ export default {
   },
 };
 </script>
-<style scoped>
+<style>
+/* Limita el ancho del menú desplegable */
+.dropdown-limited {
+  max-width: 100% !important;
+  width: auto !important;
+  min-width: 0 !important;
+  overflow-x: hidden;
+}
+
+/* Items del dropdown: no crecer innecesariamente */
+.dropdown-item {
+  min-width: 0;
+  width: 100%;
+  display: flex;
+  align-items: center;
+}
+
+/* Truncamiento seguro con puntos suspensivos */
+.text-truncate {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100%;
+  display: block;
+  line-height: 1.2;
+}
+
+/* Asegura que el tooltip no interfiera con el layout */
+.v-tooltip__activator {
+  width: 100%;
+  display: block;
+}
 .icono-concavo {
   width: 48px;
   height: 48px;

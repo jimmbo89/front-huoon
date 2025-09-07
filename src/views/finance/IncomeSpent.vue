@@ -58,21 +58,35 @@
 
           <!-- Columna 3: Ingresos -->
           <v-col cols="2" class="d-flex align-center pe-4 gap-2">
-          <div :class="['text-body-2', income.income > 0 ? 'text-green-darken-1' : 'text-red-darken-1']">
-    <span>
-      {{ income.income > 0 ? formatCurrency(income.income) : formatCurrency(income.spent) }}
-    </span>
-    <v-tooltip activator="parent" location="bottom">
-      <span>
-        {{ $t('finances.fields.currency') }}: 
-        {{ income.income > 0 ? formatCurrency(income.income) : formatCurrency(income.spent) }}
-      </span>
-    </v-tooltip>
-  </div>
+          <div class="text-body-2  text-green-darken-1">
+          <span>
+            {{ formatCurrency(income.income) }}
+          </span>
+          <v-tooltip activator="parent" location="bottom">
+            <span>
+              {{ $t('finances.fields.income') }}: 
+              {{ formatCurrency(income.income) }}
+            </span>
+          </v-tooltip>
+        </div>
+        </v-col>
+
+        <v-col cols="2" class="d-flex align-center pe-4 gap-2">
+          <div class="text-body-2 text-red-darken-1">
+        <span>
+          {{ formatCurrency(income.spent) }}
+        </span>
+        <v-tooltip activator="parent" location="bottom">
+          <span>
+            {{ $t('finances.fields.spent') }}: 
+            {{ formatCurrency(income.spent) }}
+          </span>
+        </v-tooltip>
+      </div>
         </v-col>
 
           <!-- Columna 4: Descripción -->
-          <v-col cols="4" class="d-flex align-center pe-4 gap-2">
+          <v-col cols="3" class="d-flex align-center pe-4 gap-2">
             <div class="text-body-2 text-grey-darken-1">
               <span>
                 {{ income.description }}
@@ -84,7 +98,7 @@
           </v-col>
 
           <!-- Columna 5: Archivo y Acciones -->
-          <v-col cols="2" class="d-flex align-center pe-4 gap-2 justify-end align-center">
+          <v-col cols="1" class="d-flex align-center pe-4 gap-2 justify-end align-center">
             <!-- Archivo -->
             <div v-if="income.image && income.image !== 'finances/default.jpg'" class="mr-2">
               <v-btn density="comfortable" icon="mdi-eye" color="green" @click="openModal(income.image)" variant="tonal"
@@ -238,8 +252,6 @@
                     v-model="editedItem.income"
                     :label="$t('finances.fields.income')"
                     variant="underlined"
-                    type="number"
-                    step="0.01"
                     :rules="incomeRules"
                     required
                     :color="'green'"
@@ -249,8 +261,6 @@
                     v-model="editedItem.spent"
                     :label="$t('finances.fields.spent')"
                     variant="underlined"
-                    type="number"
-                    step="0.01"
                     :rules="incomeRules"
                     required
                     :color="'red'"
@@ -275,7 +285,7 @@
                               <img
                                 :src="`${this.$axios.defaults.baseURL}images/${
                                   item.raw.icon
-                                }?t=${Date.now()}`"
+                                }`"
                                 alt="icon"
                               />
                             </template>
@@ -308,7 +318,7 @@
                     name="file"
                     accept=".png, .jpg, .jpeg"
                     @change="onFileSelected"
-                    :prepend-icon="false"
+                    :prepend-icon="null"
                   ></v-file-input>
                 </v-col>
                 <v-col cols="12" md="6">
@@ -346,7 +356,7 @@
                 <v-col cols="12">
                   <v-menu
                     v-model="dateMenu"
-                    :close-on-content-click="false"
+                    :close-on-content-click="true"
                     transition="scale-transition"
                     offset-y
                     min-width="auto"
@@ -364,6 +374,7 @@
                       color="#03626C"
                       :model-value="parseDateString(dateInput)"
                       @update:model-value="updateDate"
+                      :max="maxDate"
                     ></v-date-picker>
                   </v-menu>
                 </v-col>
@@ -535,9 +546,18 @@ export default {
     search: "",
     types: [],
     budgets: [],
+    selectRules: [(v) => !!v || "Seleccionar al menos un elemento"],
   }),
 
   computed: {
+     maxDate() {
+    const today = new Date();
+      const year = today.getFullYear();
+      const month = String(today.getMonth() + 1).padStart(2, "0");
+      const day = String(today.getDate()).padStart(2, "0");
+      return `${year}-${month}-${day}`;
+    // Esto asegura que sea el inicio del día (evita problemas de hora/minuto)
+  },
      filteredIncomes() {
       return this.financialRecords.filter(record => record.income && record.income > 0);
     },
@@ -573,10 +593,11 @@ export default {
       return [v => !!v || this.$t("finances.validationMessages.date.required")];
     },
     formTitle() {
-      return this.editedIndex === -1
-        ? this.$t("finances.titles.new")
-        : this.$t("finances.titles.edit");
-    },
+  const action = this.editedIndex === -1 ? 'new' : 'edit';
+  const type = this.isIncome ? 'income' : 'expense';
+
+  return this.$t(`finances.titles.${action}.${type}`);
+},
     dateFormatted() {
       const date = this.dateInput ? new Date(this.dateInput) : new Date();
       const day = date.getDate().toString().padStart(2, "0");
@@ -681,19 +702,25 @@ export default {
   
   // Método para convertir string a Date (solo cuando sea necesario)
   parseDateString(dateString) {
-    if (!dateString) return null;
-    const [year, month, day] = dateString.split('-');
-    return new Date(year, month - 1, day);
-  },
+  if (!dateString) {
+    const today = new Date();
+    // Aseguramos que sea el inicio del día (evita problemas de zona horaria)
+    return new Date(today.getFullYear(), today.getMonth(), today.getDate());
+  }
+  const [year, month, day] = dateString.split('-');
+  return new Date(parseInt(year), parseInt(month) - 1, parseInt(day));
+},
     formatCurrency(value) {
-      if (value === null || value === undefined) return "";
-      return new Intl.NumberFormat('es-ES', { 
-        style: 'currency', 
-        currency: 'EUR',
-        minimumFractionDigits: 2,
-        maximumFractionDigits: 2
-      }).format(value);
-    },
+  if (value === null || value === undefined || value === '') return "";
+  
+  const number = parseFloat(value);
+  if (isNaN(number)) return "";
+
+  return '$' + number.toLocaleString('es-CL', {
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 0
+  });
+},
     openModal(imageUrl) {
       this.dialogPhoto = true;
       this.loadingImage = true;
@@ -740,6 +767,10 @@ export default {
         if (result.success) {
           this.types = result.data?.types || [];
           this.budgets = result.data?.budgets || [];
+
+          if (!this.editedItem.type && this.types.length > 0) {
+            this.editedItem.type = this.types[0].id;
+          }
         } else {
           this.types = [];
           this.budgets = [];
@@ -1114,15 +1145,6 @@ export default {
 .date {
   padding: 4px 8px;
   border-radius: 4px;
-}
-
-.v-card {
-  transition: all 0.2s ease;
-}
-
-.v-card:hover {
-  transform: translateY(-3px);
-  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.1) !important;
 }
 
 .fullscreen-dialog {
