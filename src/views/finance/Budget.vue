@@ -15,7 +15,7 @@
 
 
 
-    <v-card elevation="4" rounded="lg" style="max-height: 100vh; min-height: 40vh; overflow-y: auto">
+    <v-card class="pa-4" elevation="4" rounded="lg">
       <!-- Encabezado con foto y datos -->
       <v-card-text>
 
@@ -73,7 +73,7 @@
                   </div>
                 </div>
               </v-col>
-              <v-col cols="7" class="d-flex align-center pe-4">
+              <v-col cols="6" class="d-flex align-center pe-4">
                 <v-row align="center">
                   <div>
                     <div class="font-weight-bold text-body-2">
@@ -100,10 +100,10 @@
                   <div>
                     <div class="font-weight-bold text-body-2">
                       <span>
-                        {{ budget.amount }}
+                        {{ formatCurrency(budget.amount) }}
                       </span>
                       <v-tooltip activator="parent" location="bottom">
-                        <span>{{ $t('budget.fields.amount') }}: {{ budget.amount }}</span>
+                        <span>{{ $t('budget.fields.amount') }}: {{ formatCurrency(budget.amount) }}</span>
                       </v-tooltip>
                     </div>
                     <!--<div class="text-caption text-grey-darken-1">
@@ -122,6 +122,21 @@
                         <span>Disponible: {{ budget.remaining_amount }}</span>
                       </v-tooltip>
                     </div>-->
+                  </div>
+                </v-row>
+              </v-col>
+              
+              <v-col cols="1" class="d-flex align-center pe-4">
+                <v-row align="center">
+                  <div>
+                    <div class="text-caption text-grey-darken-1">
+                      <span>
+                        {{ formatCurrency(budget.used_amount) }}
+                      </span>
+                      <v-tooltip activator="parent" location="bottom">
+                        <span>{{ $t('budget.fields.used_amount') }}: {{ formatCurrency(budget.used_amount) }}</span>
+                      </v-tooltip>
+                    </div>
                   </div>
                 </v-row>
               </v-col>
@@ -163,47 +178,6 @@
                   </div>
                 </v-row>
               </v-col>
-              <!--<v-col cols="4" class="d-flex align-center pe-2 py-2">
-            <v-row align="center" justify="space-between" no-gutters>
-              <div>
-                <div class="d-flex flex-wrap align-center mb-2">
-                <v-tooltip bottom>
-                  <span class="text-body-2">
-                  {{ budget.categoryName }}
-                  </span>
-                    <span>{{ $t('budget.fields.category') }}: {{ budget.categoryName }}</span>
-                  </v-tooltip>
-                  <v-tooltip
-                    v-for="(item, i) in compactBudgetData(budget)"
-                    :key="i"
-                    bottom
-                  >
-                        <span class="text-body-2"
-                          >{{ item.value }}</span
-                        >
-                    <span
-                      >{{ item.fullLabel || item.label }}:
-                      {{ item.fullValue || item.value }}</span
-                    >
-                  </v-tooltip>
-                </div>
-                <div class="mt-2">
-                   <div class="d-flex flex-wrap gap-1">
-                    <v-tooltip
-                      v-for="(detail, i) in compactDetails(budget)"
-                      :key="'detail' + i"
-                      bottom
-                    >
-                      
-                          <v-icon left size="small" :icon="detail.icon"></v-icon>
-                          <span class="ml-1 text-body-2">- {{ detail.text }}</span>
-                      <span>{{ detail.fullLabel }}: {{ detail.fullText }}</span>
-                    </v-tooltip>
-                  </div>
-                </div>
-              </div>
-            </v-row>
-          </v-col>-->
               <v-col cols="1" class="d-flex align-center pe-4">
                 <v-btn icon variant="text" color="green-darken-2" size="small" @click="editItem(budget)">
                   <v-icon>mdi-pencil</v-icon>
@@ -311,91 +285,91 @@
                 </v-autocomplete>
                 </v-col>-->
                 <v-col cols="12" md="6">
-  <v-autocomplete
-    v-model="selectedParent"
-    :items="categoryParents"
-    :label="$t('budget.fields.category')"
-    item-title="nameCategory"
-    item-value="id"
-    variant="underlined"
-    :rules="selectRules"
-    clearable
-    :menu-props="{ contentClass: 'dropdown-limited' }"
-  >
-    <template v-slot:item="{ props, item }">
-      <v-list-item v-bind="props" class="dropdown-item">
-        <!-- Ícono -->
-        <template v-slot:prepend>
-          <v-avatar size="24">
-            <img
-              v-if="isImage(item.raw.iconCategory)"
-              :src="`${$axios.defaults.baseURL}images/${item.raw.iconCategory}`"
-              alt="icon"
-              class="object-fit-cover"
-            />
-            <v-icon v-else size="small">{{ getIconName(item.raw.iconCategory) }}</v-icon>
-          </v-avatar>
-        </template>
+          <v-autocomplete
+            v-model="selectedParent"
+            :items="categoryParents"
+            :label="$t('budget.fields.category')"
+            item-title="nameCategory"
+            item-value="id"
+            variant="underlined"
+            :rules="selectRules"
+            clearable
+            :menu-props="{ contentClass: 'dropdown-limited' }"
+          >
+            <template v-slot:item="{ props, item }">
+              <v-list-item v-bind="props" class="dropdown-item">
+                <!-- Ícono -->
+                <template v-slot:prepend>
+                  <v-avatar size="24">
+                    <img
+                      v-if="isImage(item.raw.iconCategory)"
+                      :src="`${$axios.defaults.baseURL}images/${item.raw.iconCategory}`"
+                      alt="icon"
+                      class="object-fit-cover"
+                    />
+                    <v-icon v-else size="small">{{ getIconName(item.raw.iconCategory) }}</v-icon>
+                  </v-avatar>
+                </template>
 
-        <!-- Descripción truncada con tooltip -->
-        <v-tooltip location="top" :text="`Descripción: ${item.raw.descriptionCategory}`">
-          <template v-slot:activator="{ props: tooltipProps }">
-            <v-list-item-subtitle
-              v-bind="tooltipProps"
-              class="text-truncate"
-            >
-              Descripción: {{ item.raw.descriptionCategory }}
-            </v-list-item-subtitle>
-          </template>
-        </v-tooltip>
-      </v-list-item>
-    </template>
-  </v-autocomplete>
-</v-col>
+                <!-- Descripción truncada con tooltip -->
+                <v-tooltip location="top" :text="`Descripción: ${item.raw.descriptionCategory}`">
+                  <template v-slot:activator="{ props: tooltipProps }">
+                    <v-list-item-subtitle
+                      v-bind="tooltipProps"
+                      class="text-truncate"
+                    >
+                      Descripción: {{ item.raw.descriptionCategory }}
+                    </v-list-item-subtitle>
+                  </template>
+                </v-tooltip>
+              </v-list-item>
+            </template>
+          </v-autocomplete>
+        </v-col>
 
-<!-- === SUBCATEGORÍA === -->
-<v-col cols="12" md="6">
-  <v-autocomplete
-    v-model="editedItem.category_id"
-    :items="categoryChildren"
-    :label="$t('budget.fields.category')"
-    item-title="nameCategory"
-    item-value="id"
-    variant="underlined"
-    :rules="selectRules"
-    :disabled="!selectedParent"
-    clearable
-    :menu-props="{ contentClass: 'dropdown-limited' }"
-  >
-    <template v-slot:item="{ props, item }">
-      <v-list-item v-bind="props" class="dropdown-item">
-        <!-- Ícono -->
-        <template v-slot:prepend>
-          <v-avatar size="24">
-            <img
-              v-if="isImage(item.raw.iconCategory)"
-              :src="`${$axios.defaults.baseURL}images/${item.raw.iconCategory}`"
-              alt="icon"
-              class="object-fit-cover"
-            />
-            <v-icon v-else size="small">{{ getIconName(item.raw.iconCategory) }}</v-icon>
-          </v-avatar>
-        </template>
-        <!-- Descripción con tooltip -->
-        <v-tooltip location="top" :text="`Descripción: ${item.raw.descriptionCategory}`">
-          <template v-slot:activator="{ props: tooltipProps }">
-            <v-list-item-subtitle
-              v-bind="tooltipProps"
-              class="text-truncate"
-            >
-              Descripción: {{ item.raw.descriptionCategory }}
-            </v-list-item-subtitle>
-          </template>
-        </v-tooltip>
-      </v-list-item>
-    </template>
-  </v-autocomplete>
-</v-col>
+                <!-- === SUBCATEGORÍA === -->
+                <v-col cols="12" md="6">
+                  <v-autocomplete
+                    v-model="editedItem.category_id"
+                    :items="categoryChildren"
+                    :label="$t('budget.fields.category')"
+                    item-title="nameCategory"
+                    item-value="id"
+                    variant="underlined"
+                    :rules="selectRules"
+                    :disabled="!selectedParent"
+                    clearable
+                    :menu-props="{ contentClass: 'dropdown-limited' }"
+                  >
+                    <template v-slot:item="{ props, item }">
+                      <v-list-item v-bind="props" class="dropdown-item">
+                        <!-- Ícono -->
+                        <template v-slot:prepend>
+                          <v-avatar size="24">
+                            <img
+                              v-if="isImage(item.raw.iconCategory)"
+                              :src="`${$axios.defaults.baseURL}images/${item.raw.iconCategory}`"
+                              alt="icon"
+                              class="object-fit-cover"
+                            />
+                            <v-icon v-else size="small">{{ getIconName(item.raw.iconCategory) }}</v-icon>
+                          </v-avatar>
+                        </template>
+                        <!-- Descripción con tooltip -->
+                        <v-tooltip location="top" :text="`Descripción: ${item.raw.descriptionCategory}`">
+                          <template v-slot:activator="{ props: tooltipProps }">
+                            <v-list-item-subtitle
+                              v-bind="tooltipProps"
+                              class="text-truncate"
+                            >
+                              Descripción: {{ item.raw.descriptionCategory }}
+                            </v-list-item-subtitle>
+                          </template>
+                        </v-tooltip>
+                      </v-list-item>
+                    </template>
+                  </v-autocomplete>
+                </v-col>
 
                 <v-col cols="12" sm="6">
                   <v-autocomplete v-model="editedItem.budget_type" :items="types"
@@ -426,16 +400,16 @@
                   <v-text-field v-model="editedItem.amount" :label="$t('budget.fields.amount')" variant="underlined" min="0" :rules="amountRules" />
                 </v-col>
 
-                <v-col cols="12" sm="6">
+                <!--<v-col cols="12" sm="6">
                   <v-select v-model="editedItem.currency" :label="$t('budget.fields.currency')" :items="[
                       { title: $t('budget.currencies.CLP'), value: 'CLP' },
-                      { title: $t('budget.currencies.USD'), value: 'USD' },
+                      /*{ title: $t('budget.currencies.USD'), value: 'USD' },
                       { title: $t('budget.currencies.EUR'), value: 'EUR' },
                       { title: $t('budget.currencies.BRL'), value: 'BRL' },
                       { title: $t('budget.currencies.MXN'), value: 'MXN' },
-                      { title: $t('budget.currencies.COP'), value: 'COP' },
+                      { title: $t('budget.currencies.COP'), value: 'COP' },*/
                     ]" variant="underlined" :rules="currencyRules" />
-                </v-col>
+                </v-col>-->
               </v-row>
 
               <!-- Step 2: Fechas y detalles -->
@@ -616,10 +590,10 @@ export default {
       used_amount: 0,
       start_date: null,
       end_date: null,
-      budget_type: "",
+      budget_type: "Personal",
       status: "",
       description: "",
-      currency: "",
+      currency: "CLP",
       type_id: null,
     },
     messages:[],
@@ -630,6 +604,19 @@ export default {
       }],*/
       
     defaultItem: {
+      id: "",
+      category_id: null,
+      amount: null,
+      used_amount: 0,
+      start_date: null,
+      end_date: null,
+      budget_type: "Personal",
+      status: "",
+      description: "",
+      currency: "CLP",
+      type_id: null,
+    },
+    originalItem: {
       id: "",
       category_id: null,
       amount: null,
@@ -661,7 +648,7 @@ export default {
     ],
   }),
   computed: {
-     categoryParents() {
+    categoryParents() {
     return this.categories.filter(cat => cat.parent_id === null);
   },
     formTitle() {
@@ -732,20 +719,18 @@ export default {
    created() {
     this.tools = [
       {
-        name: "Crear Presupuestos",
+        name: this.$t("budget.titles.new"),
         action: () => this.showAdd()
       }
-    ],
-    this.categoryParents = this.categories.filter(cat => cat.parent_id === null);
-
+    ]
   // Si estamos editando y ya hay un category_id, sincronizar
-  if (this.editedItem.category_id) {
+  /*if (this.editedItem.category_id) {
     const child = this.categories.find(c => c.id === this.editedItem.category_id);
     if (child && child.parent_id) {
       this.selectedParent = child.parent_id;
       // categoryChildren se llenará por el watcher de selectedParent
     }
-  }
+  }*/
   },
   mounted() {
     this.home_id = JSON.parse(LocalStorageService.getItem("home_id"));
@@ -842,6 +827,28 @@ export default {
       if (!dateString) return "N/R";
       const [year, month, day] = dateString.split("-");
       return `${day}-${month}-${year}`;
+    },
+    formatCurrency(value) {
+  // Convertir a número si es string
+      if (typeof value === 'string') {
+        // Eliminar cualquier caracter no numérico excepto punto y signo menos
+        value = value.trim().replace(/[^\d.-]/g, '');
+        value = parseFloat(value);
+      }
+
+      // Validar si es numérico válido
+      if (value === null || value === undefined || isNaN(value)) {
+        return '0.00';
+      }
+
+      // Redondear a 2 decimales con protección contra errores de punto flotante
+      value = Math.round((value + Number.EPSILON) * 100) / 100;
+
+      // Formatear con 2 decimales siempre, usando formato en-US
+      return value.toLocaleString('en-US', {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2
+      });
     },
     updateStartDate(val) {
       this.startDateInput = val;
@@ -943,7 +950,7 @@ export default {
           .filter(
             (key) =>
               fieldsToUpdate.includes(key) &&
-              this.editedItem[key] !== this.defaultItem[key]
+              this.editedItem[key] !== this.originalItem[key]
           )
           .reduce((obj, key) => {
             obj[key] = this.editedItem[key];
@@ -1045,6 +1052,11 @@ export default {
           3000
         );
       } finally {
+        const child = this.categories.find(c => c.id === this.editedItem.category_id);
+        if (child && child.parent_id) {
+          this.selectedParent = child.parent_id;
+          // categoryChildren se llenará por el watcher de selectedParent
+        }
         this.dialog = true;
       }
     },

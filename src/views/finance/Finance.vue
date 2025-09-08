@@ -17,7 +17,7 @@
     overflow: visible;
     z-index: auto;
   ">
-    <v-menu
+    <!--<v-menu
     offset-y
     location="bottom end"
     transition="scale-transition"
@@ -61,7 +61,7 @@
         </v-list-item-title>
       </v-list-item>
     </v-list>
-  </v-menu>
+  </v-menu>-->
       <!-- Encabezado con foto y datos -->
       <v-card-text>
         <v-row class="mb-4" align="center" no-gutters>
@@ -180,7 +180,7 @@
                 </v-sheet>
 
                 <v-alert v-if="budgetAlerts && budgetAlerts.length > 0" color="warning" icon="mdi-alert-circle" variant="outlined" theme="dark" border
-                  density="compact" class="py-1 px-4" @click="showSpent()"  style="cursor: pointer;">
+                  density="compact" class="py-1 px-4" @click="showAddBuget()"  style="cursor: pointer;">
                   <div class="text-body2 text-black">
                      {{ budgetAlerts[0].message }}
                   </div>
@@ -278,7 +278,7 @@
           </v-col>
           <v-col cols="12" class="d-flex">
             <v-alert v-if="spentAlerts" color="warning" icon="mdi-alert-circle" variant="outlined" theme="dark" border density="compact"
-              class="py-1 px-4 mt-1" @click="showSpent()"  style="cursor: pointer;">
+              class="py-1 px-4 mt-1" @click="showAddIncomeSpent()"  style="cursor: pointer;">
               <div class="text-body2 text-black">
                  {{ spentAlerts.message }}
               </div>
@@ -406,7 +406,7 @@
 
                 <v-col cols="12" sm="6">
                   <v-autocomplete v-model="editedItem.type" :items="types" :label="$t('finances.fields.type')"
-                    item-title="name" item-value="id" variant="underlined" :rules="typeRules">
+                    item-title="name" item-value="id" variant="underlined" :rules="typeRules" :disabled="editedIndex === -1">
                     <template v-slot:item="{ props, item }">
                       <v-list-item v-bind="props">
                         <v-list-item-subtitle class="d-flex flex-column">
@@ -430,13 +430,20 @@
 
                 <v-col cols="12" sm="6">
                   <v-text-field v-if="isIncome" v-model="editedItem.income" :label="$t('finances.fields.income')"
-                    variant="underlined" type="number" step="0.01" :rules="incomeRules" required :color="'green'" />
+                    variant="underlined" type="number" :rules="incomeRules" required />
                   <v-text-field v-else v-model="editedItem.spent" :label="$t('finances.fields.spent')"
-                    variant="underlined" type="number" step="0.01" :rules="incomeRules" required :color="'red'" />
+                    variant="underlined" type="number" :rules="[validateSpent]"
+                    :hint="spentHint"
+                    persistent-hint required
+                    :class="{
+                      'has-negative-hint': availableAmount < 0,
+                      'has-positive-hint': availableAmount > 0,
+                      'has-neutral-hint': availableAmount === 0
+                    }" />
                 </v-col>
 
                 <v-col cols="12" sm="12" v-if="!isIncome">
-                  <v-autocomplete v-model="editedItem.budget_id" :items="budgets" :label="$t('budget.fields.category')"
+                  <v-autocomplete v-model="editedItem.budget_id" :items="filteredBudgets" :label="$t('budget.fields.category')"
                     item-title="categoryName" item-value="id" variant="underlined" :rules="selectRules">
                     <template v-slot:item="{ props, item }">
                       <v-list-item v-bind="props">
@@ -594,7 +601,7 @@
 
                 <v-col cols="12" sm="6">
                   <v-text-field v-model="editedItem.spent" :label="$t('finances.fields.spent')" variant="underlined"
-                    type="number" step="0.01" :rules="incomeRules" required />
+                    type="number" :rules="incomeRules" required />
                 </v-col>
 
                 <v-col cols="12" md="6">
@@ -654,7 +661,7 @@
   </v-dialog>
 
   <v-dialog v-model="dialogBugets" fullscreen transition="dialog-bottom-transition">
-    <v-card>
+    <v-card class="bg-grey-lighten-4">
       <v-card-text>
         <!-- Aquí pasamos el 'selectedWorker' al componente dentro del diálogo -->
         <Budget />
@@ -667,7 +674,7 @@
     </v-card>
   </v-dialog>
   <v-dialog v-model="dialogIncomeSpent" fullscreen transition="dialog-bottom-transition">
-    <v-card>
+    <v-card class="bg-grey-lighten-4">
       <v-card-text>
         <!-- Aquí pasamos el 'selectedWorker' al componente dentro del diálogo -->
         <IncomeSpent />
@@ -881,17 +888,17 @@ export default {
       initializated: false,
       tools: [
         {
-          name: this.$t("finances.fields.income"),
-          icon: "mdi-trending-up",
-           action: () => this.showIncome(),
-        },
+          name: this.$t("finances.titles.new.finance"),
+          icon: "mdi-plus",
+           action: () => this.showAddFinance(),
+        },/*
         {
           name: this.$t("finances.fields.spent"),
           icon: "mdi-trending-down",
           action: () => this.showSpent(),
-        },
+        },*/
         {
-          name: this.$t("finances.sections.balance"),
+          name: this.$t("finances.sections.movements"),
           icon: "mdi-cash",
           action: () => this.showAddIncomeSpent(),
         },
@@ -912,6 +919,7 @@ export default {
       dialogAlerta: false,
       dialogChatTask: false,
       dialogIncomeSpent: false,
+      shouldAutoShowAdd: false,
       chatDialog: false,
       dialogBugets: false,
       currentTask: null,
@@ -1354,7 +1362,31 @@ export default {
     getCurrentName() {
       const type = this.types.find(t => t.id === this.budget_type);
       return type ? type.name : this.budget_type;
-    }
+    },
+    filteredBudgets() {
+    if (!this.editedItem.type) return this.budgets; // Si no hay tipo seleccionado, mostrar todos
+
+    // Suponiendo que "types" tiene objetos con { id, name }, y editedItem.type es el ID
+    // Necesitamos obtener el "name" del tipo seleccionado para compararlo con budget_type
+    /*const selectedType = this.types.find(t => t.id === this.editedItem.type);
+    const typeName = selectedType ? selectedType.name : null;
+
+    if (!typeName) return [];*/
+
+    // Filtrar budgets cuyo budget_type coincida con el nombre del tipo seleccionado
+    return this.budgets.filter(budget => budget.budget_type === this.editedItem.type);
+  },
+    availableAmount() {
+    if (!this.editedItem.type || !this.balance) return 0;
+    return this.editedItem.type === 'Personal'
+      ? this.balance.personal.available
+      : this.balance.home?.available || 0;
+  },
+   spentHint() {
+    const amount = this.availableAmount;
+    const formatted = this.formatCurrency(amount);
+    return `Disponible: ${formatted}`;
+  }
   },
   mounted() {
     this.person_id = JSON.parse(LocalStorageService.getItem("person_id"));
@@ -1371,6 +1403,39 @@ export default {
     }
   },
   methods: {
+    validateSpent(value) {
+    if (value === null || value === undefined || value === '') {
+      return 'Este campo es requerido.';
+    }
+
+    const numValue = parseFloat(value);
+    if (isNaN(numValue)) {
+      return 'Debe ser un número válido.';
+    }
+
+    if (numValue < 0) {
+      return 'El gasto no puede ser negativo.';
+    }
+
+    // Validar contra el disponible según el tipo
+    if (!this.editedItem.type) {
+      return 'Selecciona un tipo primero.';
+    }
+
+    if (!this.balance) {
+      return 'Cargando balance...';
+    }
+
+    const available = this.editedItem.type === 'Personal'
+      ? this.balance.personal.available
+      : this.balance.home?.available || 0;
+
+    if (numValue > available) {
+      return `No puedes gastar más de lo disponible (${this.formatCurrency(available)}).`;
+    }
+
+    return true; // ✅ válido
+  },
      /*handleGenerateDemo() {
       // Lógica para generar datos demo
       console.log('Generando datos demo...');
@@ -1725,42 +1790,27 @@ export default {
         this.loadingImage = false;
       };
     },*/
-    formatNumber(value) {
-      console.log("value: ", value)
-      // Si el valor es null o NaN, devolver 0.00
-      if (value == null || isNaN(value)) {
-        value = 0;
-      }
-  // Validación: si no es un número válido, devolver 0.00
-  if (value == null || isNaN(value)) {
-    value = 0;
-  }
-
-  // Asegurarnos de que sea un número
-  const numberValue = Number(value);
-
-  // Redondear a 2 decimales usando técnica segura
-  const roundedValue = Math.round((numberValue + Number.EPSILON) * 100) / 100;
-
-  // Aplicar formato
-  return roundedValue.toLocaleString("en-US", {
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2,
-  });
-},
-
     formatCurrency(value) {
-      // Primero reemplaza los puntos (separadores de miles) si existen
-      const numericValue =
-        typeof value === "string"
-          ? parseFloat(value.replace(/\./g, "").replace(",", "."))
-          : value;
+  // Convertir a número si es string
+      if (typeof value === 'string') {
+        // Eliminar cualquier caracter no numérico excepto punto y signo menos
+        value = value.trim().replace(/[^\d.-]/g, '');
+        value = parseFloat(value);
+      }
 
-      return new Intl.NumberFormat("es-CO", {
-        style: "decimal",
-        minimumFractionDigits: 0,
-        maximumFractionDigits: 0,
-      }).format(numericValue || 0);
+      // Validar si es numérico válido
+      if (value === null || value === undefined || isNaN(value)) {
+        return '0.00';
+      }
+
+      // Redondear a 2 decimales con protección contra errores de punto flotante
+      value = Math.round((value + Number.EPSILON) * 100) / 100;
+
+      // Formatear con 2 decimales siempre, usando formato en-US
+      return value.toLocaleString('en-US', {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2
+      });
     },
     clearFields() {
       // Limpiar los valores de ingreso y gasto al cambiar el tipo
@@ -1848,7 +1898,7 @@ export default {
           // Si la solicitud es exitosa, asignamos las sucursales
           this.income = result.data?.incomeCard || [];
           this.spent = result.data?.spentCard || [];
-          this.balance = result.data?.balanceCard || [];
+          //this.balance = result.data?.balanceCard || [];
           this.suggestions = result.data?.suggestions || [];
           this.statusuggestions = result.data?.statusuggestions || [];
           this.movent = result.data?.movementsCard || {};
@@ -1865,7 +1915,7 @@ export default {
           // Si no hay datos, asignamos un array vacío
           this.spent = [];
           this.income = [];
-          this.balance = [];
+          //this.balance = [];
           this.suggestions = [];
           this.movent = {};
           this.statusuggestions = [];
@@ -1933,12 +1983,14 @@ export default {
         if (result.success) {
           this.types = result.data?.types || [];
           this.budgets = result.data?.budgets || [];
+          this.balance = result.data?.balance || {};
           if (!this.editedItem.type && this.types.length > 0) {
             this.editedItem.type = this.types[0].id;
           }
         } else {
           this.types = [];
           this.butgets = [];
+          this.balance = {};
         }
       } catch (error) {
         this.showAlert(
@@ -1949,7 +2001,8 @@ export default {
       } finally {
         this.dialogAddFinance = true; // Abrimos el diálogo
       }
-      this.dialogAddFinance = true; // Abrimos el diálogo
+      //this.shouldAutoShowAdd = true; // Indicamos que debe auto-ejecutar showAdd
+      //this.dialogAddFinance = true; // Abrimos el diálogo
     },
     closeDialogFinances() {
       this.dialogAddFinance = false; // Cerramos el diálogo
@@ -1984,8 +2037,12 @@ export default {
 
         if (result.success) {
           this.types = result.data?.types || [];
+          this.budgets = result.data?.budgets || [];
+          this.balance = result.data?.balance || {};
         } else {
           this.types = [];
+          this.budgets = [];
+          this.balance = {};
         }
       } catch (error) {
         this.showAlert(
@@ -2135,6 +2192,7 @@ export default {
       this.dialogBugets = true; // Abrimos el diálogo
     },
     showAddIncomeSpent() {
+      this.shouldAutoShowAdd = false; // Indicamos que debe auto-ejecutar showAdd
       this.dialogIncomeSpent = true; // Abrimos el diálogo
     },
     closeDialogBugets() {
@@ -2142,6 +2200,7 @@ export default {
       this.initialize();
     },
     closeDialogIncomeSpent() {
+      this.shouldAutoShowAdd = false; // Indicamos que debe auto-ejecutar showAdd
       this.dialogIncomeSpent = false; // Cerramos el diálogo
       this.initialize();
     },
@@ -2171,7 +2230,17 @@ export default {
 </script>
 
 <style>
+.has-negative-hint .v-field__hint {
+  color: #f44336 !important;
+}
 
+.has-positive-hint .v-field__hint {
+  color: #4caf50 !important;
+}
+
+.has-neutral-hint .v-field__hint {
+  color: #9e9e9e !important;
+}
 .text-red {
   color: #c62828;
 }

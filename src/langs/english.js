@@ -687,7 +687,7 @@ const english = {
         },
       },
       fields: {
-        type: "Transaction Type",
+        type: "Type",
         method: "Payment Method",
         income: "Income",
         spent: "Expense",

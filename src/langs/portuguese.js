@@ -686,7 +686,7 @@ const portuguese = {
         },
       },
       fields: {
-        type: "Tipo de Transação",
+        type: "Tipo",
         method: "Método de Pagamento",
         income: "Receita",
         spent: "Despesa",
@@ -708,12 +708,12 @@ const portuguese = {
         new: {
           income: "Adicionar Receita",
           expense: "Adicionar Despesa",
-          finance: "Adicionar Registro Financeiro",
+          finance: "Adicionar Registro",
         },
         edit: {
           income: "Editar Receita",
           expense: "Editar Despesa",
-          finance: "Editar Registro Financeiro",
+          finance: "Editar Registro",
         },
         view: {
           income: "Registros de Receitas",

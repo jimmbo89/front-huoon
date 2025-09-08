@@ -13,22 +13,104 @@
   </v-snackbar>
 
   <v-container class="pa-4">
-  <v-card class="pa-4" elevation="4" rounded="lg">
+  <v-card elevation="4" rounded="lg">
       <!-- Encabezado con foto y datos -->
       <v-card-text>
+      <v-col cols="12" sm="9" md="9" class="d-flex align-center">
+            <v-avatar size="48" class="me-3" color="grey-lighten-4" variant="tonal">
+              <v-icon color="green-darken-2">mdi-cash-multiple</v-icon>
+            </v-avatar>
+            <div>
+              <div class="text-body-2 font-weight-bold mb-1">
+                {{ $t("finances.sections.movements") }}
+              </div>
+              <div class="text-body-2 text-grey-darken-1">
+              
+              </div>
+            </div>
+          </v-col>
+
+
+             <v-divider />
+          <v-card-actions class="pa-3 bg-grey-lighten-5 tools-bar">
+            <v-btn
+              v-for="tool in tools"
+              :key="tool.name"
+              @click="tool.action()"
+              size="small"
+              color="primary"
+              variant="text"
+              prepend-icon="mdi-plus"
+              class="text-capitalize"
+            >
+              {{ tool.name }}
+            </v-btn>
+          </v-card-actions>
+          
     <!-- Encabezado -->
-    <v-row justify="space-between" align="center" class="mb-6">
-      <h2 class="text-body-2 font-weight-bold">{{ $t("finances.header.title") }}</h2>
+    <!--<v-row justify="space-between" align="center" class="mb-6">
+      <h2 class="text-body-2 font-weight-bold">{{ $t("finances.sections.movements") }}</h2>
       <v-btn icon color="deep-purple-accent-4" variant="flat" class="elevation-3" @click="showAdd">
         <v-icon>mdi-plus</v-icon>
       </v-btn>
-    </v-row>
+    </v-row>-->
 
     <template v-if="financialRecords.length > 0">
-      <v-card v-for="(income, index) in financialRecords" :key="index" class="mb-4 rounded-lg pa-2" density="comfortable" elevation="2">
-        <v-row no-gutters class="ma-0">
+    <v-card class="mb-4 rounded-lg py-2 px-0" density="comfortable" elevation="1" color="grey-lighten-4">
+    <v-row no-gutters class="ma-0 mx-0">
+      <!-- Columna 1: Fecha -->
+      <v-col cols="1" class="d-flex align-center justify-center px-0">
+        <div class="text-caption font-weight-bold">
+          {{ $t('finances.fields.date') }}
+        </div>
+      </v-col>
+
+      <!-- Columna 2: Tipo -->
+      <v-col cols="1" class="d-flex align-center pe-4">
+        <div class="text-caption font-weight-bold">
+          {{ $t('finances.fields.type') }}
+        </div>
+      </v-col>
+
+      <!-- Columna 3: Categoría / Presupuesto -->
+      <v-col cols="2" class="d-flex align-center pe-4">
+        <div class="text-caption font-weight-bold">
+          {{ $t('finances.fields.category') }}
+        </div>
+      </v-col>
+
+      <!-- Columna 4: Ingresos -->
+      <v-col cols="2" class="d-flex align-center pe-4">
+        <div class="text-caption font-weight-bold text-green-darken-1">
+          {{ $t('finances.fields.income') }}
+        </div>
+      </v-col>
+
+      <!-- Columna 5: Gastos -->
+      <v-col cols="2" class="d-flex align-center pe-4">
+        <div class="text-caption font-weight-bold text-red-darken-1">
+          {{ $t('finances.fields.spent') }}
+        </div>
+      </v-col>
+
+      <!-- Columna 6: Descripción -->
+      <v-col cols="3" class="d-flex align-center pe-4">
+        <div class="text-caption font-weight-bold">
+          {{ $t('finances.fields.description') }}
+        </div>
+      </v-col>
+
+      <!-- Columna 7: Archivo y Acciones -->
+      <v-col cols="1" class="d-flex align-center pe-4 justify-end">
+        <div class="text-caption font-weight-bold">
+        </div>
+      </v-col>
+    </v-row>
+    </v-card>
+      <v-card v-for="(income, index) in financialRecords" :key="index" class="mb-4 rounded-lg py-2 px-0" density="comfortable" elevation="2">
+        <v-row no-gutters class="ma-0 px-0">
           <!-- Columna 1: Fecha -->
-          <v-col cols="1" md="1" class="d-flex align-center justify-center">
+          <v-col cols="1" class="d-flex align-center justify-center px-0">
             <div class="icono-concavo" :class="`bg-${getTypeColor(income.type)}`">
               <div class="date-text">
                 {{ formatIntuitiveDate(income.date) }}
@@ -220,6 +302,7 @@
                     item-value="id"
                     variant="underlined"
                     :rules="typeRules"
+                    :disabled="editedIndex !== -1"
                   >
                     <template v-slot:item="{ props, item }">
                       <v-list-item v-bind="props">
@@ -261,16 +344,22 @@
                     v-model="editedItem.spent"
                     :label="$t('finances.fields.spent')"
                     variant="underlined"
-                    :rules="incomeRules"
                     required
-                    :color="'red'"
+                    :rules="[validateSpent]"
+                    :hint="spentHint"
+                    persistent-hint
+                    :class="{
+                      'has-negative-hint': availableAmount < 0,
+                      'has-positive-hint': availableAmount > 0,
+                      'has-neutral-hint': availableAmount === 0
+                    }"
                   />
                 </v-col>
 
                 <v-col cols="12" sm="12" v-if="!isIncome">
                   <v-autocomplete
                     v-model="editedItem.budget_id"
-                    :items="budgets"
+                    :items="filteredBudgets"
                     :label="$t('budget.fields.category')"
                     item-title="categoryName"
                     item-value="id"
@@ -296,12 +385,12 @@
                         </template>
                         <v-list-item-subtitle class="d-flex flex-column">
                           <div>
-                            {{ $t("finances.fields.available") }}:
-                            {{ formatCurrency(item.raw.amount - item.raw.used_amount) }}
-                          </div>
-                          <div>
                             {{ $t("finances.fields.total") }}:
                             {{ formatCurrency(item.raw.amount) }}
+                          </div>
+                          <div>
+                            {{ $t("budget.fields.used_amount") }}:
+                            {{ formatCurrency(item.raw.used_amount) }}
                           </div>
                         </v-list-item-subtitle>
                       </v-list-item>
@@ -466,7 +555,7 @@ import _ from "lodash";
 import { shallowRef } from "vue";
 
 export default {
-  data: () => ({
+ data: () => ({
     selected: shallowRef([2]),
     selected2: null,
     step: 0,
@@ -546,6 +635,7 @@ export default {
     search: "",
     types: [],
     budgets: [],
+    blance: {},
     selectRules: [(v) => !!v || "Seleccionar al menos un elemento"],
   }),
 
@@ -611,6 +701,30 @@ export default {
     imgedit() {
       return this.imgMiniatura;
     },
+    filteredBudgets() {
+    if (!this.editedItem.type) return this.budgets; // Si no hay tipo seleccionado, mostrar todos
+
+    // Suponiendo que "types" tiene objetos con { id, name }, y editedItem.type es el ID
+    // Necesitamos obtener el "name" del tipo seleccionado para compararlo con budget_type
+    /*const selectedType = this.types.find(t => t.id === this.editedItem.type);
+    const typeName = selectedType ? selectedType.name : null;
+
+    if (!typeName) return [];*/
+
+    // Filtrar budgets cuyo budget_type coincida con el nombre del tipo seleccionado
+    return this.budgets.filter(budget => budget.budget_type === this.editedItem.type);
+  },
+    availableAmount() {
+    if (!this.editedItem.type || !this.balance) return 0;
+    return this.editedItem.type === 'Personal'
+      ? this.balance.personal.available
+      : this.balance.home?.available || 0;
+  },
+   spentHint() {
+    const amount = this.availableAmount;
+    const formatted = this.formatCurrency(amount);
+    return `Disponible: ${formatted}`;
+  }
   },
 
   mounted() {
@@ -618,8 +732,48 @@ export default {
     this.person_id = JSON.parse(LocalStorageService.getItem("person_id"));
     this.initialize();
   },
-
+   created() {
+    this.tools = [
+      {
+        name: this.$t("finances.titles.new.finance"),
+        action: () => this.showAdd()
+      }
+    ]
+   },
   methods: {
+     validateSpent(value) {
+    if (value === null || value === undefined || value === '') {
+      return 'Este campo es requerido.';
+    }
+
+    const numValue = parseFloat(value);
+    if (isNaN(numValue)) {
+      return 'Debe ser un número válido.';
+    }
+
+    if (numValue < 0) {
+      return 'El gasto no puede ser negativo.';
+    }
+
+    // Validar contra el disponible según el tipo
+    if (!this.editedItem.type) {
+      return 'Selecciona un tipo primero.';
+    }
+
+    if (!this.balance) {
+      return 'Cargando balance...';
+    }
+
+    const available = this.editedItem.type === 'Personal'
+      ? this.balance.personal.available
+      : this.balance.home?.available || 0;
+
+    if (numValue > available) {
+      return `No puedes gastar más de lo disponible (${this.formatCurrency(available)}).`;
+    }
+
+    return true; // ✅ válido
+  },
     isImage(icon) {
       // Validar si el valor es una URL válida (puedes personalizar esta lógica)
       return (
@@ -757,16 +911,20 @@ export default {
       this.editedItem = Object.assign({}, this.defaultItem);
       this.originalItem = Object.assign({}, this.defaultItem);
       this.file = null;
+      this.data = {};
+      this.data.home_id = this.home_id;
       this.imgMiniatura = "";
       try {
         const result = await handleRequest({
           endpoint: 'get-finances-data',
           method: 'POST',
+          data: this.data,
         });
 
         if (result.success) {
-          this.types = result.data?.types || [];
+           this.types = result.data?.types || [];
           this.budgets = result.data?.budgets || [];
+          this.balance = result.data?.balance || {};
 
           if (!this.editedItem.type && this.types.length > 0) {
             this.editedItem.type = this.types[0].id;
@@ -774,6 +932,7 @@ export default {
         } else {
           this.types = [];
           this.budgets = [];
+          this.balance = {};
         }
       } catch (error) {
         this.showAlert('error', 'Ocurrió un error inesperado al cargar los tipos de consulta.', 3000);
@@ -955,11 +1114,13 @@ export default {
         });
 
         if (result.success) {
-          this.types = result.data?.types || [];
+           this.types = result.data?.types || [];
           this.budgets = result.data?.budgets || [];
+          this.balance = result.data?.balance || {};
         } else {
           this.types = [];
           this.budgets = [];
+          this.balance = {};
         }
       } catch (error) {
         this.showAlert('error', 'Ocurrió un error inesperado al cargar los tipos de consulta.', 3000);
@@ -1101,7 +1262,18 @@ export default {
 };
 </script>
 
-<style scoped>
+<style>
+.has-negative-hint .v-field__hint {
+  color: #f44336 !important;
+}
+
+.has-positive-hint .v-field__hint {
+  color: #4caf50 !important;
+}
+
+.has-neutral-hint .v-field__hint {
+  color: #9e9e9e !important;
+}
 .icono-concavo {
   width: 50px;
   height: 50px;

@@ -690,7 +690,7 @@ const spanish = {
         },
       },
       fields: {
-        type: "Tipo de Transacción",
+        type: "Tipo",
         method: "Método de Pago",
         income: "Ingreso",
         spent: "Gasto",
@@ -712,12 +712,12 @@ const spanish = {
         new: {
           income: "Agregar Ingreso",
           expense: "Agregar Gasto",
-          finance: "Agregar Registro Financiero",
+          finance: "Agregar Registro",/*  Financiero*/
         },
         edit: {
           income: "Editar Ingreso",
           expense: "Editar Gasto",
-          finance: "Editar Registro Financiero",
+          finance: "Editar Registro",
         },
         view: {
           income: "Registros de Ingresos",
