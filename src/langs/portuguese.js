@@ -1,6 +1,80 @@
 const portuguese = {
   messages: {
     greet: "Olá",
+    login: {
+      title: "Faça login na sua conta",
+      subtitle: "Bem-vindo de volta! Selecione um método para fazer login:",
+      or: "Ou faça login com",
+      forgotPassword: "Esqueceu sua senha?",
+      noAccount: "Não tem uma conta?",
+      signUp: "Cadastre-se",
+      signInButton: "Entrar →",
+      privacy: "Política de Privacidade",
+      support: "Suporte",
+      footer: "© 2025 Huoon · {privacy} · {support}",
+
+      fields: {
+        name: "Nome",
+        email: "E-mail",
+        password: "Senha",
+        user: "Usuário",
+      },
+
+      placeholders: {
+        name: "Nome",
+        email: "johndoe@mail.com",
+        password: "senha",
+        user: "Usuário",
+      },
+
+      buttons: {
+        google: "Google",
+        facebook: "Facebook",
+      },
+    },
+    slides: {
+      welcome: {
+        title: "Bem-vindo ao",
+        emphasis: "Huoon",
+        subtitle: "sua casa organizada",
+        description:
+          "Centralize tarefas, membros, produtos e documentos domésticos em um só lugar.",
+      },
+      shareHome: {
+        title: "Compartilhe sua casa",
+        emphasis: "com sua família",
+        subtitle: "",
+        description:
+          "Crie um lar colaborativo onde todos participam: parceiro, filhos, colegas de quarto ou cuidadores.",
+      },
+      smartTasks: {
+        title: "Tarefas e lembretes",
+        emphasis: "inteligentes",
+        subtitle: "",
+        description:
+          "Automatize rotinas, receba alertas importantes e mantenha sua casa atualizada facilmente.",
+      },
+      controlFromPhone: {
+        title: "Tudo sob controle",
+        emphasis: "do seu celular",
+        subtitle: "",
+        description:
+          "Consulte informações de compras, pagamentos, receitas, calendários e muito mais de qualquer lugar.",
+      },
+      designedForYou: {
+        title: "Projetado para você",
+        emphasis: "e seu bem-estar",
+        subtitle: "",
+        description:
+          "Huoon se adapta ao seu estilo de vida: inclui ferramentas úteis para todos os membros da casa, incluindo crianças e idosos.",
+      },
+    },
+    dataTable: {
+      itemsPerPageText: "Itens por página",
+      noDataText: "Nenhum dado disponível",
+      loadingText: "Carregando...",
+      search: "Pesquisar",
+    },
     chat: {
       initialMessage: "Olá 👋 Como posso te ajudar hoje, {name}?",
       title: "Assistente de Tarefas",
@@ -139,9 +213,20 @@ const portuguese = {
     },
     common: {
       items: "itens",
+      product: "produtos",
       last: "Último",
       no_records: "Sem registros",
+      no_name: "Sem nome",
     },
+    activity: {
+    title: "Mostrar movimentos de produtos",
+    origin_warehouse: "Armazém de saída",
+    destination_warehouse: "Armazém de entrada",
+    product: "Produto",
+    quantity: "Quantidade",
+    date: "Data",
+    performed_by: "Realizado",
+  },
     settings: {
       category: "Categorias",
       warehouse: "Armazéns",
@@ -151,6 +236,7 @@ const portuguese = {
       hometype: "Tipos de Casa",
       type: "Tipos de Saúde",
       history: "Histórico Médico",
+      actions: "Ações",
     },
     taskForm: {
       noTasksToday: "Você não tem tarefas para hoje",
@@ -187,6 +273,11 @@ const portuguese = {
         previous: "Anterior",
         next: "Próximo",
         saveAndClose: "Salvar e Fechar",
+        delete: "Eliminar",
+        edit: "Editar",
+        moveProduct: "Mover para outro armazém",
+        create: "Criar",
+        move: "Mover",
       },
       validation: {
         required: "Este campo é obrigatório",
@@ -252,6 +343,12 @@ const portuguese = {
         budget: "orçamento",
         income: "receita", // Para ingresos/ganancias
         expense: "despesa",
+        blood_pressure: "pressão arterial",
+        pulse: "pulso",
+        respiratory_rate: "frequência respiratória",
+        temperature: "temperatura",
+        weight: "peso",
+        height: "altura",
       },
     },
     personDetails: {
@@ -309,11 +406,11 @@ const portuguese = {
         },
       },
       fields: {
-        blood_pressure: "Pressão Arterial (mmHg)",
-        pulse: "Frequência Cardíaca (bpm)",
-        temperature: "Temperatura (°C)",
-        respiratory_rate: "Frequência Respiratória (rpm)",
-        exam_date: "Data do Exame",
+        blood_pressure: "Pressão Arterial",
+        pulse: "Frequência Cardíaca",
+        temperature: "Temperatura",
+        respiratory_rate: "Frequência Respiratória",
+        exam_date: "Data",
         weight: "Peso (kg)",
         height: "Altura (m)",
         bmi: "Índice de Massa Corporal",
@@ -323,6 +420,50 @@ const portuguese = {
         digestive_observations: "Observações Digestivas",
         urinary_observations: "Observações Urinárias",
         other_findings: "Outros Achados",
+      },
+      forms: {
+        blood_pressure: {
+          title: {
+            add: "Adicionar Pressão Arterial",
+            edit: "Editar Pressão Arterial",
+          },
+        },
+        pulse: {
+          title: {
+            add: "Adicionar Frequência Cardíaca",
+            edit: "Editar Frequência Cardíaca",
+          },
+        },
+        temperature: {
+          title: {
+            add: "Adicionar Temperatura",
+            edit: "Editar Temperatura",
+          },
+        },
+        respiratory_rate: {
+          title: {
+            add: "Adicionar Frequência Respiratória",
+            edit: "Editar Frequência Respiratória",
+          },
+        },
+        weight: {
+          title: {
+            add: "Adicionar Peso",
+            edit: "Editar Peso",
+          },
+        },
+        height: {
+          title: {
+            add: "Adicionar Altura",
+            edit: "Editar Altura",
+          },
+        },
+        bmi: {
+          title: {
+            add: "Adicionar Índice de Massa Corporal",
+            edit: "Editar Índice de Massa Corporal",
+          },
+        },
       },
       titles: {
         new: "Novo Exame Físico",
@@ -355,17 +496,17 @@ const portuguese = {
         medication: "Medicação",
         dosage: "Dosagem",
         frequency: "Frequência",
-        duration: "Duração (ex: 5 dias, 2 semanas)",
+        duration: "Duração",
         durationHint:
           "Especifique a duração com número e unidade (dias, semanas, meses)",
         instructions: "Instruções",
         purpose: "Propósito",
-        startDate: "Data de início",
+        startDate: "Início",
         endDate: "Data de término",
         observations: "Observações",
       },
       titles: {
-        new: "Novo Tratamento",
+        new: "Adicionar Tratamento",
         edit: "Editar Tratamento",
       },
       validationMessages: {
@@ -411,15 +552,27 @@ const portuguese = {
         type: "Tipo de condição",
         description: "Condição médica",
         details: "Detalhes clínicos",
-        startDate: "Data de início",
+        startDate: "Data",
         endDate: "Data de resolução",
-        status: "Estado atual",
-        severity: "Nível de gravidade",
+        status: "Estado",
+        severity: "Gravidade",
+        vaccination: "Vacinação",
+        allergy: "Alergia",
       },
       titles: {
         new: "Adicionar Histórico Pessoal",
         edit: "Editar Histórico Pessoal",
         view: "Histórico Médico Pessoal",
+        vaccination: {
+          new: "Adicionar Vacina",
+          edit: "Editar Vacina",
+          view: "Detalhes da Vacina",
+        },
+        allergy: {
+          new: "Adicionar Alergia",
+          edit: "Editar Alergia",
+          view: "Detalhes da Alergia",
+        },
       },
       validationMessages: {
         type: {
@@ -451,7 +604,7 @@ const portuguese = {
         relationship: "Parentesco",
         disease: "Doença/Condição",
         details: "Detalhes Médicos",
-        date: "Data de Registro",
+        date: "Data",
         diagnosis_age: "Idade no Diagnóstico",
       },
       titles: {
@@ -545,7 +698,7 @@ const portuguese = {
         description: "Descrição",
         cie10_code: "Código CIE-10",
         notes: "Notas",
-        date: "Data do diagnóstico",
+        date: "Data",
       },
       titles: {
         new: "Novo diagnóstico",
@@ -587,7 +740,7 @@ const portuguese = {
         profesional: "Profissional",
         reason: "Motivo da Consulta",
         medicalNotes: "Notas Médicas",
-        date: "Data da Consulta",
+        date: "Data",
       },
       validationMessages: {
         type: {
@@ -605,6 +758,11 @@ const portuguese = {
           required: "A data é obrigatória",
           invalid: "A data não é válida",
         },
+      },
+      titles: {
+        new: "Adicionar Consulta Médica",
+        edit: "Editar Consulta Médica",
+        view: "Consultas Médicas",
       },
     },
     personManagement: {
@@ -699,6 +857,7 @@ const portuguese = {
         budget: "Orçamento", // Novo campo
         category: "Categoria", // Também recomendado se não existir
         currency: "Moeda",
+        saldo: "Saldo",
       },
       actions: {
         viewFile: "Ver Comprovante",
@@ -771,7 +930,7 @@ const portuguese = {
         balance: "Saldo",
         movements: "Movimentações",
         suggestions: "Sugestões",
-        budget: "Orçamento",
+        budget: "Orçamentos",
       },
       currentAmount: "<strong>{amount}</strong> atual",
       charts: {
@@ -814,7 +973,7 @@ const portuguese = {
       },
       fields: {
         category: "Categoria",
-        budget_type: "Tipo de Orçamento",
+        budget_type: "Tipo",
         amount: "Valor",
         used_amount: "Valor Utilizado",
         start_date: "Data de Início",
@@ -897,8 +1056,11 @@ const portuguese = {
     },
     warehouse: {
       formTitle: {
-        create: "Criar novo armazém",
+        create: "Criar armazém",
         edit: "Editar armazém",
+        generateShoppingList: "Gerar Lista de Compras",
+        inventory: "Inventário",
+        movements: "Movimentos",
       },
       formInstructions: "Preencha as informações necessárias para o armazém",
       steps: {
@@ -915,12 +1077,12 @@ const portuguese = {
         warehouse: "Armazéns",
         name: "Nome",
         home_location: "Localização em casa",
-        status: "Estado",
+        status: "Tipo",
         description: "Descrição",
       },
       status: {
-        public: "Público",
-        private: "Privado",
+        public: "Doméstico",
+        private: "Pessoal",
       },
       validation: {
         required: "{field} é obrigatório",
@@ -986,7 +1148,7 @@ const portuguese = {
         total_price: "Preço total",
         status: "Estado",
         category: "Categoria",
-        purchase_date: "Data de compra",
+        purchase_date: "Data",
         expiration_date: "Data de expiração",
         frequency: "Frequência (horas)",
         type: "Tipo",
@@ -1216,7 +1378,7 @@ const portuguese = {
           residents: "Número de residentes",
           image: "Imagem do lar",
           status: "Estado",
-          ranking: "Ranking do lar",
+          ranking: "Ranking",
         },
         membersTable: {
           avatar: "Foto",
@@ -1251,6 +1413,7 @@ const portuguese = {
       empty: "Nenhum animal registrado",
       search: "Buscar animais...",
       addButton: "Cadastrar novo animal",
+      managePet: "Informações do pet",
       instructions:
         "Preencha todos os campos obrigatórios para registrar seu animal",
       steps: {
@@ -1334,7 +1497,7 @@ const portuguese = {
       formInstructions: "Preencha as informações da vacinação",
       fields: {
         name: "Nome da Vacina",
-        date: "Data de Aplicação",
+        date: "Data",
         next_date: "Próxima Dose",
         pet: "Animal de Estimação",
         notes: "Observações",
@@ -1372,7 +1535,7 @@ const portuguese = {
         name: "Produto",
         dosage: "Dosagem",
         unit: "Unidade",
-        date: "Data de Aplicação",
+        date: "Data",
         next_date: "Próxima Aplicação",
         pet: "Animal de Estimação",
         notes: "Observações",
@@ -1408,15 +1571,15 @@ const portuguese = {
       },
       formInstructions: "Preencha as informações da visita ao veterinário",
       fields: {
-        date: "Data da visita",
-        vet_name: "Nome do veterinário",
+        date: "Data",
+        vet_name: "Veterinário",
         clinic: "Clínica ou consultório",
         reason: "Motivo da visita",
         diagnosis: "Diagnóstico",
         treatment_given: "Tratamento aplicado",
         recommendations: "Recomendações",
         next_visit: "Próxima consulta",
-        image: "Documento anexado",
+        image: "Documento",
       },
       steps: {
         basic: {
@@ -1459,7 +1622,7 @@ const portuguese = {
         unit: "Unidade",
         type_id: "Frequência",
         route: "Via de administração",
-        start_date: "Data de início",
+        start_date: "Data",
         end_date: "Data de término",
         notes: "Observações",
         prescribed_by: "Prescrito por",

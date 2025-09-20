@@ -19,216 +19,272 @@
       </v-col>
     </v-row>
   </v-snackbar>
-  <v-container>
-    <v-card class="pa-4" elevation="4" rounded="lg">
+  <v-container class="pa-4" >
+    <v-card elevation="2" rounded="lg" flat>
+      <!-- Encabezado con foto y datos -->
       <v-card-text>
-        <v-row justify="space-between" align="center" class="mb-6">
-        <v-col cols="12" class="d-flex justify-space-between align-center">
-          <h2 class="text-body-2 font-weight-bold">{{ $t("home.title") }}</h2>
-          <v-btn
-            icon
-            color="deep-purple-accent-4"
-            variant="flat"
-            class="elevation-3"
-            @click="showAdd"
-            :title="this.$t('home.addButton')"
-          >
-            <v-icon>mdi-plus</v-icon>
-          </v-btn>
-          </v-col>
-        </v-row>
-        <v-row justify="space-between" align="center" class="mb-6">
-          <v-col
-            cols="12"
-            class="ma-0 pt-6"
-            style="max-height: 60vh; min-height: 40vh; overflow-y: auto"
-          >
-            <template v-if="homes.length > 0">
-              <v-card
-                v-for="(home, index) in homes"
-                :key="index"
-                class="mb-4 rounded-lg pa-2"
-                density="comfortable"
-                elevation="2"
-              >
-                <v-row>
-                  <v-col cols="1" class="d-flex justify-start">
-                    <v-dialog max-width="500" class="rounded-lg">
-                      <!-- Activator: La imagen que abre el diálogo -->
-                      <template v-slot:activator="{ props: activatorProps }">
-                        <div
-                          v-bind="activatorProps"
-                          class="icono-concavo d-flex flex-column justify-center justify-start"
-                          :class="`bg-${getTypeColor(home.nameStatus)}`"
-                        >
-                          <v-img
-                            :src="`${$axios.defaults.baseURL}images/${home.image}`"
-                            cover
-                            class="img-concava"
-                          />
-                        </div>
-                      </template>
+        <v-col cols="12" sm="9" md="9" class="d-flex align-center">
+          <v-avatar size="48" class="me-3" color="grey-lighten-4" variant="tonal">
+            <v-icon color="brown">mdi-home</v-icon>
+          </v-avatar>
+          <div>
+            <div class="text-body-2 font-weight-bold mb-1">
+              {{ $t("home.title") }}
+            </div>
+            <div class="text-body-2 text-grey-darken-1"></div>
+          </div>
+        </v-col>
 
-                      <!-- Contenido del diálogo -->
-                      <template v-slot:default="{ isActive }">
-                        <v-card class="modal-imagen">
-                          <v-img
-                            :src="`${$axios.defaults.baseURL}images/${home.image}`"
-                            max-height="500"
-                            contain
-                          />
-                          <v-card-actions>
-                            <v-spacer></v-spacer>
-                            <v-btn
-                              text="Cerrar"
-                              variant="flat"
-                              @click="isActive.value = false"
-                            ></v-btn>
-                          </v-card-actions>
-                        </v-card>
-                      </template>
-                    </v-dialog>
-                  </v-col>
-                  <v-col cols="4" class="d-flex align-center justify-start">
-                    <v-row align="center" class="gap-3">
-                      <div>
-                        <div class="font-weight-bold text-body-2">
-                          {{ home.name }}
-                        </div>
-                        <div
-                          class="text-body-2 d-flex align-center text-grey-darken-1 text-truncate"
-                        >
-                          {{ home.address }}
-                          <v-tooltip
-                            activator="parent"
-                            location="bottom"
-                            max-width="350px"
-                          >
-                            <span style="white-space: normal; word-break: break-word">
-                              {{ $t("home.fields.address") }}: {{ home.address }}
-                            </span>
-                          </v-tooltip>
-                        </div>
-                      </div>
-                    </v-row>
-                  </v-col>
-                  <v-col cols="1" class="d-flex align-center justify-start text-truncate">
-                    <div>
-                      <v-rating
-                        :model-value="home.percent"
-                        color="orange-darken-2"
-                        density="compact"
-                        size="small"
-                        readonly
-                      ></v-rating>
-                      <v-tooltip activator="parent" location="bottom" max-width="350px">
-                        <span style="white-space: normal; word-break: break-word">
-                          {{ $t("home.fields.ranking") }}: {{ home.percent }}
-                        </span>
-                      </v-tooltip>
+        <v-divider />
+        <v-card-actions class="pa-3 bg-grey-lighten-5 tools-bar">
+          <v-btn
+            v-for="tool in tools"
+            :key="tool.name"
+            @click="tool.action()"
+            size="small"
+            color="primary"
+            variant="text"
+            prepend-icon="mdi-plus"
+            class="text-capitalize"
+          >
+            {{ tool.name }}
+          </v-btn>
+        </v-card-actions>
+        <v-card-title class="d-flex flex-wrap align-center gap-4 pb-0">
+      <!-- Spacer (solo visible en md+) -->
+      <v-spacer class="d-none d-md-block"></v-spacer>
+      <!-- Campo de búsqueda global -->
+      <div class="flex-grow-1" style="max-width: 300px">
+        <v-text-field
+          v-model="search"
+          density="compact"
+          :label="$t('dataTable.search')"
+          prepend-inner-icon="mdi-magnify"
+          variant="solo-filled"
+          hide-details
+          single-line
+          flat
+          clearable
+        ></v-text-field>
+      </div>
+    </v-card-title>
+
+    <!-- Tabla de datos -->
+    <v-data-table
+      :headers="headers"
+      :items="homes"
+      :search="search"
+      :items-per-page-text="$t('dataTable.itemsPerPageText')"
+      :no-data-text="$t('dataTable.noDataText')"
+      :loading-text="$t('dataTable.loadingText')"
+      :loading="loading"
+      :hide-default-header="true"
+      class="mt-1"
+      style="
+        max-height: 68vh;
+        overflow-y: auto;
+        background: transparent;
+        border: none !important;
+        outline: none !important;
+        box-shadow: none !important;
+        padding: 0;
+      "
+    >
+      <!-- Header personalizado (simulado) -->
+      <template v-slot:top>
+        <v-card
+          :elevation="1"
+          :hover="false"
+          flat
+          class="mb-2 mx-1 rounded-lg"
+          style="
+            border: 1px solid #eceff1;
+            height: 40px;
+            min-height: 40px;
+            display: flex;
+            align-items: center;
+            transition: none !important;
+          "
+        >
+          <v-card-text
+            class="d-flex pa-2"
+            style="
+              width: 100%;
+              min-width: 0;
+              height: 100%;
+              padding: 0 16px !important;
+              display: flex;
+              align-items: center;
+            "
+          >
+            <div style="width: 40%; min-width: 0" class="text-left">
+              {{ $t("home.fields.name") }} / {{ $t("home.fields.address") }}
+            </div>
+            <div style="width: 10%; min-width: 0" class="text-left">
+              {{ $t("home.fields.ranking") }}
+            </div>
+            <div style="width: 20%; min-width: 0" class="text-left">
+              {{ $t("home.fields.residents") }}
+            </div>
+            <div style="width: 10%; min-width: 0" class="text-center">
+              {{ $t("home.fields.type") }}
+            </div>
+            <div style="width: 13%; min-width: 0" class="text-center">
+              {{ $t("home.fields.status") }}
+            </div>
+            <div style="width: 7%; min-width: 0" class="d-flex justify-end">
+              {{ $t("settings.actions") }}
+            </div>
+          </v-card-text>
+        </v-card>
+      </template>
+
+      <!-- Fila personalizada -->
+      <template v-slot:item="slotProps">
+            <v-card
+              class="mb-2 mx-1 rounded-lg"
+              elevation="1"
+              density="comfortable"
+              flat
+            >
+              <v-card-text
+                class="d-flex align-center pa-2"
+                style="width: 100%; min-width: 0"
+              >
+                <div style="width: 40%; min-width: 0" class="d-flex align-center">
+                <!-- Avatar de la vivienda -->
+                  <v-avatar
+                    size="48"
+                    class="mr-3 icono-concavo"
+                    color="grey-lighten-4"
+                    style="flex-shrink: 0"
+                  >
+                    <v-img
+                      :src="getImageUrl(slotProps.item.image)"
+                      cover
+                      class="icono-concavo"
+                    />
+                  </v-avatar>
+
+                  <!-- Contenedor de texto -->
+                  <div class="d-flex flex-column" style="min-width: 0">
+                    <div class="font-weight-bold text-body-2 text-truncate">
+                      {{ slotProps.item.name }}
                     </div>
-                  </v-col>
-                  <v-col cols="3" class="d-flex align-center justify-start">
-                    <div class="avatar-row">
-                      <v-tooltip
-                        v-for="person in home.people"
-                        :key="person.id"
-                        bottom
-                        content-class="custom-tooltip"
-                      >
-                        <template v-slot:activator="{ props }">
-                          <v-avatar
-                            class="avatar-item hover-expand"
-                            size="32"
-                            elevation="3"
-                            v-bind="props"
-                          >
-                            <v-img :src="`${this.$axios.defaults.baseURL}images/${ person.image }`" alt="image" />
-                          </v-avatar>
-                        </template>
-                        <span>{{ person.name }}</span>
-                        <v-spacer></v-spacer>
-                        <span class="text-secondary">{{ person.roleName }}</span>
-                        <div class="star-rating">
+                    <div class="text-caption text-grey-darken-1 text-truncate">
+                      {{ slotProps.item.address }}
+                    </div>
+                    <v-tooltip
+                      activator="parent"
+                      location="bottom"
+                      max-width="350px"
+                    >
+                      <span style="white-space: normal; word-break: break-word">
+                        {{ slotProps.item.address }}
+                      </span>
+                    </v-tooltip>
+                  </div>
+                </div>
+
+                <!-- Rating - 15% -->
+                <div style="width: 10%; min-width: 0" class="d-flex align-center">
+                  <v-rating
+                    :model-value="parseFloat(slotProps.item.percent) || 0"
+                    color="orange-darken-2"
+                    density="compact"
+                    size="small"
+                    readonly
+                  ></v-rating>
+                </div>
+
+                <!-- Personas (avatars) - 10% -->
+                <div style="width: 20%; min-width: 0; text-align: left" class="avatar-row d-flex justify-left">
+                  <div class="d-flex flex-wrap gap-1">
+                    <v-tooltip
+                      v-for="person in slotProps.item.people"
+                      :key="person.id"
+                      bottom
+                      :open-delay="300"
+                      :close-delay="100"
+                      max-width="350px"
+                    >
+                      <template v-slot:activator="{ props }">
+                        <v-avatar
+                          class="avatar-item hover-expand"
+                          size="32"
+                          v-bind="props"
+                        >
+                          <v-img
+                            :src="getImageUrl(person.image)"
+                            alt="avatar"
+                          />
+                        </v-avatar>
+                      </template>
+                      <div>
+                        <div>{{ person.name }}</div>
+                        <div class="text-secondary text-caption">{{ person.roleName }}</div>
+                        <div class="star-rating mt-1">
                           <v-rating
-                            :model-value="person.percent"
+                            :model-value="parseFloat(person.percent) || 0"
                             color="orange-darken-2"
                             density="compact"
-                            size="small"
+                            size="x-small"
                             readonly
                           ></v-rating>
                         </div>
-                      </v-tooltip>
-                      <v-tooltip bottom content-class="custom-tooltip">
-                        <template v-slot:activator="{ props }">
-                          <v-btn
-                            density="comfortable"
-                            icon="mdi-plus"
-                            @click="addPeople(home)"
-                            bg-color="white"
-                            color="#03626C"
-                            size="32"
-                            elevation="3"
-                            v-bind="props"
-                          ></v-btn>
-                        </template>
-                        <span> {{ $t("home.actions.addMembers") }}</span>
-                      </v-tooltip>
-                    </div>
-                  </v-col>
-                  <v-col cols="1" class="d-flex align-center justify-start">
-                    <div>
-                      <span class="text-body-2">
-                        {{ home.nameHomeType }}</span>
-                      <v-tooltip activator="parent" location="bottom" max-width="350px">
-                        <span style="white-space: normal; word-break: break-word">
-                          {{ $t("home.fields.type") }}: {{ home.nameHomeType }}
-                        </span>
-                      </v-tooltip>
-                    </div>
-                  </v-col>
-                  <v-col cols="1" class="d-flex align-center justify-start">
-                    <div>
-                      <span class="text-body-2">
-                        {{ home.nameStatus }}</span>
-                      <v-tooltip activator="parent" location="bottom" max-width="350px">
-                        <span style="white-space: normal; word-break: break-word">
-                          {{ $t("home.fields.status") }}: {{ home.nameStatus }}
-                        </span>
-                      </v-tooltip>
-                    </div>
-                  </v-col>
-                  <v-col cols="1" class="d-flex align-center ml-auto pe-4" style="margin-left: auto !important" >
-                    <v-btn
-                      icon
-                      variant="text"
-                      color="green-darken-2"
-                      size="small"
-                      @click="editItem(home)"
-                    >
-                      <v-icon>mdi-pencil</v-icon>
-                    </v-btn>
-                    <v-btn
-                      icon
-                      variant="text"
-                      color="red-darken-2"
-                      size="small"
-                      @click="deleteItem(home)"
-                    >
-                      <v-icon>mdi-delete</v-icon>
-                    </v-btn>
-                  </v-col>
-                </v-row>
-              </v-card>
-            </template>
-            <template v-else>
-              <v-col cols="12" class="text-center py-8">
-                {{ $t("home.empty") }}
-              </v-col>
-            </template>
-          </v-col>
-        </v-row>
-      </v-card-text>
+                      </div>
+                    </v-tooltip>
+                  </div>
+                </div>
+
+                <!-- Tipo - 10% -->
+                <div style="width: 10%; min-width: 0; text-align: center">
+                  <span class="text-body-2 text-truncate">
+                    {{ slotProps.item.nameHomeType }}
+                  </span>
+                </div>
+
+                <!-- Estado - 13% -->
+                <div style="width: 13%; min-width: 0; text-align: center">
+                  <span class="text-body-2 text-truncate">
+                    {{ slotProps.item.nameStatus }}
+                  </span>
+                </div>
+
+                <!-- Acciones - 5% -->
+                <div
+                  class="d-flex gap-1"
+                  style="width: 7%; justify-content: flex-end; flex-wrap: nowrap"
+                >
+                  <v-btn
+                    size="35"
+                    icon
+                    variant="text"
+                    color="green-darken-2"
+                    @click="editItem(slotProps.item)"
+                    class="flex-shrink-0 mr-1"
+                    :title="$t('buttons.edit')"
+                  >
+                    <v-icon size="20">mdi-pencil</v-icon>
+                  </v-btn>
+
+                  <v-btn
+                    size="35"
+                    icon
+                    variant="text"
+                    color="red-darken-2"
+                    @click="deleteItem(slotProps.item)"
+                    class="flex-shrink-0"
+                    :title="$t('buttons.delete')"
+                  >
+                    <v-icon size="20">mdi-delete</v-icon>
+                  </v-btn>
+                </div>
+              </v-card-text>
+            </v-card>
+      </template>
+    </v-data-table>
+        </v-card-text>
     </v-card>
   </v-container>
 
@@ -631,12 +687,23 @@ export default {
       return this.imgMiniatura;
     },
   },
+   created() {
+    this.tools = [
+      {
+        name: this.$t("home.addButton"),
+        action: () => this.showAdd(),
+      },
+    ];
+  },
   mounted() {
     this.home_id = JSON.parse(LocalStorageService.getItem("home_id"));
     this.person_id = JSON.parse(LocalStorageService.getItem("person_id"));
     this.initialize();
   },
   methods: {
+    getImageUrl(imagePath) {
+      return `${this.$axios.defaults.baseURL}images/${imagePath}`;
+    },
     getDynamicColSize(roleCount) {
     if (roleCount <= 2) return 6;      // 2 columnas
     if (roleCount <= 4) return 4;      // 3 columnas
@@ -691,6 +758,7 @@ export default {
     },
     async showAdd() {
       this.step = 0;
+      this.editedIndex = -1;
       (this.file = null), (this.editedIndex = -1);
       (this.imgMiniatura = ""), (this.data = {});
       try {
@@ -1409,76 +1477,29 @@ export default {
   object-fit: cover; /* Asegura que la imagen cubra el espacio */
   border-radius: 8px; /* Para que coincida con el contenedor */
 }
-.modal-imagen {
-  background: transparent !important;
-  box-shadow: none !important;
+.text-truncate {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
-.avatar-border {
-  border: 2px solid #000;
-  /* Aquí se define el borde */
+/* OCULTAR HEADER DE v-data-table - Vuetify 3.4.7 */
+/* Máxima especificidad para ocultar el thead */
+.v-data-table > .v-data-table__wrapper > table > thead,
+.v-data-table > .v-data-table__wrapper > .v-table > table > thead,
+.v-data-table__content > table > thead,
+.v-data-table__content > thead,
+table.v-table > thead,
+.v-table > .v-table__wrapper > table > thead {
+  display: none !important;
+  visibility: hidden !important;
+  height: 0 !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  border: none !important;
+  border-spacing: 0 !important;
+  border-collapse: collapse !important;
 }
-
-.avatar-row {
-  display: flex;
-  flex-wrap: nowrap;
-  justify-content: start;
-}
-
-.avatar-col {
-  margin-right: -10px;
-  /* Reduce the space between avatars */
-}
-
-.avatar-item {
-  margin-right: -5px;
-  border: 2px solid #4caf50;
-  /* Cambia el color del borde según desees */
-  border-radius: 50%;
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
-  /* Para que siga siendo redondo */
-  box-sizing: border-box;
-  /* Asegura que el borde no afecte el tamaño del avatar */
-  /* Optional: reduce the space even further between avatars */
-}
-
-.avatar-item.hover-expand:hover {
-  transform: scale(1.5);
-  box-shadow: 0 0 0 rgba(0, 0, 0, 0.3);
-}
-
-.text-secondary {
-  color: #6c757d;
-  /* Color gris claro */
-  font-size: 0.85rem;
-  /* Tamaño de texto más pequeño */
-}
-
-.custom-tooltip {
-  background-color: #f5f5f5 !important;
-  /* Fondo claro */
-  color: #e5e5e5 !important;
-  /* Texto oscuro */
-  border-radius: 8px;
-  /* Bordes redondeados */
-  padding: 8px;
-  /* Espaciado interno */
-  box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
-  /* Sombra suave */
-}
-
-.selected-tab {
-  background-color: #03626c;
-  /* Fondo del tab seleccionado */
-  color: white;
-  /* Texto blanco */
-  border-radius: 4px;
-  /* Esquinas redondeadas, opcional */
-}
-
-.star-rating {
-  display: flex;
-  align-items: center;
-  margin-top: 4px;
-  /* Espacio entre el rol y las estrellas */
+.hidden-header .v-data-table__content > table > thead {
+  display: none !important;
 }
 </style>

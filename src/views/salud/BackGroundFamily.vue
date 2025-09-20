@@ -19,123 +19,230 @@
       </v-col>
     </v-row>
   </v-snackbar>
-  <v-container class="pa-4">
-  <v-card class="pa-4" elevation="4" rounded="lg">
-      <!-- Encabezado con foto y datos -->
-      <v-card-text>
-    <!-- Encabezado -->
-    <v-row justify="space-between" align="center" class="mb-6">
-      <h2 class="text-body-2 font-weight-bold">{{ $t("viewTitles.familyBackground") }}</h2>
-      <v-btn
-        icon
-        color="deep-purple-accent-4"
-        variant="flat"
-        class="elevation-3"
-        @click="showAdd"
-      >
-        <v-icon>mdi-plus</v-icon>
-      </v-btn>
-    </v-row>
-    <template v-if="backgroundFamilies.length > 0">
-      <!-- Tarjetas de antecedentes familiares -->
-      <v-card
-        v-for="(background, index) in backgroundFamilies"
-        :key="index"
-        class="mb-3 rounded-lg pa-2"
-        elevation="2"
-      >
-        <v-row>
-          <!-- Barra lateral con fecha -->
-          <v-col cols="1" class="d-flex align-center justify-center">
-            <div class="icono-concavo d-flex flex-column justify-center justify-start"
-              :class="`bg-${getTypeColor(background.typeName)}`">
-              <div class="date-display">
-                {{ formatIntuitiveDate(background.date) }}
-              </div>
-            </div>
-          </v-col>
-          <v-col cols="4" class="d-flex align-center pe-4 gap-2">
-           <v-row align="center" class="gap-3">
-              <div>
-                <div class="text-body-2 font-weight-bold">
-                  <span>
-                    {{ background.typeName }}
-                  </span>
-                  <v-tooltip activator="parent" location="bottom" max-width="350px">
-                    <span style="white-space: normal; word-break: break-word">{{ $t('familyBackground.fields.typeName') }}: {{
-                      background.typeName }}</span>
-                  </v-tooltip>
-                </div>
-                <div class="text-caption d-flex align-center text-grey-darken-1">
-                  <span>
-                    {{ background.details }}
-                  </span>
-                  <v-tooltip activator="parent" location="bottom" max-width="350px">
-                    <span style="white-space: normal; word-break: break-word">{{ $t('familyBackground.fields.details') }}: {{ background.details }}</span>
-                  </v-tooltip>
-                </div>
-              </div>
-              </v-row>
-              </v-col>
-              <v-col cols="4" class="d-flex align-center pe-4 gap-2">
-                <div class="text-body-2">
-                  <span>
-                    {{ background.disease}}
-                  </span>
-                  <v-tooltip activator="parent" location="bottom" max-width="350px">
-                    <span style="white-space: normal; word-break: break-word">{{ $t("familyBackground.fields.disease") }}:
-                      {{ background.disease}}</span>
-                  </v-tooltip>
-                </div>
-              </v-col>
-              <v-col cols="1" class="d-flex align-center pe-4 gap-2">
-                <div class="text-body-2">
-                  <span>
-                    {{ background.relationship}}
-                  </span>
-                  <v-tooltip activator="parent" location="bottom" max-width="350px">
-                    <span style="white-space: normal; word-break: break-word">{{ $t("familyBackground.fields.relationship") }}:
-                      {{ background.relationship}}</span>
-                  </v-tooltip>
-                </div>
-              </v-col>
-          <!-- Acciones -->
-          <v-col cols="1" class="d-flex align-center ml-auto pe-4">
-                <div class="d-flex">
-            <v-btn
-              icon
-              variant="text"
-              color="green-darken-2"
-              size="small"
-              @click="editItem(background)"
-            >
-              <v-icon>mdi-pencil</v-icon>
-            </v-btn>
-            <v-btn
-              icon
-              variant="text"
-              color="red-darken-2"
-              size="small"
-              @click="deleteItem(background)"
-            >
-              <v-icon>mdi-delete</v-icon>
-            </v-btn>
-            </div>
-          </v-col>
-        </v-row>
-      </v-card>
-    </template>
-    <template v-else>
-      <v-col cols="12" class="text-center py-8 pa-0">
-        <v-icon size="64" color="grey-lighten-1">mdi-clipboard-text-off</v-icon>
-        <div class="text-h6 text-grey mt-4">
-          {{ $t("familyBackground.noRecords") }}
+  <v-card
+    class="pa-0"
+    elevation="1"
+    rounded="lg"
+    style="position: relative; overflow: visible; z-index: auto"
+  >
+    <!-- Encabezado con foto y datos -->
+    <v-card-text>
+      <v-card-actions class="bg-grey-lighten-5 tools-bar">
+        <v-btn
+          v-for="tool in tools"
+          :key="tool.name"
+          @click="tool.action()"
+          size="small"
+          color="primary"
+          variant="text"
+          prepend-icon="mdi-plus"
+          class="text-capitalize"
+        >
+          {{ tool.name }}
+        </v-btn>
+      </v-card-actions>
+      <v-card-title class="d-flex flex-wrap align-center pb-2">
+        <!-- Spacer (solo visible en md+) -->
+        <v-spacer class="d-none d-md-block"></v-spacer>
+
+        <!-- Campo de búsqueda global -->
+        <div class="flex-grow-1" style="max-width: 300px">
+          <v-text-field
+            v-model="search"
+            density="compact"
+            :label="$t('dataTable.search')"
+            prepend-inner-icon="mdi-magnify"
+            variant="solo-filled"
+            hide-details
+            single-line
+            flat
+          ></v-text-field>
         </div>
-      </v-col>
-    </template>
+      </v-card-title>
+      <v-data-table
+        :headers="familyHeaders"
+        :items="backgroundFamilies"
+        :search="search"
+        :items-per-page-text="$t('dataTable.itemsPerPageText')"
+        :no-data-text="$t('dataTable.noDataText')"
+        :loading-text="$t('dataTable.loadingText')"
+        :loading="loading"
+        :hide-default-header="true"
+        style="
+          max-height: 68vh;
+          overflow-y: auto;
+          background: transparent;
+          border: none !important;
+          outline: none !important;
+          box-shadow: none !important;
+          padding: 0;
+        "
+      >
+        <!-- Encabezado fijo -->
+        <template v-slot:top>
+          <v-card
+            :elevation="1"
+            flat
+            class="mb-2 mx-1 rounded-lg"
+            style="
+              border: 1px solid #eceff1;
+              height: 40px;
+              min-height: 40px;
+              display: flex;
+              align-items: center;
+              transition: none !important;
+            "
+          >
+            <v-card-text
+              class="d-flex pa-2"
+              style="
+                width: 100%;
+                min-width: 0;
+                height: 100%;
+                padding: 0 16px !important;
+                display: flex;
+                align-items: center;
+              "
+            >
+              <!-- Fecha / Periodo (7%) -->
+              <div style="width: 7%; min-width: 0" class="text-left">
+                {{ $t("familyBackground.fields.date") }}
+              </div>
+
+              <!-- Tipo + Descripción (33%) -->
+              <div style="width: 33%; min-width: 0" class="text-left">
+                {{ $t("familyBackground.fields.type") }}
+              </div>
+
+              <!-- Severidad (10%) -->
+              <div style="width: 30%; min-width: 0" class="text-left">
+                {{ $t("familyBackground.fields.disease") }}
+              </div>
+
+              <!-- Detalles (30%) -->
+              <div style="width: 10%; min-width: 0" class="text-left">
+                {{ $t("familyBackground.fields.relationship") }}
+              </div>
+
+              <!-- Severidad (10%) -->
+              <div style="width: 13%; min-width: 0" class="text-left">
+                {{ $t("familyBackground.fields.diagnosis_age") }}
+              </div>
+
+              <!-- Acciones (10%) -->
+              <div style="width: 7%; min-width: 0" class="d-flex justify-end">
+                {{ $t("settings.actions") }}
+              </div>
+            </v-card-text>
+          </v-card>
+        </template>
+
+        <!-- Item (fila) -->
+        <template v-slot:item="slotProps">
+          <tr>
+            <td colspan="100%" style="padding: 0; border: none">
+              <v-card
+                class="mb-2 mx-1 rounded-lg"
+                elevation="1"
+                density="comfortable"
+                flat
+              >
+                <v-card-text
+                  class="d-flex align-center pa-2"
+                  style="width: 100%; min-width: 0"
+                >
+                  <!-- Fecha / Periodo (7%) -->
+                  <div class="d-flex align-center" style="width: 7%; min-width: 0">
+                    <v-avatar
+                      class="mr-1 icono-concavo"
+                      :class="`bg-${getTypeColor(slotProps.item.typeName)}`"
+                      :style="{
+                        'min-height': '48px',
+                        'min-width': '48px',
+                        'border-radius': '8px',
+                        'font-size': '0.90em',
+                      }"
+                    >
+                      <div class="text-body-3 font-weight-medium">
+                        {{ formatIntuitiveDate(slotProps.item.date) }}
+                      </div>
+                    </v-avatar>
+                  </div>
+
+                  <!-- Tipo + Descripción (33%) -->
+                  <div style="width: 33%; min-width: 0" class="d-flex flex-column">
+                    <div class="text-body-2 text-truncate">
+                      {{ slotProps.item.typeName || "" }}
+                    </div>
+                    <div class="text-caption text-grey-darken-1 text-truncate mt-1">
+                      {{ slotProps.item.details || "" }}
+                      <v-tooltip activator="parent" location="bottom" max-width="350px">
+                        <span style="white-space: normal; word-break: break-word">
+                          {{ $t("familyBackground.fields.details") }}:
+                          {{ slotProps.item.details || "-" }}
+                        </span>
+                      </v-tooltip>
+                    </div>
+                  </div>
+
+                  <!-- Severidad (10%) → Mapeado a disease -->
+                  <div style="width: 30%; min-width: 0" class="text-body-2 text-truncate">
+                    <span>{{ slotProps.item.disease || "" }}</span>
+                    <v-tooltip activator="parent" location="bottom" max-width="350px">
+                      <span style="white-space: normal; word-break: break-word">
+                        {{ slotProps.item.disease || "-" }}
+                      </span>
+                    </v-tooltip>
+                  </div>
+
+                  <!-- Detalles (30%) → Mapeado a relationship -->
+                  <div style="width: 10%; min-width: 0" class="text-body-2 text-truncate">
+                    <span>{{ slotProps.item.relationship || "" }}</span>
+                  </div>
+
+                  <div
+                    style="width: 13%; min-width: 0; text-align: cecnter"
+                    class="text-body-2 text-truncate"
+                  >
+                    <span>{{ slotProps.item.diagnosis_age || "" }}</span>
+                  </div>
+                  <!-- Acciones (10%) -->
+                  <div
+                    class="d-flex gap-1"
+                    style="width: 7%; justify-content: flex-end; flex-wrap: nowrap"
+                  >
+                    <v-btn
+                      size="35"
+                      icon
+                      variant="text"
+                      color="green-darken-2"
+                      @click="editItem(slotProps.item)"
+                      class="flex-shrink-0"
+                      title="Editar Antecedente Familiar"
+                    >
+                      <v-icon size="20">mdi-pencil</v-icon>
+                    </v-btn>
+
+                    <v-btn
+                      size="35"
+                      icon
+                      variant="text"
+                      color="red-darken-2"
+                      @click="deleteItem(slotProps.item)"
+                      class="flex-shrink-0"
+                      title="Eliminar Antecedente Familiar"
+                    >
+                      <v-icon size="20">mdi-delete</v-icon>
+                    </v-btn>
+                  </div>
+                </v-card-text>
+              </v-card>
+            </td>
+          </tr>
+        </template>
+      </v-data-table>
     </v-card-text>
-    </v-card>
-  </v-container>
+  </v-card>
   <v-dialog
     v-model="dialog"
     fullscreen
@@ -176,9 +283,7 @@
                 >
                   <template #opposite>
                     <div class="text-end">
-                      <strong>{{
-                        $t(`familyBackground.steps.${s.title}.title`)
-                      }}</strong>
+                      <strong>{{ $t(`familyBackground.steps.${s.title}.title`) }}</strong>
                       <div class="text-caption text-grey">
                         {{ $t(`familyBackground.steps.${s.title}.subtitle`) }}
                       </div>
@@ -197,13 +302,13 @@
               <!-- Paso 1: Detalles -->
               <v-row dense v-if="step === 0">
                 <v-col cols="12" sm="6">
-                  <v-autocomplete 
+                  <v-autocomplete
                     v-model="editedItem.type_id"
-                    :items="backgroundTypes" 
-                    :label="$t('familyBackground.fields.type')" 
+                    :items="backgroundTypes"
+                    :label="$t('familyBackground.fields.type')"
                     item-title="nameTranslated"
-                    item-value="id" 
-                    variant="underlined" 
+                    item-value="id"
+                    variant="underlined"
                     :rules="typeRules"
                   >
                     <template v-slot:item="{ props, item }">
@@ -211,10 +316,14 @@
                         <v-list-item-subtitle class="d-flex flex-column">
                           <v-tooltip bottom>
                             <template v-slot:activator="{ props: tooltipProps }">
-                              <div 
-                                class="truncate" 
+                              <div
+                                class="truncate"
                                 v-bind="tooltipProps"
-                                style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis;"
+                                style="
+                                  white-space: nowrap;
+                                  overflow: hidden;
+                                  text-overflow: ellipsis;
+                                "
                               >
                                 {{ item.raw.descriptionTranslated }}
                               </div>
@@ -228,26 +337,37 @@
                 </v-col>
 
                 <v-col cols="12" sm="6">
-                  <v-select v-model="editedItem.relationship" :items="relationships" item-title="name" item-value="id"
-                    :label="$t('familyBackground.fields.relationship')" variant="underlined" :rules="selectRules">
+                  <v-select
+                    v-model="editedItem.relationship"
+                    :items="relationships"
+                    item-title="name"
+                    item-value="id"
+                    :label="$t('familyBackground.fields.relationship')"
+                    variant="underlined"
+                    :rules="selectRules"
+                  >
                     <template v-slot:item="{ props, item }">
-                    <v-list-item v-bind="props">
-                      <v-list-item-subtitle class="d-flex flex-column">
-                        <v-tooltip bottom>
-                          <template v-slot:activator="{ props: tooltipProps }">
-                            <div 
-                              class="truncate" 
-                              v-bind="tooltipProps"
-                              style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis;"
-                            >
-                              {{ item.raw.description }}
-                            </div>
-                          </template>
-                          <span>{{ item.raw.description }}</span>
-                        </v-tooltip>
-                      </v-list-item-subtitle>
-                    </v-list-item>
-                  </template>
+                      <v-list-item v-bind="props">
+                        <v-list-item-subtitle class="d-flex flex-column">
+                          <v-tooltip bottom>
+                            <template v-slot:activator="{ props: tooltipProps }">
+                              <div
+                                class="truncate"
+                                v-bind="tooltipProps"
+                                style="
+                                  white-space: nowrap;
+                                  overflow: hidden;
+                                  text-overflow: ellipsis;
+                                "
+                              >
+                                {{ item.raw.description }}
+                              </div>
+                            </template>
+                            <span>{{ item.raw.description }}</span>
+                          </v-tooltip>
+                        </v-list-item-subtitle>
+                      </v-list-item>
+                    </template>
                   </v-select>
                 </v-col>
 
@@ -263,7 +383,7 @@
 
               <!-- Step 2: Información adicional -->
               <v-row dense v-if="step === 1">
-                <v-col cols="12" >
+                <v-col cols="12">
                   <v-textarea
                     v-model="editedItem.details"
                     :label="$t('familyBackground.fields.details')"
@@ -296,9 +416,10 @@
                     <template v-slot:activator="{ props }">
                       <v-text-field
                         v-bind="props"
-                        :modelValue="dateFormatted"
+                        :modelValue="dateInput"
                         variant="underlined"
                         :label="$t('familyBackground.fields.date')"
+                        :rules="dateRules"
                       ></v-text-field>
                     </template>
                     <v-locale-provider>
@@ -307,6 +428,7 @@
                         :modelValue="dateInput"
                         @update:model-value="updateDate"
                         format="yyyy-MM-dd"
+                        :max="new Date().toISOString().split('T')[0]"
                       ></v-date-picker>
                     </v-locale-provider>
                   </v-menu>
@@ -410,6 +532,12 @@ import _ from "lodash";
 import { shallowRef } from "vue";
 
 export default {
+  props: {
+    selectedPerson: {
+      type: Object,
+      required: true
+    },
+  },
   data: () => ({
     selected: shallowRef([2]),
     selected2: null,
@@ -482,6 +610,14 @@ export default {
     },
 
     editedIndex: -1,
+    headers: [
+      { title: "", key: "date", width: "7%" },
+      { title: "", key: "typeName", width: "33%" },
+      { title: "", key: "status", width: "10%" },
+      { title: "", key: "disease", width: "10%" },
+      { title: "", key: "relationship", width: "30%" },
+      { title: "", key: "actions", width: "10%" },
+    ],
     search: "",
     nameRules: [
       (v) => !!v || "El campo es requerido",
@@ -496,7 +632,7 @@ export default {
         this.$t("familyBackground.validationMessages.description.maxLength"),
     ],
     ageRules: [
-      (v) => !v || (v >= 0 && v <= 120) || "La edad debe estar entre 0 y 120 años"
+      (v) => !v || (v >= 0 && v <= 120) || "La edad debe estar entre 0 y 120 años",
     ],
     title: "",
     description: "",
@@ -506,19 +642,18 @@ export default {
 
   computed: {
     typeRules() {
-      return [
-        v => !!v || this.$t('familyBackground.validationMessages.type.required')
-      ];
+      return [(v) => !!v || this.$t("familyBackground.validationMessages.type.required")];
     },
     relationshipRules() {
       return [
-        v => !!v || this.$t('familyBackground.validationMessages.relationship.required')
+        (v) =>
+          !!v || this.$t("familyBackground.validationMessages.relationship.required"),
       ];
     },
     formTitle() {
       return this.editedIndex === -1
-        ? this.$t("treatment.titles.new")
-        : this.$t("treatment.titles.edit");
+        ? this.$t("familyBackground.titles.new")
+        : this.$t("familyBackground.titles.edit");
     },
     dateFormatted() {
       const date = this.dateInput ? new Date(this.dateInput) : new Date();
@@ -548,6 +683,14 @@ export default {
     },
   },
 
+  created() {
+    this.tools = [
+      {
+        name: this.$t("familyBackground.titles.new"),
+        action: () => this.showAdd(),
+      },
+    ];
+  },
   mounted() {
     this.home_id = JSON.parse(LocalStorageService.getItem("home_id"));
     this.person_id = JSON.parse(LocalStorageService.getItem("person_id"));
@@ -555,6 +698,13 @@ export default {
   },
 
   methods: {
+    obtenerFechaLocal() {
+      const hoy = new Date();
+      const year = hoy.getFullYear();
+      const month = String(hoy.getMonth() + 1).padStart(2, "0");
+      const day = String(hoy.getDate()).padStart(2, "0");
+      return `${year}-${month}-${day}`;
+    },
     formatIntuitiveDate(dateString) {
       if (!dateString) return "Sin fecha";
 
@@ -591,6 +741,7 @@ export default {
               weekday: "short",
               day: "numeric",
               month: "short",
+              year: "numeric",
             })
             .replace(/\./g, "");
       }
@@ -601,40 +752,42 @@ export default {
         Meta: "purple",
         // Agrega más tipos si es necesario
       };
-      return colorMap[type] || "grey-lighten-1"; // Color por defecto
-    },
-    formatDate(dateString) {
-      if (!dateString) return "N/R";
-      const [year, month, day] = dateString.split("-");
-      return `${day}-${month}-${year}`;
+      return colorMap[type] || "deep-orange"; // Color por defecto
     },
 
-    updateDate(val) {
-      this.dateInput = val;
-      this.editedItem.date = this.dateFormatted;
+    updateDate(value) {
+      // value viene como objeto Date desde el date-picker
+      // Convertimos a formato YYYY-MM-DD
+      const year = value.getFullYear();
+      const month = String(value.getMonth() + 1).padStart(2, "0");
+      const day = String(value.getDate()).padStart(2, "0");
+      this.dateInput = `${year}-${month}-${day}`;
+      this.editedItem.date = this.dateInput;
       this.dateMenu = false;
     },
 
     async showAdd() {
       this.editedIndex = -1;
+      this.dateInput = this.obtenerFechaLocal();
+      this.editedItem.date = this.dateInput;
       this.data = {};
       this.data.type = "Salud";
       try {
         const result = await handleRequest({
-          endpoint: 'get-type-relationship',
-          method: 'POST',
-          data: this.data
+          endpoint: "get-type-relationship",
+          method: "POST",
+          data: this.data,
         });
 
         if (result.success) {
           this.backgroundTypes = result.data?.types || [];
-          this.relationships  = result.data?.relationships || [];
+          this.relationships = result.data?.relationships || [];
         } else {
           this.backgroundTypes = [];
           this.relationships = [];
         }
       } catch (error) {
-        this.showAlert('error', 'Ocurrió un error inesperado al cargar los datos.', 3000);
+        this.showAlert("error", "Ocurrió un error inesperado al cargar los datos.", 3000);
       } finally {
         this.dialog = true;
       }
@@ -653,11 +806,13 @@ export default {
     async initialize() {
       this.data = {};
       this.data.home_id = this.home_id;
+      this.data.person_id = this.selectedPerson.id;
       try {
         this.loading = true;
         const result = await handleRequest({
           endpoint: "get-family-background-person",
           method: "POST",
+          data: this.data
         });
 
         if (result.success) {
@@ -697,7 +852,7 @@ export default {
           "disease",
           "details",
           "date",
-          "diagnosis_age"
+          "diagnosis_age",
         ];
 
         let updatedFields = Object.keys(this.editedItem)
@@ -712,6 +867,7 @@ export default {
           }, {});
 
         if (Object.keys(updatedFields).length > 0) {
+          updatedFields.person_id = this.selectedPerson.id;
           try {
             const result = await handleRequest({
               endpoint: "family-background",
@@ -726,7 +882,11 @@ export default {
               this.showAlert("warning", result.message, 3000);
             }
           } catch (error) {
-            this.showAlert("error", "Ocurrió un error al guardar el antecedente familiar", 3000);
+            this.showAlert(
+              "error",
+              "Ocurrió un error al guardar el antecedente familiar",
+              3000
+            );
           }
         }
       } else {
@@ -737,7 +897,7 @@ export default {
           "disease",
           "details",
           "date",
-          "diagnosis_age"
+          "diagnosis_age",
         ];
 
         let updatedFields = Object.keys(this.editedItem)
@@ -783,13 +943,15 @@ export default {
       this.editedIndex = 1;
       this.originalItem = Object.assign({}, item);
       this.editedItem = Object.assign({}, item);
+      this.dateInput = item.date || null;
+      this.editedItem.date = item.date || null;
       this.data = {};
       this.data.type = "Salud";
       try {
         const result = await handleRequest({
-          endpoint: 'get-type-relationship',
-          method: 'POST',
-          data: this.data
+          endpoint: "get-type-relationship",
+          method: "POST",
+          data: this.data,
         });
 
         if (result.success) {
@@ -800,7 +962,7 @@ export default {
           this.relationships = [];
         }
       } catch (error) {
-        this.showAlert('error', 'Ocurrió un error inesperado al cargar los datos.', 3000);
+        this.showAlert("error", "Ocurrió un error inesperado al cargar los datos.", 3000);
       } finally {
         this.dialog = true;
       }
@@ -871,61 +1033,6 @@ export default {
       this.sb_timeout = sb_timeout;
       this.snackbar = true;
     },
-
-    compactBackgroundData(background) {
-      return [
-        {
-          label: this.$t("familyBackground.fields.type"),
-          value: background.type || "N/R",
-          fullLabel: this.$t("familyBackground.fields.type"),
-          fullValue: background.type || this.$t("familyBackground.notRecorded"),
-          icon: "mdi-account-group",
-          color: "indigo-darken-2",
-        },
-        {
-          label: this.$t("familyBackground.fields.relationship"),
-          value: background.relationship || "N/R",
-          fullLabel: this.$t("familyBackground.fields.relationship"),
-          fullValue: background.relationship || this.$t("familyBackground.notRecorded"),
-          icon: "mdi-family-tree",
-          color: "green-darken-2",
-        },
-        {
-          label: this.$t("familyBackground.fields.disease"),
-          value: this.truncateText(background.disease) || "N/R",
-          fullLabel: this.$t("familyBackground.fields.disease"),
-          fullValue: background.disease || this.$t("familyBackground.notRecorded"),
-          icon: "mdi-heart-pulse",
-          color: "red-darken-2",
-        },
-        {
-          label: this.$t("familyBackground.fields.diagnosis_age"),
-          value: background.diagnosis_age ? `${background.diagnosis_age} años` : "N/R",
-          fullLabel: this.$t("familyBackground.fields.diagnosis_age"),
-          fullValue: background.diagnosis_age ? `${background.diagnosis_age} años` : this.$t("familyBackground.notRecorded"),
-          icon: "mdi-numeric",
-          color: "orange-darken-2",
-        },
-      ].filter((item) => item.value !== "N/R");
-    },
-
-    compactDetails(background) {
-      return [
-        {
-          label: this.$t("familyBackground.fields.details"),
-          text: this.truncateText(background.details) || "-",
-          fullLabel: this.$t("familyBackground.fields.details"),
-          fullText: background.details || this.$t("familyBackground.notRecorded"),
-          icon: "mdi-information",
-          color: "teal-darken-1",
-        },
-      ].filter((detail) => detail.text !== "-");
-    },
-
-    truncateText(text, length = 15) {
-      if (!text) return null;
-      return text.length > length ? text.substring(0, length) + "..." : text;
-    },
   },
 };
 </script>
@@ -968,15 +1075,6 @@ export default {
   border-radius: 4px;
 }
 
-.v-card {
-  transition: all 0.2s ease;
-}
-
-.v-card:hover {
-  transform: translateY(-3px);
-  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.1) !important;
-}
-
 .fullscreen-dialog {
   height: 100vh !important;
   max-height: 100vh !important;
@@ -991,28 +1089,28 @@ export default {
   text-overflow: ellipsis;
 }
 
-/* Estilos para los chips */
-.v-chip {
-  margin-right: 4px;
-  margin-bottom: 4px;
+.text-secondary {
+  color: #6c757d;
+  /* Color gris claro */
+  font-size: 0.85rem;
+  /* Tamaño de texto más pequeño */
 }
-
-/* Estilos para la línea de tiempo */
-.v-timeline-item {
-  padding-bottom: 16px;
+.v-data-table > .v-data-table__wrapper > table > thead,
+.v-data-table > .v-data-table__wrapper > .v-table > table > thead,
+.v-data-table__content > table > thead,
+.v-data-table__content > thead,
+table.v-table > thead,
+.v-table > .v-table__wrapper > table > thead {
+  display: none !important;
+  visibility: hidden !important;
+  height: 0 !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  border: none !important;
+  border-spacing: 0 !important;
+  border-collapse: collapse !important;
 }
-
-/* Estilos para los campos del formulario */
-.v-text-field, .v-select, .v-textarea {
-  margin-bottom: 12px;
-}
-
-/* Estilos para los botones de acción */
-.v-btn--icon {
-  transition: all 0.2s ease;
-}
-
-.v-btn--icon:hover {
-  transform: scale(1.1);
+.hidden-header .v-data-table__content > table > thead {
+  display: none !important;
 }
 </style>

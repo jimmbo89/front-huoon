@@ -19,97 +19,204 @@
       </v-col>
     </v-row>
   </v-snackbar>
-   <v-container class="pa-4">
-  <v-card class="pa-4" elevation="4" rounded="lg">
-        <v-card-text>
-        <v-row justify="space-between" align="center" class="mb-6">
-      <h2 class="text-body-2 font-weight-bold">{{ $t("vaccinations.listing.title") }}</h2>
-      <v-btn
-        icon
-        color="deep-purple-accent-4"
-        variant="flat"
-        class="elevation-3"
-        :title=" this.$t('vaccinations.listing.addButton')"
-        @click="showAdd"
+    <v-card
+    class="pa-0 mt-2"
+    elevation="1"
+    rounded="lg"
+    style="position: relative; overflow: visible; z-index: auto"
+  >
+      <!-- Encabezado con foto y datos -->
+      <v-card-text>
+        <v-card-actions class="pa-3 bg-grey-lighten-5 tools-bar">
+          <v-btn
+            v-for="tool in tools"
+            :key="tool.name"
+            @click="tool.action()"
+            size="small"
+            color="primary"
+            variant="text"
+            prepend-icon="mdi-plus"
+            class="text-capitalize"
+          >
+            {{ tool.name }}
+          </v-btn>
+        </v-card-actions>
+        <v-card-title class="d-flex flex-wrap align-center gap-4 pb-0">
+      <!-- Spacer (solo visible en md+) -->
+      <v-spacer class="d-none d-md-block"></v-spacer>
+      <!-- Campo de búsqueda global -->
+      <div class="flex-grow-1" style="max-width: 300px">
+        <v-text-field
+          v-model="search"
+          density="compact"
+          :label="$t('dataTable.search')"
+          prepend-inner-icon="mdi-magnify"
+          variant="solo-filled"
+          hide-details
+          single-line
+          flat
+          clearable
+        ></v-text-field>
+      </div>
+    </v-card-title>
+    <v-data-table
+    :headers="headers"
+    :items="treatments"
+    :search="search"
+    :items-per-page-text="$t('dataTable.itemsPerPageText')"
+    :no-data-text="$t('dataTable.noDataText')"
+    :loading-text="$t('dataTable.loadingText')"
+    :loading="loading"
+    :hide-default-header="true"
+    class="mt-1"
+    style="
+      max-height: 68vh;
+      overflow-y: auto;
+      background: transparent;
+      border: none !important;
+      outline: none !important;
+      box-shadow: none !important;
+      padding: 0;
+    "
+  >
+    <!-- Header personalizado (simulado) -->
+    <template v-slot:top>
+      <v-card
+        :elevation="1"
+        :hover="false"
+        flat
+        class="mb-2 mx-1 rounded-lg"
+        style="
+          border: 1px solid #eceff1;
+          height: 40px;
+          min-height: 40px;
+          display: flex;
+          align-items: center;
+          transition: none !important;
+        "
       >
-        <v-icon>mdi-plus</v-icon>
-      </v-btn>
-    </v-row>
-      <template v-if="treatments.length > 0">
-              <v-card v-for="(treatment, index) in treatments" :key="index" class="mb-4 rounded-lg pa-2"
-                density="comfortable" elevation="2">
-                <v-row>
-                  <!-- Barra lateral de color e info -->
-                  <v-col cols="1" class="d-flex justify-start ">
-                    <div class="icono-concavo d-flex flex-column justify-center justify-start"
-                      :class="`bg-${getTypeColor(treatment.type)}`">
-                      <div class="date-display">
-                        {{ formatIntuitiveDate(treatment.date) }}
-                      </div>
-                    </div>
-                  </v-col>
-                  <v-col cols="3" class="d-flex align-center justify-start">
-                    <v-row align="center" class="gap-3">
-                      <div>
-                        <div class="font-weight-bold text-body-2">
-                          {{ treatment.name }}
-                        </div>
-                      </div>
-                    </v-row>
-                  </v-col>
-                  <!--<v-col cols="1" class="d-flex align-center justify-start text-truncate">
-                    <div>
-                      <span class="text-body-2">
-                        {{ treatment.type }}</span>
-                      <v-tooltip activator="parent" location="bottom" max-width="350px">
-                        <span style="white-space: normal; word-break: break-word">
-                          {{ $t("vaccinations.fields.type") }}: {{ treatment.type }}
-                        </span>
-                      </v-tooltip>
-                    </div>
-                  </v-col>-->
-                  <v-col cols="4" class="d-flex align-center justify-start">
-                <div class="text-truncate" style="max-width: 100%">
-                    <span class="text-body-2 text-truncate d-inline-block" style="max-width: 100%">
-                    {{ treatment.notes }}
-                    </span>
-                    <v-tooltip activator="parent" location="bottom" max-width="350px">
-                    <span style="white-space: normal; word-break: break-word">
-                        {{ $t("vaccinations.fields.notes") }}: {{ treatment.notes }}
-                    </span>
-                    </v-tooltip>
-                </div>
-                </v-col>
-                  <v-col cols="2" class="d-flex align-center justify-start text-truncate">
-                    <div>
-                      <span class="text-body-2">
-                        {{ formatIntuitiveDate(treatment.next_date) }}</span>
-                      <v-tooltip activator="parent" location="bottom" max-width="350px">
-                        <span style="white-space: normal; word-break: break-word">
-                          {{ $t("vaccinations.fields.next_date") }}: {{ treatment.next_date }}
-                        </span>
-                      </v-tooltip>
-                    </div>
-                  </v-col>
-                  <v-col cols="1" class="d-flex align-center ml-auto pe-4" style="margin-left: auto !important">
-                    <v-btn icon variant="text" color="green-darken-2" size="small" @click="editItem(treatment)">
-                      <v-icon>mdi-pencil</v-icon>
-                    </v-btn>
-                    <v-btn icon variant="text" color="red-darken-2" size="small" @click="deleteItem(treatment)">
-                      <v-icon>mdi-delete</v-icon>
-                    </v-btn>
-                  </v-col>
-                </v-row>
-              </v-card>
-             </template>
-            <template v-else>
-              <v-col cols="12" class="text-center py-8">
-                {{ $t("vaccinations.listing.noData") }}
-              </v-col>
-            </template>
+        <v-card-text
+          class="d-flex pa-2"
+          style="
+            width: 100%;
+            min-width: 0;
+            height: 100%;
+            padding: 0 16px !important;
+            display: flex;
+            align-items: center;
+          "
+        >
+          <div style="width: 7%; min-width: 0" class="text-left">
+            {{ $t("vaccinations.fields.date") }}
+          </div>
+          <div style="width: 20%; min-width: 0" class="text-left">
+            {{ $t("vaccinations.fields.name") }}
+          </div>
+          <div style="width: 43%; min-width: 0" class="text-left">
+            {{ $t("vaccinations.fields.notes") }}
+          </div>
+          <div style="width: 23%; min-width: 0" class="text-left">
+            {{ $t("vaccinations.fields.next_date") }}
+          </div>
+          <div style="width: 7%; min-width: 0" class="d-flex justify-end">
+            {{ $t("settings.actions") }}
+          </div>
+        </v-card-text>
+      </v-card>
+    </template>
+
+    <!-- Fila personalizada -->
+    <template v-slot:item="{ item }">
+      <v-card
+        class="mb-2 mx-1 rounded-lg"
+        elevation="1"
+        density="comfortable"
+        flat
+      >
+        <v-card-text
+          class="d-flex align-center pa-2"
+          style="width: 100%; min-width: 0"
+        >
+          <!-- Columna 1: Fecha con ícono cóncavo (5%) -->
+          <div style="width: 7%; min-width: 0" class="d-flex align-center justify-left">
+            <div
+              class="icono-concavo d-flex flex-column justify-center align-left"
+              :class="`bg-${getTypeColor(item.type)}`"
+             style="min-height: 48px; min-width: 48px; border-radius: 8px;">
+              <div class="date-display text-center" style="font-size: 0.9rem; line-height: 1.2;">
+                {{ formatIntuitiveDate(item.date) }}
+              </div>
+            </div>
+          </div>
+
+          <!-- Columna 2: Nombre del tratamiento (20%) -->
+          <div style="width: 20%; min-width: 0" class="d-flex flex-column">
+            <div class="font-weight-bold text-body-2 text-truncate">
+              {{ item.name }}
+            </div>
+          </div>
+
+          <!-- Columna 3: Notas (45%) -->
+          <div style="width: 43%; min-width: 0" class="d-flex flex-column">
+            <div
+              class="text-body-2 text-grey-darken-1 text-truncate"
+              style="max-width: 100%;"
+            >
+              {{ item.notes }}
+              <v-tooltip
+                activator="parent"
+                location="bottom"
+                max-width="350px"
+              >
+                <span style="white-space: normal; word-break: break-word">
+                  {{ item.notes }}
+                </span>
+              </v-tooltip>
+            </div>
+          </div>
+
+          <!-- Columna 4: Próxima fecha (23%) -->
+          <div style="width: 23%; min-width: 0" class="d-flex flex-column">
+            <div class="text-body-2 text-truncate">
+              {{ formatIntuitiveDate(item.next_date) }}
+            </div>
+          </div>
+
+          <!-- Columna 5: Acciones (Editar + Eliminar) (7%) -->
+          <div
+            class="d-flex gap-1"
+            style="width: 7%; justify-content: flex-end; flex-wrap: nowrap"
+          >
+            <v-btn
+              size="35"
+              icon
+              variant="text"
+              color="green-darken-2"
+              @click="editItem(item)"
+              class="flex-shrink-0 mr-1"
+              :title="$t('buttons.edit')"
+            >
+              <v-icon size="20">mdi-pencil</v-icon>
+            </v-btn>
+
+            <v-btn
+              size="35"
+              icon
+              variant="text"
+              color="red-darken-2"
+              @click="deleteItem(item)"
+              class="flex-shrink-0"
+              :title="$t('buttons.delete')"
+            >
+              <v-icon size="20">mdi-delete</v-icon>
+            </v-btn>
+          </div>
+        </v-card-text>
+      </v-card>
+    </template>
+  </v-data-table>
      </v-card-text>
     </v-card>
-  </v-container>
   <v-dialog
   v-model="dialog"
   fullscreen
@@ -285,8 +392,8 @@ import LocalStorageService from "@/LocalStorageService";
 import { handleRequest } from "@/utils/api"; // Ruta al archivo
 import { format } from "date-fns";
 export default {
-     props: {
-    pet: {
+    props: {
+    selectedPet: {
       type: Object,
       required: true
     },
@@ -344,6 +451,14 @@ export default {
         home_id: ""
     },
     editedIndex: -1,
+     headers: [
+      //{ title: 'Sucursal', value: 'branchName', width: '20%' },
+      { title: "Fecha", value: "date", width: "20%" },
+      { title: "Nombre", value: "name", width: "10%" },
+      { title: "Notas", value: "notes", width: "10%" },
+      { title: "Siguiente vacuna", value: "next_date", width: "10%" },
+      { title: "files.fields.actions", value: "actions", sortable: false, width: "15%" },
+    ],
     search: "",
     menu: false,
     input: null,
@@ -401,6 +516,14 @@ export default {
       return this.input1 ? new Date(this.input1) : new Date();
     },
   },
+  created() {
+    this.tools = [
+      {
+        name: this.$t("vaccinations.listing.addButton"),
+        action: () => this.showAdd(),
+      },
+    ];
+  },
   mounted() {
     this.person_id = JSON.parse(LocalStorageService.getItem("person_id"));
     this.home_id = JSON.parse(LocalStorageService.getItem("home_id"));
@@ -423,7 +546,7 @@ export default {
       };
       
       // Retorna el color correspondiente o un color por defecto (primary)
-      return colorMap[type] || "secondary";
+      return colorMap[type] || "green";
     },
     formatIntuitiveDate(dateString) {
   if (!dateString) return "Sin fecha";
@@ -531,7 +654,7 @@ export default {
       try {
         this.data = {};
         this.data.home_id = this.home_id;
-        this.data.pet_id = this.pet.id;
+        this.data.pet_id = this.selectedPet.id;
         this.data.type = "vaccination";
         this.loading = true;
         const result = await handleRequest({
@@ -586,7 +709,7 @@ export default {
           }, {});
         if (Object.keys(updatedFields).length > 0) {
           updatedFields.home_id = this.home_id;
-          updatedFields.pet_id = this.pet.id;
+          updatedFields.pet_id = this.selectedPet.id;
 
           try {
             const result = await handleRequest({
@@ -766,14 +889,6 @@ export default {
   word-break: break-word;
   white-space: normal;
 }
-.selected-tab {
-  background-color: #03626c;
-  /* Fondo del tab seleccionado */
-  color: white;
-  /* Texto blanco */
-  border-radius: 4px;
-  /* Esquinas redondeadas, opcional */
-}
 .icono-concavo {
   width: 50px;
   height: 50px;
@@ -809,5 +924,30 @@ export default {
 .modal-imagen {
   background: transparent !important;
   box-shadow: none !important;
+}
+.text-truncate {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+/* OCULTAR HEADER DE v-data-table - Vuetify 3.4.7 */
+/* Máxima especificidad para ocultar el thead */
+.v-data-table > .v-data-table__wrapper > table > thead,
+.v-data-table > .v-data-table__wrapper > .v-table > table > thead,
+.v-data-table__content > table > thead,
+.v-data-table__content > thead,
+table.v-table > thead,
+.v-table > .v-table__wrapper > table > thead {
+  display: none !important;
+  visibility: hidden !important;
+  height: 0 !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  border: none !important;
+  border-spacing: 0 !important;
+  border-collapse: collapse !important;
+}
+.hidden-header .v-data-table__content > table > thead {
+  display: none !important;
 }
 </style>

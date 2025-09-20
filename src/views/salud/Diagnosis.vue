@@ -11,100 +11,210 @@
       </v-col>
     </v-row>
   </v-snackbar>
-  <v-container class="pa-4">
-      <v-card class="pa-4" elevation="4" rounded="lg">
+  <v-card class="pa-0" elevation="1" rounded="lg" style="
+    position: relative;
+    overflow: visible;
+    z-index: auto;
+  ">
       <!-- Encabezado con foto y datos -->
       <v-card-text>
-    <!-- Encabezado -->
+          <v-card-actions class="bg-grey-lighten-5 tools-bar">
+            <v-btn
+              v-for="tool in tools"
+              :key="tool.name"
+              @click="tool.action()"
+              size="small"
+              color="primary"
+              variant="text"
+              prepend-icon="mdi-plus"
+              class="text-capitalize"
+            >
+              {{ tool.name }}
+            </v-btn>
+          </v-card-actions>
+          <v-card-title class="d-flex flex-wrap align-center pb-2">
+  <!-- Spacer (solo visible en md+) -->
+  <v-spacer class="d-none d-md-block"></v-spacer>
+
+  <!-- Campo de búsqueda global -->
+  <div class="flex-grow-1" style="max-width: 300px">
+    <v-text-field
+      v-model="search"
+      density="compact"
+      :label="$t('dataTable.search')"
+      prepend-inner-icon="mdi-magnify"
+      variant="solo-filled"
+      hide-details
+      single-line
+      flat
+    ></v-text-field>
+  </div>
+</v-card-title>
+
+<v-data-table
+  :headers="headers"
+  :items="diagnoses"
+  :search="search"
+  :items-per-page-text="$t('dataTable.itemsPerPageText')"
+  :no-data-text="$t('dataTable.noDataText')"
+  :loading-text="$t('dataTable.loadingText')"
+  :loading="loading"
+  :hide-default-header="true"
+  style="
+    max-height: 68vh;
+    overflow-y: auto;
+    background: transparent;
+    border: none !important;
+    outline: none !important;
+    box-shadow: none !important;
+    padding: 0;
+  "
+>
+  <!-- Encabezado fijo -->
+  <template v-slot:top>
+    <v-card
+      :elevation="1"
+      flat
+      class="mb-2 mx-1 rounded-lg"
+      style="border: 1px solid #ECEFF1; height: 40px; min-height: 40px; display: flex; align-items: center; transition: none !important"
+    >
+      <v-card-text
+        class="d-flex pa-2"
+        style="width: 100%; min-width: 0; height: 100%; padding: 0 16px !important; display: flex; align-items: center"
+      >
+        <!-- Fecha / Periodo (7%) -->
+        <div style="width: 7%; min-width: 0" class="text-left">
+          {{ $t('diagnoses.fields.date') }}
+        </div>
+
+        <!-- Tipo + Descripción (34%) -->
+        <div style="width: 36%; min-width: 0" class="text-left">
+          {{ $t('diagnoses.fields.type') }}
+        </div>
+
+        <!-- Notas (34%) -->
+        <div style="width: 37%; min-width: 0" class="text-left">
+          {{ $t('diagnoses.fields.notes') }}
+        </div>
+
+        <!-- CIE-10 (10%) -->
+        <div style="width: 10%; min-width: 0; text-align: center;" class="text-left">
+          {{ $t('diagnoses.fields.cie10_code') }}
+        </div>
+
+        <!-- Acciones (10%) -->
+        <div style="width: 10%; min-width: 0" class="d-flex justify-end">
+          {{ $t('settings.actions') }}
+        </div>
+      </v-card-text>
+    </v-card>
+  </template>
+
+  <!-- Item (fila) -->
+  <template v-slot:item="slotProps">
+    <tr>
+      <td colspan="100%" style="padding: 0; border: none">
+        <v-card
+          class="mb-2 mx-1 rounded-lg"
+          elevation="1"
+          density="comfortable"
+          flat
+        >
+          <v-card-text class="d-flex align-center pa-2" style="width: 100%; min-width: 0">
+            <!-- Fecha / Periodo (7%) -->
+            <div class="d-flex align-center" style="width: 7%; min-width: 0">
+              <v-avatar
+                class="mr-1 icono-concavo"
+                :class="`bg-${getTypeColor(slotProps.item.typeName)}`"
+                :style="{
+                  'min-height': '48px',
+                  'min-width': '48px',
+                  'border-radius': '8px',
+                  'font-size': '0.90em'
+                }"
+              >
+                <div class="text-body-3 font-weight-medium">
+                  {{ formatIntuitiveDate(slotProps.item.date) }}
+                </div>
+              </v-avatar>
+            </div>
+
+            <!-- Tipo + Descripción (34%) -->
+            <div style="width: 36%; min-width: 0" class="d-flex flex-column">
+              <div class="text-body-2 text-truncate">
+                {{ slotProps.item.typeName }}
+              </div>
+              <div class="text-caption text-grey-darken-1 text-truncate mt-1">
+                {{ slotProps.item.description }}
+                <v-tooltip activator="parent" location="bottom">
+                  <span>
+                    {{ slotProps.item.description }}
+                  </span>
+                </v-tooltip>
+              </div>
+            </div>
+
+            <!-- Notas (34%) -->
+            <div style="width: 37%; min-width: 0" class="text-body-2 text-truncate">
+              <span>{{ slotProps.item.notes || '' }}</span>
+              <v-tooltip activator="parent" location="bottom" max-width="350px">
+                <span style="white-space: normal; word-break: break-word">
+                  {{ slotProps.item.notes || '' }}
+                </span>
+              </v-tooltip>
+            </div>
+
+            <!-- CIE-10 (10%) -->
+            <div style="width: 10%; min-width: 0; text-align: center;" class="text-body-2 text-truncate">
+              <span>{{ slotProps.item.cie10_code || 'N/A' }}</span>
+              <v-tooltip activator="parent" location="bottom" max-width="350px">
+                <span style="white-space: normal; word-break: break-word">
+                {{ slotProps.item.cie10_code || 'N/A' }}
+                </span>
+              </v-tooltip>
+            </div>
+
+            <!-- Acciones (10%) -->
+            <div class="d-flex gap-1" style="width: 10%; justify-content: flex-end; flex-wrap: nowrap">
+              <v-btn
+                size="35"
+                icon
+                variant="text"
+                color="green-darken-2"
+                @click="editItem(slotProps.item)"
+                class="flex-shrink-0"
+                title="Editar Diagnóstico"
+              >
+                <v-icon size="20">mdi-pencil</v-icon>
+              </v-btn>
+
+              <v-btn
+                size="35"
+                icon
+                variant="text"
+                color="red-darken-2"
+                @click="deleteItem(slotProps.item)"
+                class="flex-shrink-0"
+                title="Eliminar Diagnóstico"
+              >
+                <v-icon size="20">mdi-delete</v-icon>
+              </v-btn>
+            </div>
+          </v-card-text>
+        </v-card>
+      </td>
+    </tr>
+  </template>
+</v-data-table>
+    <!-- Encabezado 
     <v-row justify="space-between" align="center" class="mb-6">
       <h2 class="text-body-2 font-weight-bold">{{ $t("viewTitles.diagnosis") }}</h2>
       <v-btn icon color="deep-purple-accent-4" variant="flat" class="elevation-3" @click="showAdd">
         <v-icon>mdi-plus</v-icon>
       </v-btn>
-    </v-row>
-    <template v-if="diagnoses.length > 0">
-      <!-- Tarjetas de diagnósticos -->
-      <v-card v-for="(diagnosis, index) in diagnoses" :key="index" class="mb-3 rounded-lg pa-2" elevation="2">
-        <v-row>
-          <!-- Barra lateral con fecha (sin fondo verde) -->
-          <v-col cols="1" class="d-flex align-center justify-center">
-            <div class="icono-concavo d-flex flex-column justify-center justify-start"
-              :class="`bg-${getTypeColor(diagnosis.typeName)}`">
-              <div class="date-display">
-                {{ formatIntuitiveDate(diagnosis.date) }}
-              </div>
-            </div>
-          </v-col>
-          <v-col cols="4" class="d-flex align-center pe-4">
-            <v-row align="center" class="gap-3">
-              <div>
-                <div class="text-body-2 font-weight-bold">
-                  <span>
-                    {{ diagnosis.typeName }}
-                  </span>
-                  <v-tooltip activator="parent" location="bottom" max-width="350px">
-                    <span style="white-space: normal; word-break: break-word">{{ $t('diagnoses.fields.type') }}: {{
-                      diagnosis.typeName }}</span>
-                  </v-tooltip>
-                </div>
-                <div class="text-caption d-flex align-center text-grey-darken-1">
-                  <span>
-                    {{ diagnosis.description }}
-                  </span>
-                  <v-tooltip activator="parent" location="bottom">
-                    <span>{{ $t('diagnoses.fields.description') }}: {{ diagnosis.description }}</span>
-                  </v-tooltip>
-                </div>
-              </div>
-            </v-row>
-          </v-col>
-          <v-col cols="5" class="d-flex align-center pe-4 gap-2">
-                <div class="text-body-2">
-                  <span>
-                    {{ diagnosis.notes }}
-                  </span>
-                  <v-tooltip activator="parent" location="bottom" max-width="350px">
-                    <span style="white-space: normal; word-break: break-word">{{ $t("diagnoses.fields.notes") }}:
-                      {{ diagnosis.notes }}</span>
-                  </v-tooltip>
-                </div>
-              </v-col>
-          <v-col cols="1" class="d-flex align-center pe-4 gap-2">
-                <div class="text-body-2">
-                  <span>
-                    {{ diagnosis.cie10_code || 'N/A' }}
-                  </span>
-                  <v-tooltip activator="parent" location="bottom" max-width="350px">
-                    <span style="white-space: normal; word-break: break-word">{{ $t("diagnoses.fields.cie10_code") }}:
-                      {{ diagnosis.cie10_code || 'N/A' }}</span>
-                  </v-tooltip>
-                </div>
-              </v-col>
-          <!-- Acciones -->
-          <v-col cols="1" class="d-flex align-center ml-auto pe-4">
-                <div class="d-flex">
-            <v-btn icon variant="text" color="green-darken-2" size="small" @click="editItem(diagnosis)">
-              <v-icon>mdi-pencil</v-icon>
-            </v-btn>
-            <v-btn icon variant="text" color="red-darken-2" size="small" @click="deleteItem(diagnosis)">
-              <v-icon>mdi-delete</v-icon>
-            </v-btn>
-            </div>
-          </v-col>
-        </v-row>
-      </v-card>
-    </template>
-    <template v-else>
-      <v-col cols="12" class="text-center py-8 pa-0">
-        <v-icon size="64" color="grey-lighten-1">mdi-clipboard-text-off</v-icon>
-        <div class="text-h6 text-grey mt-4">
-          {{ $t("diagnoses.noRecords") }}
-        </div>
-      </v-col>
-    </template>
+    </v-row>-->
     </v-card-text>
     </v-card>
-  </v-container>
   <v-dialog v-model="dialog" fullscreen persistent transition="dialog-bottom-transition"
     content-class="fullscreen-dialog">
     <v-form ref="form" v-model="valid" class="h-100">
@@ -195,15 +305,29 @@
                 </v-col>
 
                 <v-col cols="12" sm="6">
-                  <v-menu v-model="dateMenu" :close-on-content-click="false" :nudge-right="40"
-                    transition="scale-transition" offset-y min-width="290px">
+                  <v-menu
+                    v-model="dateMenu"
+                    :close-on-content-click="false"
+                    transition="scale-transition"
+                    offset-y
+                    min-width="auto"
+                  >
                     <template v-slot:activator="{ props }">
-                      <v-text-field v-bind="props" :modelValue="dateFormatted" variant="underlined"
-                        :label="$t('diagnoses.fields.date')"></v-text-field>
+                      <v-text-field
+                        v-bind="props"
+                        :model-value="dateInput"
+                        :label="$t('diagnoses.fields.date')"
+                        variant="underlined"
+                        readonly
+                      ></v-text-field>
                     </template>
                     <v-locale-provider>
-                      <v-date-picker color="#03626C" :modelValue="dateInput" @update:model-value="updateDate"
-                        format="yyyy-MM-dd"></v-date-picker>
+                    <v-date-picker
+                      color="#03626C"
+                      :model-value="dateInput"
+                      @update:model-value="updateDate"
+                      :max="new Date().toISOString().split('T')[0]"
+                    ></v-date-picker>
                     </v-locale-provider>
                   </v-menu>
                 </v-col>
@@ -259,6 +383,12 @@ import _ from "lodash";
 import { shallowRef } from "vue";
 
 export default {
+   props: {
+    selectedPerson: {
+      type: Object,
+      required: true
+    },
+  },
   data: () => ({
     selected: shallowRef([2]),
     selected2: null,
@@ -315,6 +445,14 @@ export default {
 
     editedIndex: -1,
     search: "",
+    headers: [
+      { title: '', key: 'date', width: '7%' },
+      { title: '', key: 'typeName', width: '34%' },
+      { title: '', key: 'description', width: '34%' },
+      { title: '', key: 'notes', width: '34%' },
+      { title: '', key: 'cie10_code', width: '10%' },
+      { title: '', key: 'actions', width: '10%' },
+    ],
     descriptionRules: [
       (v) => !!v || "La descripción es requerida",
       (v) => (v && v.length <= 500) || "La descripción debe tener menos de 500 caracteres",
@@ -333,27 +471,16 @@ export default {
         ? this.$t("diagnoses.titles.new")
         : this.$t("diagnoses.titles.edit");
     },
-    dateFormatted() {
-      const date = this.dateInput ? new Date(this.dateInput) : new Date();
-      const day = date.getDate().toString().padStart(2, "0");
-      const month = (date.getMonth() + 1).toString().padStart(2, "0");
-      const year = date.getFullYear();
-      return `${year}-${month}-${day}`;
-    },
-    getDate() {
-      return this.dateInput ? new Date(this.dateInput) : new Date();
-    },
-    paginatedTasks() {
-      if (!Array.isArray(this.tasks)) return [];
-      const start = (this.currentPage - 1) * this.itemsPerPage;
-      const end = start + this.itemsPerPage;
-      return this.tasks.slice(start, end);
-    },
-    pageCount() {
-      return this.tasks?.length ? Math.ceil(this.tasks.length / this.itemsPerPage) : 0;
-    },
+    
   },
-
+  created() {
+    this.tools = [
+      {
+        name: this.$t("diagnoses.titles.new"),
+        action: () => this.showAdd()
+      }
+    ]
+  },
   mounted() {
     this.home_id = JSON.parse(LocalStorageService.getItem("home_id"));
     this.person_id = JSON.parse(LocalStorageService.getItem("person_id"));
@@ -361,6 +488,13 @@ export default {
   },
 
   methods: {
+    obtenerFechaLocal() {
+    const hoy = new Date();
+    const year = hoy.getFullYear();
+    const month = String(hoy.getMonth() + 1).padStart(2, '0');
+    const day = String(hoy.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+  },
     formatIntuitiveDate(dateString) {
       if (!dateString) return "Sin fecha";
 
@@ -397,6 +531,7 @@ export default {
               weekday: "short",
               day: "numeric",
               month: "short",
+              year: "numeric"
             })
             .replace(/\./g, "");
       }
@@ -407,22 +542,33 @@ export default {
         Meta: "purple",
         // Agrega más tipos si es necesario
       };
-      return colorMap[type] || "grey-lighten-1"; // Color por defecto
-    },
-    formatDate(dateString) {
-      if (!dateString) return "N/R";
-      const [year, month, day] = dateString.split("-");
-      return `${day}-${month}-${year}`;
+      return colorMap[type] || "red-darken-1"; // Color por defecto
     },
 
-    updateDate(val) {
-      this.dateInput = val;
-      this.editedItem.date = this.dateFormatted;
-      this.dateMenu = false;
+    updateDate(value) {
+    // value viene como objeto Date desde el date-picker
+    // Convertimos a formato YYYY-MM-DD
+    const year = value.getFullYear();
+    const month = String(value.getMonth() + 1).padStart(2, '0');
+    const day = String(value.getDate()).padStart(2, '0');
+    this.dateInput = `${year}-${month}-${day}`;
+    this.editedItem.date = this.dateInput;
+    this.dateMenu = false;
+  },
+  parseDateString(dateString) {
+      if (!dateString) {
+        const today = new Date();
+        // Aseguramos que sea el inicio del día (evita problemas de zona horaria)
+        return new Date(today.getFullYear(), today.getMonth(), today.getDate());
+      }
+      const [year, month, day] = dateString.split('-');
+      return new Date(parseInt(year), parseInt(month) - 1, parseInt(day));
     },
 
     async showAdd() {
       this.editedIndex = -1;
+      this.dateInput = this.obtenerFechaLocal();
+      this.editedItem.date = this.dateInput;
       this.data = {};
       this.data.type = 'Diagnostico';
       try {
@@ -456,9 +602,13 @@ export default {
     async initialize() {
       try {
         this.loading = true;
+        this.data = {};
+        this.data.home_id = this.home_id;
+        this.data.person_id = this.selectedPerson.id;
         const result = await handleRequest({
           endpoint: "diagnoses-person",
           method: "POST",
+          data: this.data
         });
 
         if (result.success) {
@@ -510,7 +660,7 @@ export default {
             obj[key] = this.editedItem[key];
             return obj;
           }, {});
-
+          updatedFields.person_id = this.selectedPerson.id;
         try {
           const result = await handleRequest({
             endpoint: "diagnosis",
@@ -622,7 +772,7 @@ export default {
       this.data.id = this.editedItem.id;
       try {
         const result = await handleRequest({
-          endpoint: "diagnoss-delete",
+          endpoint: "diagnosis-delete",
           method: "POST",
           data: this.data,
         });
@@ -665,48 +815,6 @@ export default {
       this.sb_message = sb_message;
       this.sb_timeout = sb_timeout;
       this.snackbar = true;
-    },
-
-    compactDiagnosisData(diagnosis) {
-      return [
-        {
-          label: this.$t("diagnoses.fields.type"),
-          value: diagnosis.type_name || "N/R",
-          fullLabel: this.$t("diagnoses.fields.type"),
-          fullValue: diagnosis.type_name || this.$t("diagnoses.notRecorded"),
-          icon: "mdi-heart-pulse",
-          color: "indigo-darken-2",
-        },
-        {
-          label: this.$t("diagnoses.fields.cie10_code"),
-          value: diagnosis.cie10_code || "N/R",
-          fullLabel: this.$t("diagnoses.fields.cie10_code"),
-          fullValue: diagnosis.cie10_code || this.$t("diagnoses.notRecorded"),
-          icon: "mdi-barcode",
-          color: "green-darken-2",
-        },
-        {
-          label: this.$t("diagnoses.fields.description"),
-          value: this.truncateText(diagnosis.description) || "N/R",
-          fullLabel: this.$t("diagnoses.fields.description"),
-          fullValue: diagnosis.description || this.$t("diagnoses.notRecorded"),
-          icon: "mdi-text",
-          color: "red-darken-2",
-        },
-      ].filter((item) => item.value !== "N/R");
-    },
-
-    compactNotes(diagnosis) {
-      return [
-        {
-          label: this.$t("diagnoses.fields.notes"),
-          text: this.truncateText(diagnosis.notes) || "-",
-          fullLabel: this.$t("diagnoses.fields.notes"),
-          fullText: diagnosis.notes || this.$t("diagnoses.notRecorded"),
-          icon: "mdi-information",
-          color: "teal-darken-1",
-        },
-      ].filter((note) => note.text !== "-");
     },
 
     truncateText(text, length = 15) {
@@ -755,16 +863,6 @@ export default {
   border-radius: 4px;
   background-color: #03626C;
 }
-
-.v-card {
-  transition: all 0.2s ease;
-}
-
-.v-card:hover {
-  transform: translateY(-3px);
-  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.1) !important;
-}
-
 .fullscreen-dialog {
   height: 100vh !important;
   max-height: 100vh !important;
@@ -778,44 +876,23 @@ export default {
   overflow: hidden;
   text-overflow: ellipsis;
 }
-
+.v-data-table > .v-data-table__wrapper > table > thead,
+.v-data-table > .v-data-table__wrapper > .v-table > table > thead,
+.v-data-table__content > table > thead,
+.v-data-table__content > thead,
+table.v-table > thead,
+.v-table > .v-table__wrapper > table > thead {
+  display: none !important;
+  visibility: hidden !important;
+  height: 0 !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  border: none !important;
+  border-spacing: 0 !important;
+  border-collapse: collapse !important;
+}
+.hidden-header .v-data-table__content > table > thead {
+  display: none !important;
+}
 /* Estilos para los chips */
-.v-chip {
-  margin-right: 4px;
-  margin-bottom: 4px;
-}
-
-/* Estilos para la línea de tiempo */
-.v-timeline-item {
-  padding-bottom: 16px;
-}
-
-/* Estilos para los campos del formulario */
-.v-text-field, .v-select, .v-textarea {
-  margin-bottom: 12px;
-}
-
-/* Estilos para los botones de acción */
-.v-btn--icon {
-  transition: all 0.2s ease;
-}
-
-.v-btn--icon:hover {
-  transform: scale(1.1);
-}
-
-/* Para mantener los saltos de línea en los textos */
-.text-pre-wrap {
-  white-space: pre-wrap;
-}
-
-/* Espaciado entre elementos */
-.gap-1 {
-  gap: 4px;
-}
-
-/* Ajustes para la fecha */
-.date-column {
-  border-right: 1px solid rgba(0, 0, 0, 0.12);
-}
 </style>

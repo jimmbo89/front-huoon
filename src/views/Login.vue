@@ -35,7 +35,7 @@
       "
         >
           <v-carousel-item 
-            v-for="(slide, i) in slides" 
+            v-for="(key, i) in slideKeys" 
             :key="i"
             style="
               display: flex;
@@ -47,11 +47,11 @@
           >
             <div class="text-center" style="width: 100%">
               <h2 class="text-h5 text-white font-weight-bold mb-3">
-              {{ slide.title }} <span style="color: #006064">{{ slide.emphasis }}</span><br />
-              {{ slide.subtitle }}
+                {{ $t(`slides.${key}.title`) }}  <span style="color: #006064">  {{ $t(`slides.${key}.emphasis`) }} </span><br />
+               {{ $t(`slides.${key}.subtitle`) }} 
             </h2>
             <p class="text-white text-subtitle-2" style="max-width: 360px; opacity: 0.8; margin: auto;">
-              {{ slide.description }}
+                {{ $t(`slides.${key}.description`) }} 
             </p>
           </div>
         </v-carousel-item>
@@ -62,7 +62,7 @@
     <!-- PANEL DERECHO (Login) -->
     <v-col cols="12" md="5" class="d-flex flex-column justify-center align-center pa-4 bg-white">
       <v-card class="w-100" max-width="500" flat>
-
+        <v-card-text>
         <v-row class="mb-6 mt-2 ">
 
           <v-avatar class="ml-2" image="@/assets/logo-verde.png" size="60"></v-avatar>
@@ -72,59 +72,57 @@
 
 
 
-        <p class="text-h5 font-weight-bold ">Log in to Your Account</p>
+        <p class="text-h5 font-weight-bold ">{{ $t('login.title') }}</p>
 
-        <p class="text-subtitle-2 mb-6 font-weight-light">Welcome Back! Select method to log in:</p>
+        <p class="text-subtitle-2 mb-6 font-weight-light">{{ $t('login.subtitle') }}:</p>
 
         <v-btn size="x-large" prepend-icon="mdi-google" class="flex-grow-1" variant="tonal" color="info"
           style="text-transform: none;" rounded="lg" @click="loginWithGoogle">
-          Google&nbsp;&nbsp;&nbsp;&nbsp;
+          {{ $t('login.buttons.google') }}&nbsp;&nbsp;&nbsp;&nbsp;
         </v-btn>
         <v-btn size="x-large" prepend-icon="mdi-facebook" class="flex-grow-1 ml-12" style="text-transform: none;"
           variant="tonal" color="primary" rounded="lg" @click="loginWithFacebook">
-          Facebook&nbsp;&nbsp;
+          {{ $t('login.buttons.facebook') }}&nbsp;&nbsp;
         </v-btn>
 
 
          <v-form ref="form" v-model="valid">
-        <div class="text-center mt-6 text-caption my-2">Or sign in with</div>
+        <div class="text-center mt-6 text-caption my-2">{{ $t('login.or') }}</div>
 
         <v-text-field v-model="editedItem.name" variant="outlined" class="mb-3" v-if="this.register"
-          placeholder="Name" prepend-inner-icon="mdi-account-outline" :rules="nameRules" density="comfortable"/>
+          :placeholder="$t('login.placeholders.name')"  :rules="nameRules" density="comfortable"/>
 
-        <v-text-field v-model="editedItem.email" label="Email" variant="outlined" placeholder="johndoe@mail.com"
+        <v-text-field v-model="editedItem.email" :label="$t('login.fields.email')" variant="outlined" placeholder="johndoe@mail.com" 
           density="comfortable" class="mb-3" :rules="this.register ? emailRules : []"/>
 
-        <v-text-field v-model="editedItem.password" label="Password" variant="outlined" placeholder="password"
+        <v-text-field v-model="editedItem.password" :label="$t('login.fields.password')" variant="outlined" placeholder="johndoe@mail.com"
           :type="showPassword ? 'text' : 'password'" :append-inner-icon="showPassword ? 'mdi-eye-off' : 'mdi-eye'"
           @click:append-inner="showPassword = !showPassword" density="comfortable" class="mb-5" :rules="reuquiredRules"/>
 
         <v-text-field v-model="editedItem.user" density="comfortable" variant="outlined" class="mb-3" v-if="this.register"
-          placeholder="User" prepend-inner-icon="mdi-account" :rules="reuquiredRules"/>
+          :placeholder="$t('login.placeholders.user')"  :rules="reuquiredRules"/>
 
         <v-btn block size="x-large" color="cyan-darken-3" class="text-white text-subtitle-1 mb-3"
           style="text-transform: none;" rounded="lg" :loading="loading" @click="login()" :disabled="this.register ? !this.valid : false">
-          Sign In →
+          {{ this.register ? $t('login.signUp') : $t('login.signInButton') }}
         </v-btn>
         </v-form>
         <div class="text-center mt-2">
           <span class="text-body-2 text-decoration-underline" style="cursor: pointer;">
-            Forgot password?
+            {{ $t('login.forgotPassword') }}
           </span>
         </div>
 
 
 
         <v-row justify="center" class="mb-2 mt-4">
-          <span class="text-caption">Don't have an account?
-            <span class="text-primary" style="cursor: pointer;" @click="goToLogin"> Sign Up</span>
+          <span class="text-caption">{{ $t('login.noAccount') }}
+            <span class="text-primary" style="cursor: pointer;" @click="goToLogin"> {{ $t('login.signUp') }}</span>
           </span>
         </v-row>
 
-        <div class="text-caption text-grey text-center mt-10">
-          © 2025 Huoon · <a href="#" class="text-primary">Privacy Policy</a> · <a href="#"
-            class="text-primary">Support</a>
-        </div>
+        <div class="text-caption text-grey text-center mt-10" v-html="$t('login.footer', { privacy: `<a href='#' class='text-primary'>${$t('login.privacy')}</a>`, support: `<a href='#' class='text-primary'>${$t('login.support')}</a>` })"></div>
+      </v-card-text>
       </v-card>
     </v-col>
     </v-row>
@@ -140,7 +138,8 @@ export default {
   data: () => ({
 
     onboardingStep: 0,
-    onboardingSlides: [
+    slideKeys: ['welcome', 'shareHome', 'smartTasks', 'controlFromPhone', 'designedForYou'],
+    /*onboardingSlides: [
       {
         title: "Administra tu hogar",
         description: "Organiza tareas, eventos y finanzas en un solo lugar.",
@@ -191,7 +190,7 @@ export default {
         subtitle: "",
         description: "Huoon se adapta a tu estilo de vida: incluye herramientas útiles para todos los miembros del hogar, incluyendo niños y adultos mayores."
       }
-    ],
+    ],*/
     loading: false,
     snackbar: false,
     sb_type: '',

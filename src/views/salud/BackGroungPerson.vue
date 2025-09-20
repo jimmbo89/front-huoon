@@ -19,135 +19,206 @@
       </v-col>
     </v-row>
   </v-snackbar>
-  <v-container class="pa-4">
-      <v-card class="pa-4" elevation="4" rounded="lg">
+      <v-card class="pa-0" elevation="1" rounded="lg" style="
+    position: relative;
+    overflow: visible;
+    z-index: auto;
+  ">
       <!-- Encabezado con foto y datos -->
       <v-card-text>
-    <!-- Encabezado -->
-    <v-row justify="space-between" align="center" class="mb-6">
-      <h2 class="text-body-2 font-weight-bold">{{ $t("viewTitles.personalBackground") }}</h2>
-      <v-btn
-        icon
-        color="deep-purple-accent-4"
-        variant="flat"
-        class="elevation-3"
-        @click="showAdd"
-      >
-        <v-icon>mdi-plus</v-icon>
-      </v-btn>
-    </v-row>
-    <template v-if="backgroundPersons.length > 0">
-      <!-- Tarjetas de antecedentes personales -->
-      <v-card
-        v-for="(background, index) in backgroundPersons"
-        :key="index"
-        class="mb-3 rounded-lg pa-2"
-        elevation="2"
-      >
-        <v-row>
-          <!-- Barra lateral con fecha -->
-           <v-col cols="1" class="d-flex align-center justify-center">
-            <div class="icono-concavo d-flex flex-column justify-center justify-start"
-              :class="`bg-${getTypeColor(background.typeName)}`">
-              <div class="date-display">
-                {{ formatIntuitiveDate(background.startDate) }}
-              </div>
-            </div>
-          </v-col>
-          <v-col cols="4" class="d-flex align-center pe-4 gap-2">
-           <v-row align="center" class="gap-3">
-              <div>
-                <div class="text-body-2 font-weight-bold">
-                  <span>
-                    {{ background.typeName }}
-                  </span>
-                  <v-tooltip activator="parent" location="bottom" max-width="350px">
-                    <span style="white-space: normal; word-break: break-word">{{ $t('personalBackground.fields.type') }}: {{
-                      background.typeName }}</span>
-                  </v-tooltip>
-                </div>
-                <div class="text-caption d-flex align-center text-grey-darken-1">
-                  <span>
-                    {{ background.description }}
-                  </span>
-                  <v-tooltip activator="parent" location="bottom" max-width="350px">
-                    <span style="white-space: normal; word-break: break-word">{{ $t('personalBackground.fields.description') }}: {{ background.description }}</span>
-                  </v-tooltip>
-                </div>
-              </div>
-              </v-row>
-              </v-col>
-          <v-col cols="1" class="d-flex align-center pe-4 gap-2">
-                <div class="text-body-2">
-                  <span>
-                    {{ background.status}}
-                  </span>
-                  <v-tooltip activator="parent" location="bottom" max-width="350px">
-                    <span style="white-space: normal; word-break: break-word">{{ $t("personalBackground.fields.status") }}:
-                      {{ background.status}}</span>
-                  </v-tooltip>
-                </div>
-              </v-col>
-          <v-col cols="1" class="d-flex align-center pe-4 gap-2">
-                <div class="text-body-2">
-                  <span>
-                    {{ background.severity}}
-                  </span>
-                  <v-tooltip activator="parent" location="bottom" max-width="350px">
-                    <span style="white-space: normal; word-break: break-word">{{ $t("personalBackground.fields.severity") }}:
-                      {{ background.severity}}</span>
-                  </v-tooltip>
-                </div>
-              </v-col>
-           <v-col cols="4" class="d-flex align-center pe-4 gap-2">
-                <div class="text-body-2">
-                  <span>
-                    {{ background.details}}
-                  </span>
-                  <v-tooltip activator="parent" location="bottom" max-width="350px">
-                    <span style="white-space: normal; word-break: break-word">{{ $t("personalBackground.fields.details") }}:
-                      {{ background.details}}</span>
-                  </v-tooltip>
-                </div>
-              </v-col>
+          <v-card-actions class="bg-grey-lighten-5 tools-bar">
+            <v-btn
+              v-for="tool in tools"
+              :key="tool.name"
+              @click="tool.action()"
+              size="small"
+              color="primary"
+              variant="text"
+              prepend-icon="mdi-plus"
+              class="text-capitalize"
+            >
+              {{ tool.name }}
+            </v-btn>
+          </v-card-actions>
+          <v-card-title class="d-flex flex-wrap align-center pb-2">
+  <!-- Spacer (solo visible en md+) -->
+  <v-spacer class="d-none d-md-block"></v-spacer>
 
-          <!-- Acciones -->
-         <v-col cols="1" class="d-flex align-center ml-auto pe-4">
-                <div class="d-flex">
-            <v-btn
-              icon
-              variant="text"
-              color="green-darken-2"
-              size="small"
-              @click="editItem(background)"
-            >
-              <v-icon>mdi-pencil</v-icon>
-            </v-btn>
-            <v-btn
-              icon
-              variant="text"
-              color="red-darken-2"
-              size="small"
-              @click="deleteItem(background)"
-            >
-              <v-icon>mdi-delete</v-icon>
-            </v-btn>
-            </div>
-          </v-col>
-        </v-row>
-      </v-card>
-    </template>
-    <template v-else>
-      <v-col cols="12" class="text-center py-8 pa-0">
-        <v-icon size="64" color="grey-lighten-1">mdi-clipboard-text-off</v-icon>
-        <div class="text-h6 text-grey mt-4">
-          {{ $t("personalBackground.noRecords") }}
+  <!-- Campo de búsqueda global -->
+  <div class="flex-grow-1" style="max-width: 300px">
+    <v-text-field
+      v-model="search"
+      density="compact"
+      :label="$t('dataTable.search')"
+      prepend-inner-icon="mdi-magnify"
+      variant="solo-filled"
+      hide-details
+      single-line
+      flat
+    ></v-text-field>
+  </div>
+</v-card-title>
+
+<v-data-table
+  :headers="headers"
+  :items="backgroundPersons"
+  :search="search"
+  :items-per-page-text="$t('dataTable.itemsPerPageText')"
+  :no-data-text="$t('dataTable.noDataText')"
+  :loading-text="$t('dataTable.loadingText')"
+  :loading="loading"
+  :hide-default-header="true"
+  style="
+    max-height: 68vh;
+    overflow-y: auto;
+    background: transparent;
+    border: none !important;
+    outline: none !important;
+    box-shadow: none !important;
+    padding: 0;
+  "
+>
+  <!-- Encabezado fijo -->
+  <template v-slot:top>
+    <v-card
+      :elevation="1"
+      flat
+      class="mb-2 mx-1 rounded-lg"
+      style="border: 1px solid #ECEFF1; height: 40px; min-height: 40px; display: flex; align-items: center; transition: none !important"
+    >
+      <v-card-text
+        class="d-flex pa-2"
+        style="width: 100%; min-width: 0; height: 100%; padding: 0 16px !important; display: flex; align-items: center"
+      >
+        <!-- Fecha / Periodo (7%) -->
+        <div style="width: 7%; min-width: 0" class="text-left">
+          {{ $t('personalBackground.fields.startDate') }}
         </div>
-      </v-col>
-    </template>
+
+        <!-- Descripción + Severidad (34%) -->
+        <div style="width: 33%; min-width: 0" class="text-left">
+          {{ $t('personalBackground.fields.type') }}
+        </div>
+
+        <!-- Estado (15%) -->
+        <div style="width: 10%; min-width: 0" class="text-left">
+          {{ $t('personalBackground.fields.status') }}
+        </div>
+
+        <div style="width: 10%; min-width: 0" class="text-left">
+          {{ $t('personalBackground.fields.severity') }}
+        </div>
+
+        <!-- Detalles (34%) -->
+        <div style="width: 30%; min-width: 0" class="text-left">
+          {{ $t('personalBackground.fields.details') }}
+        </div>
+
+        <!-- Acciones (10%) -->
+        <div style="width: 10%; min-width: 0" class="d-flex justify-end">
+          {{ $t('settings.actions') }}
+        </div>
+      </v-card-text>
+    </v-card>
+  </template>
+
+  <!-- Item (fila) -->
+  <template v-slot:item="slotProps">
+    <tr>
+      <td colspan="100%" style="padding: 0; border: none">
+        <v-card
+          class="mb-2 mx-1 rounded-lg"
+          elevation="1"
+          density="comfortable"
+          flat
+        >
+          <v-card-text class="d-flex align-center pa-2" style="width: 100%; min-width: 0">
+            <!-- Fecha / Periodo (7%) -->
+            <div class="d-flex align-center" style="width: 7%; min-width: 0">
+              <v-avatar
+                class="mr-1 icono-concavo"
+                :class="`bg-${getTypeColor(slotProps.item.typeName)}`"
+                :style="{
+                  'min-height': '48px',
+                  'min-width': '48px',
+                  'border-radius': '8px',
+                  'font-size': '0.90em'
+                }"
+              >
+                <div class="text-body-3 font-weight-medium">
+                  {{ formatIntuitiveDate(slotProps.item.startDate) }}
+                </div>
+              </v-avatar>
+            </div>
+
+            <!-- Descripción + Severidad (34%) -->
+            <div style="width: 33%; min-width: 0" class="d-flex flex-column">
+              <div class="text-body-2 text-truncate">
+                {{ slotProps.item.typeName || '' }}
+              </div>
+              <div class="text-caption text-grey-darken-1 text-truncate mt-1">
+                {{ slotProps.item.description || '' }}
+                <v-tooltip activator="parent" location="bottom" max-width="350px">
+                  <span style="white-space: normal; word-break: break-word">
+                    {{ $t('personalBackground.fields.description') }}: {{ slotProps.item.description || '-' }}
+                  </span>
+                </v-tooltip>
+              </div>
+            </div>
+
+            <!-- Estado (15%) -->
+            <div style="width: 10%; min-width: 0" class="text-body-2 text-truncate">
+              <span>{{ slotProps.item.status || '' }}</span>
+            </div>
+
+            <div style="width: 10%; min-width: 0" class="text-body-2 text-truncate">
+              <span>{{ slotProps.item.severity || '' }}</span>
+            </div>
+
+            <!-- Detalles (34%) -->
+            <div style="width: 30%; min-width: 0" class="text-body-2 text-truncate">
+              <span>{{ slotProps.item.details || '' }}</span>
+              <v-tooltip activator="parent" location="bottom" max-width="350px">
+                  <span style="white-space: normal; word-break: break-word">
+                    {{ slotProps.item.details || '-' }}
+                  </span>
+                </v-tooltip>
+            </div>
+
+            <!-- Acciones (10%) -->
+            <div class="d-flex gap-1" style="width: 10%; justify-content: flex-end; flex-wrap: nowrap">
+              <v-btn
+                size="35"
+                icon
+                variant="text"
+                color="green-darken-2"
+                @click="editItem(slotProps.item)"
+                class="flex-shrink-0"
+                title="Editar Antecedente Personal"
+              >
+                <v-icon size="20">mdi-pencil</v-icon>
+              </v-btn>
+
+              <v-btn
+                size="35"
+                icon
+                variant="text"
+                color="red-darken-2"
+                @click="deleteItem(slotProps.item)"
+                class="flex-shrink-0"
+                title="Eliminar Antecedente Personal"
+              >
+                <v-icon size="20">mdi-delete</v-icon>
+              </v-btn>
+            </div>
+          </v-card-text>
+        </v-card>
+      </td>
+    </tr>
+  </template>
+</v-data-table>
     </v-card-text>
     </v-card>
-  </v-container>
   <v-dialog
     v-model="dialog"
     fullscreen
@@ -308,9 +379,38 @@
                   </template>
                   </v-select>
                 </v-col>
+                <v-col cols="12" md="6">
+                       <v-menu
+                    v-model="dateMenu"
+                    :close-on-content-click="false"
+                    :nudge-right="40"
+                    transition="scale-transition"
+                    offset-y
+                    min-width="290px"
+                  >
+                    <template v-slot:activator="{ props }">
+                      <v-text-field
+                        v-bind="props"
+                        :modelValue="dateInput"
+                        variant="underlined"
+                        :label="$t('personalBackground.fields.startDate')"
+                        :rules="dateRules"
+                      ></v-text-field>
+                    </template>
+                    <v-locale-provider>
+                      <v-date-picker
+                        color="#03626C"
+                        :modelValue="dateInput"
+                        @update:model-value="updateDate"
+                        format="yyyy-MM-dd"
+                        :max="new Date().toISOString().split('T')[0]"
+                      ></v-date-picker>
+                    </v-locale-provider>
+                  </v-menu>
+                      </v-col>
               </v-row>
 
-              <!-- Step 3: Fechas -->
+              <!-- Step 3: Fechas 
               <v-row dense v-if="step === 2">
                 <v-col cols="12" md="6">
                   <v-menu
@@ -369,7 +469,7 @@
                     </v-locale-provider>
                   </v-menu>
                 </v-col>
-              </v-row>
+              </v-row>-->
 
               <!-- Navegación -->
               <div class="d-flex justify-space-between mt-8">
@@ -437,6 +537,12 @@ import _ from "lodash";
 import { shallowRef } from "vue";
 
 export default {
+  props: {
+    selectedPerson: {
+      type: Object,
+      required: true
+    },
+  },
   data: () => ({
     selected: shallowRef([2]),
     selected2: null,
@@ -453,10 +559,10 @@ export default {
         title: "additional",
         subtitle: "clinical_details",
       },
-      {
+      /*{
         title: "dates",
         subtitle: "timeline",
-      },
+      },*/
     ],
     itemsPerPage: 6,
     currentPage: 1,
@@ -490,6 +596,7 @@ export default {
       endDate: null,
       status: null,
       severity: null,
+      typeDetail: 'Antecedente'
     },
 
     defaultItem: {
@@ -501,6 +608,7 @@ export default {
       endDate: null,
       status:null,
       severity: null,
+      typeDetail: 'Antecedente'
     },
     optionalItem: {
       id: "",
@@ -511,6 +619,7 @@ export default {
       endDate: null,
       status: null,
       severity: null,
+      typeDetail: null
     },
 
     startDateMenu: false,
@@ -518,6 +627,16 @@ export default {
     startDateInput: null,
     endDateInput: null,
     editedIndex: -1,
+    headers: [
+      { title: 'Fecha', key: 'startDate' },
+      { title: 'Tipo', key: 'type' },
+      { title: 'Tipo', key: 'typeName' },
+      { title: 'Descripciòn', key: 'description' },
+      { title: 'Estado', key: 'status' },
+      { title: 'Severidad', key: 'severity' },
+      { title: 'Detalles', key: 'details' },
+      { title: 'Acciones', key: 'actions' },
+    ],
     search: "",
     nameRules: [
       (v) => !!v || "El campo es requerido",
@@ -542,7 +661,9 @@ export default {
     title: "",
     description: "",
     date: "",
-    module: "",
+    module: "",    
+    dateMenu: false,
+    dateInput: null,
   }),
   computed: {
     typeRules() {
@@ -552,8 +673,8 @@ export default {
     },
     formTitle() {
       return this.editedIndex === -1
-        ? this.$t("treatment.titles.new")
-        : this.$t("treatment.titles.edit");
+        ? this.$t("personalBackground.titles.new")
+        : this.$t("personalBackground.titles.edit");
     },
     startDateFormatted() {
       const date = this.startDateInput ? new Date(this.startDateInput) : new Date();
@@ -575,25 +696,14 @@ export default {
     getEndDate() {
       return this.endDateInput ? new Date(this.endDateInput) : new Date();
     },
-    paginatedTasks() {
-      if (!Array.isArray(this.tasks)) return []; // Verifica que tasks sea un array
-      const start = (this.currentPage - 1) * this.itemsPerPage;
-      const end = start + this.itemsPerPage;
-      return this.tasks.slice(start, end);
-    },
-    pageCount() {
-      return this.tasks?.length ? Math.ceil(this.tasks.length / this.itemsPerPage) : 0;
-    },
-    translatedSteps() {
-      // Fallback en caso de que la traducción no esté disponible
-      const defaultSteps = [
-        { title: "Medicación", subtitle: "Detalles de la medicación" },
-        { title: "Detalles", subtitle: "Instrucciones y propósito" },
-        { title: "Fechas", subtitle: "Período del tratamiento" },
-      ];
-
-      return this.$t("steps") || defaultSteps;
-    },
+  },
+  created() {
+    this.tools = [
+      {
+        name: this.$t("personalBackground.titles.new"),
+        action: () => this.showAdd()
+      }
+    ]
   },
   mounted() {
     this.home_id = JSON.parse(LocalStorageService.getItem("home_id"));
@@ -601,6 +711,13 @@ export default {
     this.initialize();
   },
   methods: {
+    obtenerFechaLocal() {
+    const hoy = new Date();
+    const year = hoy.getFullYear();
+    const month = String(hoy.getMonth() + 1).padStart(2, '0');
+    const day = String(hoy.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+    },
     formatIntuitiveDate(dateString) {
       if (!dateString) return "Sin fecha";
 
@@ -637,6 +754,7 @@ export default {
               weekday: "short",
               day: "numeric",
               month: "short",
+              year: "numeric"
             })
             .replace(/\./g, "");
       }
@@ -647,11 +765,7 @@ export default {
         Meta: "purple",
         // Agrega más tipos si es necesario
       };
-      return colorMap[type] || "grey-lighten-1"; // Color por defecto
-    },
-    formatDate(dateString) {
-      const [year, month, day] = dateString.split("-");
-      return `${day}-${month}-${year}`;
+      return colorMap[type] || "deep-orange"; // Color por defecto
     },
     // Filtra las personas para mostrar en cada card según el rol
     updateStartDate(val) {
@@ -664,8 +778,35 @@ export default {
       this.editedItem.endDate = this.endDateFormatted;
       this.endDateMenu = false;
     },
+    
+    updateDate(value) {
+    // value viene como objeto Date desde el date-picker
+    // Convertimos a formato YYYY-MM-DD
+    const year = value.getFullYear();
+    const month = String(value.getMonth() + 1).padStart(2, '0');
+    const day = String(value.getDate()).padStart(2, '0');
+    this.dateInput = `${year}-${month}-${day}`;
+    this.editedItem.startDate = this.dateInput;
+    this.dateMenu = false;
+  },
+  parseDateString(dateString) {
+  if (!dateString) {
+    const today = new Date();
+    const year = today.getFullYear();
+    const month = String(today.getMonth() + 1).padStart(2, '0');
+    const day = String(today.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`; // ← ¡Devuelve STRING ISO!
+  }
+
+  const [year, month, day] = dateString.split('-');
+  // Validación básica (opcional pero recomendada)
+  if (!year || !month || !day) return '';
+  return `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`;
+},
     async showAdd() {
       this.editedIndex = -1;
+      this.dateInput = this.obtenerFechaLocal();
+      this.editedItem.startDate = this.dateInput;
       this.data = {},
       this.data.type = "Personal";
             try {
@@ -680,6 +821,12 @@ export default {
                     this.backgroundTypes = result.data?.types || [];
                     this.status = result.data?.status || [];
                     this.severity = result.data?.severity || [];
+
+                     const normalizeText = (text) =>
+                      text.toLowerCase().replace(/á/g, 'a').replace(/é/g, 'e').replace(/í/g, 'i').replace(/ó/g, 'o').replace(/ú/g, 'u');
+
+                    this.editedItem.status= this.status.find(s => normalizeText(s.name) === 'activo')?.id || null;
+                      this.editedItem.severity= this.severity.find(s => normalizeText(s.name) === 'leve')?.id || null;
                 } else {
                     // Si no hay datos, asignamos un array vacío
                     this.backgroundTypes = [];
@@ -706,12 +853,14 @@ export default {
     async initialize() {
       this.data = {};
       this.data.home_id = this.home_id;
+      this.data.type = 'Antecedente';
+      this.data.person_id = this.selectedPerson.id;
       try {
         this.loading = true;
         const result = await handleRequest({
           endpoint: "get-background-person",
           method: "POST",
-          //data: this.data,
+          data: this.data,
         });
 
         if (result.success) {
@@ -755,6 +904,7 @@ export default {
           "endDate",
           "status",
           "severity",
+          "typeDetail"
         ];
 
         let updatedFields = Object.keys(this.editedItem)
@@ -769,6 +919,8 @@ export default {
           }, {});
 
         if (Object.keys(updatedFields).length > 0) {
+          updatedFields.typeDetail = 'Antecedente';
+          updatedFields.person_id = this.selectedPerson.id;
           try {
             const result = await handleRequest({
               endpoint: "personal-background",
@@ -796,6 +948,7 @@ export default {
           "endDate",
           "status",
           "severity",
+          "typeDetail"
         ];
 
         let updatedFields = Object.keys(this.editedItem)
@@ -844,6 +997,8 @@ export default {
       // Asignar a originalItem y editedItem solo las personas seleccionadas
       this.originalItem = Object.assign({}, item);
       this.editedItem = Object.assign({}, item);
+      this.dateInput = item.startDate || null;
+      this.editedItem.startDate = item.startDate || null;
       this.data = {},
       this.data.type = "Personal";
             try {
@@ -934,85 +1089,6 @@ export default {
       this.sb_timeout = sb_timeout;
       this.snackbar = true;
     },
-    /*compactBackgroundData(background) {
-      return [
-        {
-          label: this.$t("personalBackground.fields.type"),
-          value: background.type || "N/R",
-          fullLabel: this.$t("personalBackground.fields.type"),
-          fullValue: background.type || this.$t("personalBackground.notRecorded"),
-          icon: "mdi-clipboard-pulse",
-          color: "indigo-darken-2",
-        },
-        {
-          label: this.$t("personalBackground.fields.status"),
-          value: background.status || "N/R",
-          fullLabel: this.$t("personalBackground.fields.status"),
-          fullValue: background.status || this.$t("personalBackground.notRecorded"),
-          icon: "mdi-heart-pulse",
-          color: "red-darken-2",
-        },
-        {
-          label: this.$t("personalBackground.fields.severity"),
-          value: background.severity || "N/R",
-          fullLabel: this.$t("personalBackground.fields.severity"),
-          fullValue: background.severity || this.$t("personalBackground.notRecorded"),
-          icon: "mdi-alert-circle",
-          color: "orange-darken-2",
-        },
-      ].filter((item) => item.value !== "N/R");
-    },*/
-    compactDetails(background) {
-      return [
-        {
-          label: this.$t("personalBackground.fields.description"),
-          text: this.truncateText(background.description) || "-",
-          fullLabel: this.$t("personalBackground.fields.description"),
-          fullText: background.description || this.$t("personalBackground.notRecorded"),
-          icon: "mdi-text-box-search",
-          color: "blue-darken-1",
-        },
-        {
-          label: this.$t("personalBackground.fields.details"),
-          text: this.truncateText(background.details) || "-",
-          fullLabel: this.$t("personalBackground.fields.details"),
-          fullText: background.details || this.$t("personalBackground.notRecorded"),
-          icon: "mdi-information",
-          color: "teal-darken-1",
-        },
-      ].filter((detail) => detail.text !== "-");
-    },
-    truncateText(text, length = 15) {
-      if (!text) return null;
-      return text.length > length ? text.substring(0, length) + "..." : text;
-    },
-    calculateBMI() {
-      if (this.editedItem.weight && this.editedItem.height) {
-        const weight = parseFloat(this.editedItem.weight);
-        const height = parseFloat(this.editedItem.height);
-        this.editedItem.bmi = (weight / (height * height)).toFixed(2);
-      } else {
-        this.editedItem.bmi = "";
-      }
-    },
-
-    getBMICategory(bmi) {
-      if (!bmi) return "";
-      const num = parseFloat(bmi);
-      if (num < 18.5) return "Bajo peso";
-      if (num < 25) return "Normal";
-      if (num < 30) return "Sobrepeso";
-      return "Obesidad";
-    },
-
-    getBMIColor(bmi) {
-      if (!bmi) return "grey";
-      const num = parseFloat(bmi);
-      if (num < 18.5) return "blue";
-      if (num < 25) return "green";
-      if (num < 30) return "orange";
-      return "red";
-    },
   },
 };
 </script>
@@ -1061,14 +1137,6 @@ export default {
   color: rgba(0, 0, 0, 0.6); /* gris medio */
   margin-top: 8px;
 }
-.smooth-hover {
-  transition: all 0.5s ease;
-}
-
-.smooth-hover:hover {
-  transform: translateY(-1px);
-  box-shadow: 0 3px 6px rgba(0, 0, 0, 0.12) !important;
-}
 .fullscreen-dialog {
   height: 100vh !important;
   max-height: 100vh !important;
@@ -1076,184 +1144,28 @@ export default {
   margin: 0 !important;
   padding: 0 !important;
 }
-.avatar-border {
-  border: 2px solid #000;
-  /* Aquí se define el borde */
-}
-
-.avatar-row {
-  display: flex;
-  flex-wrap: nowrap;
-  justify-content: start;
-}
-
-.avatar-col {
-  margin-right: -10px;
-  /* Reduce the space between avatars */
-}
-
-.avatar-item {
-  margin-right: -5px;
-  /* Cambia el color del borde según desees */
-  border-radius: 50%;
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
-  /* Para que siga siendo redondo */
-  box-sizing: border-box;
-  /* Asegura que el borde no afecte el tamaño del avatar */
-  /* Optional: reduce the space even further between avatars */
-  /* Optional: reduce the space even further between avatars */
-}
-
 .text-secondary {
   color: #6c757d;
   /* Color gris claro */
   font-size: 0.85rem;
   /* Tamaño de texto más pequeño */
 }
-
-.custom-tooltip {
-  background-color: #f5f5f5 !important;
-  /* Fondo claro */
-  color: #e5e5e5 !important;
-  /* Texto oscuro */
-  border-radius: 8px;
-  /* Bordes redondeados */
-  padding: 8px;
-  /* Espaciado interno */
-  box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
-  /* Sombra suave */
+.v-data-table > .v-data-table__wrapper > table > thead,
+.v-data-table > .v-data-table__wrapper > .v-table > table > thead,
+.v-data-table__content > table > thead,
+.v-data-table__content > thead,
+table.v-table > thead,
+.v-table > .v-table__wrapper > table > thead {
+  display: none !important;
+  visibility: hidden !important;
+  height: 0 !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  border: none !important;
+  border-spacing: 0 !important;
+  border-collapse: collapse !important;
 }
-
-.avatar-item.hover-expand:hover {
-  transform: scale(1.5);
-  box-shadow: 0 0 0 rgba(0, 0, 0, 0.3);
-}
-
-.selected-tab {
-  background-color: #03626c;
-  /* Fondo del tab seleccionado */
-  color: white;
-  /* Texto blanco */
-  border-radius: 4px;
-  /* Esquinas redondeadas, opcional */
-}
-
-.people-scroll-container {
-  width: 100%;
-  overflow-x: auto;
-  padding-bottom: 12px;
-  /* Más espacio para el scroll */
-  scrollbar-width: thin;
-  /* Para navegadores modernos */
-}
-
-/* Estilo para la barra de scroll en WebKit */
-.people-scroll-container::-webkit-scrollbar {
-  height: 6px;
-}
-
-.people-scroll-container::-webkit-scrollbar-thumb {
-  background-color: rgba(0, 0, 0, 0.2);
-  border-radius: 3px;
-}
-
-.people-scroll-wrapper {
-  display: inline-flex;
-  gap: 12px;
-  /* Más espacio entre cards */
-  padding: 4px 8px;
-  /* Padding para que no peguen a los bordes */
-}
-
-.person-card {
-  cursor: pointer;
-  transition: all 0.3s ease;
-  width: 220px;
-  /* Ancho fijo */
-  flex-shrink: 0;
-  /* Evita que se reduzcan */
-  border-radius: 8px !important;
-  /* Bordes más redondeados */
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05) !important;
-  /* Sombra sutil por defecto */
-}
-
-.person-card:hover {
-  transform: translateY(-3px);
-  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.1) !important;
-}
-
-.selected-person {
-  border: 2px solid #03626c;
-  background-color: rgba(3, 98, 108, 0.08) !important;
-  /* Color más suave */
-}
-
-.current-user {
-  border-left: 3px solid #1976d2;
-  /* Indicador lateral para el usuario actual */
-}
-
-.person-info {
-  max-width: calc(220px - 60px);
-  /* 220px (card) - 40px (avatar) - 20px (márgenes) */
-  overflow: hidden;
-}
-
-.text-truncate {
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  display: block;
-}
-
-/* Mejor contraste para los subtítulos */
-.v-card-subtitle {
-  color: rgba(0, 0, 0, 0.7) !important;
-}
-.v-select input {
-  color: #7e57c2;
-  /* purple text input */
-}
-
-/* Estilo base para la tarjeta */
-.v-card {
-  transition: all 0.2s ease;
-  position: relative;
-  overflow: hidden;
-}
-
-/* Efecto hover más pronunciado */
-.v-card:hover {
-  transform: translateY(-3px);
-  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.1) !important;
-}
-
-/* Estilo para el tiempo de la reunión */
-.meeting-time {
-  min-width: 60px;
-  padding-top: 2px; /* Alineación vertical */
-}
-
-/* Estilo para la sección de próximas tareas */
-.next-meetings {
-  background-color: rgba(245, 245, 245, 0.7);
-  border-radius: 8px;
-  padding: 8px;
-  transition: background-color 0.3s ease;
-}
-
-.next-meetings:hover {
-  background-color: rgba(245, 245, 245, 1);
-}
-
-/* Estilo para los avatares de participantes */
-.v-avatar {
-  transition: transform 0.2s ease;
-}
-
-.v-avatar:hover {
-  transform: scale(1.1);
-  z-index: 2;
+.hidden-header .v-data-table__content > table > thead {
+  display: none !important;
 }
 </style>

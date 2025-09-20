@@ -126,14 +126,11 @@
                   prepend-icon="mdi-label-outline" variant="underlined" :rules="selectRules" density="compact">
 
                   <template v-slot:item="{ props, item }">
+                  {{ console.log('Icono:', item.raw.icon) }}
                     <v-list-item v-bind="props">
-                      <!-- Mostrar el ícono antes del nombre -->
-                      <v-list-item-icon>
-                        <v-icon>{{ item.icon }}</v-icon>
-                      </v-list-item-icon>
-                      <v-list-item-content>
-                        <v-list-item-title>{{ item.name }}</v-list-item-title>
-                      </v-list-item-content>
+                      <template v-slot:prepend>
+                        <v-icon>{{ item.raw.icon }}</v-icon>
+                      </template>
                     </v-list-item>
                   </template>
                 </v-select>

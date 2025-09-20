@@ -19,201 +19,146 @@
       </v-col>
     </v-row>
   </v-snackbar>
-
-  <v-card class="pa-0" elevation="1" rounded="lg" style="
-    position: relative;
-    overflow: visible;
-    z-index: auto;
-  ">
+  <v-container class="pa-4">
+  <v-card class="pa-4" elevation="4" rounded="lg">
       <!-- Encabezado con foto y datos -->
       <v-card-text>
-          <v-card-actions class="bg-grey-lighten-5 tools-bar">
+    <!-- Encabezado -->
+    <v-row justify="space-between" align="center" class="mb-6">
+      <h2 class="text-body-2 font-weight-bold">{{ $t('viewTitles.treatments') }}</h2>
+      <v-btn
+        icon
+        color="deep-purple-accent-4"
+        variant="flat"
+        class="elevation-3"
+        @click="showAdd"
+      >
+        <v-icon>mdi-plus</v-icon>
+      </v-btn>
+    </v-row>
+    <template v-if="treatments.length > 0">
+      <!-- Tarjetas de tratamientos -->
+      <v-card
+        v-for="(treatment, index) in treatments"
+        :key="index"
+        class="mb-3 rounded-lg pa-2"
+        elevation="2"
+      >
+        <v-row no-gutters class="ma-0">
+          <!-- Barra lateral con fecha -->
+          <v-col cols="1" class="d-flex align-center justify-center">
+            <div class="icono-concavo d-flex flex-column justify-center justify-start"
+              :class="`bg-${getTypeColor(treatment.typeName)}`">
+              <div class="date-display">
+                {{ formatIntuitiveDate(treatment.startDate) }}
+              </div>
+            </div>
+          </v-col>
+           <v-col cols="4" class="d-flex align-center pe-4 gap-2">
+           <v-row align="center" class="gap-3">
+              <div>
+                <div class="text-body-2 font-weight-bold">
+                  <span>
+                    {{ treatment.medication }}
+                  </span>
+                  <v-tooltip activator="parent" location="bottom" max-width="350px">
+                    <span style="white-space: normal; word-break: break-word">{{ $t('treatment.fields.medication') }}: {{
+                      treatment.medication }}</span>
+                  </v-tooltip>
+                </div>
+                <div class="text-caption d-flex align-center text-grey-darken-1">
+                  <span>
+                    {{ treatment.instructions }}
+                  </span>
+                  <v-tooltip activator="parent" location="bottom" max-width="350px">
+                    <span style="white-space: normal; word-break: break-word">{{ $t('treatment.fields.instructions') }}: {{ treatment.instructions }}</span>
+                  </v-tooltip>
+                </div>
+              </div>
+              </v-row>
+              </v-col>
+              <v-col cols="2" class="d-flex align-center pe-4 gap-2">
+                <div class="text-body-2">
+                  <span>
+                    {{ treatment.typeName}}
+                  </span>
+                  <v-tooltip activator="parent" location="bottom" max-width="350px">
+                    <span style="white-space: normal; word-break: break-word">{{ $t("treatment.fields.frequency") }}:
+                      {{ treatment.typeName}}</span>
+                  </v-tooltip>
+                </div>
+              </v-col>
+              <v-col cols="2" class="d-flex align-center pe-4 gap-2">
+                <div class="text-body-2">
+                  <span>
+                    {{ treatment.purpose}}
+                  </span>
+                  <v-tooltip activator="parent" location="bottom" max-width="350px">
+                    <span style="white-space: normal; word-break: break-word">{{ $t("treatment.fields.purpose") }}:
+                      {{ treatment.purpose}}</span>
+                  </v-tooltip>
+                </div>
+              </v-col>
+               <v-col cols="1" class="d-flex align-center pe-4 gap-2">
+                <div class="text-body-2">
+                  <span>
+                    {{ treatment.duration}}
+                  </span>
+                  <v-tooltip activator="parent" location="bottom" max-width="350px">
+                    <span style="white-space: normal; word-break: break-word">{{ $t("treatment.fields.duration") }}:
+                      {{ treatment.duration}}</span>
+                  </v-tooltip>
+                </div>
+              </v-col>
+              <v-col cols="1" class="d-flex align-center pe-4 gap-2">
+                <div class="text-body-2">
+                  <span>
+                    {{ treatment.dosage}}
+                  </span>
+                  <v-tooltip activator="parent" location="bottom" max-width="350px">
+                    <span style="white-space: normal; word-break: break-word">{{ $t("treatment.fields.dosage") }}:
+                      {{ treatment.dosage}}</span>
+                  </v-tooltip>
+                </div>
+              </v-col>
+
+          <!-- Acciones -->
+         <v-col cols="1" class="d-flex align-center ml-auto pe-4">
+                <div class="d-flex">
             <v-btn
-              v-for="tool in tools"
-              :key="tool.name"
-              @click="tool.action()"
-              size="small"
-              color="primary"
+              icon
               variant="text"
-              prepend-icon="mdi-plus"
-              class="text-capitalize"
+              color="green-darken-2"
+              size="small"
+              @click="editItem(treatment)"
             >
-              {{ tool.name }}
+              <v-icon>mdi-pencil</v-icon>
             </v-btn>
-          </v-card-actions>
-    <v-card-title class="d-flex flex-wrap align-center pb-2">
-                <!-- Título -->
-
-                <!-- Spacer (solo visible en md+) -->
-                <v-spacer class="d-none d-md-block"></v-spacer>
-                <!-- Campo de búsqueda global -->
-                <div class="flex-grow-1" style="max-width: 300px">
-                    <v-text-field v-model="search" density="compact" :label="$t('dataTable.search')"
-                        prepend-inner-icon="mdi-magnify" variant="solo-filled" hide-details single-line
-                        flat></v-text-field>
-                </div>
-            </v-card-title>
-          <v-data-table 
-          :headers="headers" 
-          :items="treatments" 
-          :search="search"
-          :items-per-page-text="$t('dataTable.itemsPerPageText')"
-          :no-data-text="$t('dataTable.noDataText')"
-          :loading-text="$t('dataTable.loadingText')"
-          :loading="loading"
-          :hide-default-header="true"
-          style="
-            max-height: 68vh;
-            overflow-y: auto;
-            background: transparent;
-            border: none !important;
-            outline: none !important;
-            box-shadow: none !important;
-            padding: 0;
-          "
-        >
-          <template v-slot:top>
-            <v-card
-            :elevation="1"
-            :hover="false"
-              flat
-              class="mb-2 mx-1 rounded-lg"
-              style="border: 1px solid #ECEFF1; height: 40px; min-height: 40px; display: flex; align-items: center; transition: none !important"
+            <v-btn
+              icon
+              variant="text"
+              color="red-darken-2"
+              size="small"
+              @click="deleteItem(treatment)"
             >
-              <v-card-text
-                class="d-flex pa-2"
-                style="width: 100%; min-width: 0; height: 100%; padding: 0 16px !important; display: flex; align-items: center"
-              >
-                <!-- Fecha / Periodo (10%) -->
-                <div style="width: 7%; min-width: 0" class="text-left">
-                  {{ $t('treatment.fields.startDate') }}
-                </div>
-
-                <!-- Categoría / Descripción (40%) -->
-                <div style="width: 20%; min-width: 0" class="text-left">
-                  {{ $t('treatment.fields.medication') }}
-                </div>
-
-                <!-- Monto (10%) -->
-                <div style="width: 24%; min-width: 0" class="text-left">
-                  {{ $t('treatment.fields.purpose') }}
-                </div>
-
-                <!-- Usado (15%) -->
-                <div style="width: 24%; min-width: 0" class="text-center">
-                  {{ $t('treatment.fields.instructions') }}
-                </div>
-
-                <!-- Tipo (10%) -->
-                <div style="width: 10%; min-width: 0" class="text-left">
-                  {{ $t('treatment.fields.duration') }}
-                </div>
-
-                <!-- Moneda (5%) -->
-                <div style="width: 5%; min-width: 0" class="text-left">
-                  {{ $t('treatment.fields.dosage') }}
-                </div>
-
-                <!-- Acciones (10%) -->
-                <div style="width: 10%; min-width: 0" class="d-flex justify-end">
-                  {{ $t('settings.actions') }}
-                </div>
-              </v-card-text>
-            </v-card>
-          </template>
-          <template v-slot:item="slotProps">
-            <tr>
-              <td colspan="100%" style="padding: 0; border: none">
-                <v-card class="mb-2 mx-1 rounded-lg" elevation="1" density="comfortable" flat>
-                  <v-card-text class="d-flex align-center pa-2" style="width: 100%; min-width: 0">
-                    <div class="d-flex align-center" style="width: 7%; min-width: 0">
-                    <v-avatar class="mr-1 icono-concavo" :class="`bg-${getTypeColor(slotProps.item.typeName)}`" :style="{
-                            'min-height': '48px',
-                            'min-width': '48px',
-                            'border-radius': '8px',
-                            'font-size': '0.90em'
-                          }">
-                     <div class="text-body-3 font-weight-medium">
-                          {{ formatIntuitiveDate(slotProps.item.startDate) }}
-                        </div>
-                    </v-avatar>
-                  </div>
-
-                    <!-- Categoría + Descripción - 40% -->
-                    <div style="width: 20%; min-width: 0" class="d-flex flex-column">
-                      <div class="text-body-2 text-truncate">
-                        {{ slotProps.item.medication }}
-                        </div>
-                      <div class="text-caption text-grey-darken-1 text-truncate">
-                        {{ slotProps.item.typeName }}
-                              </div>
-                    </div>
-
-                    <!-- Monto - 10% -->
-                    <div style="width: 24%; min-width: 0" class="text-body-2 text-truncate">
-                      <span>{{ slotProps.item.purpose }}</span>
-                      <v-tooltip activator="parent" location="bottom" max-width="350px">
-                    <span style="white-space: normal; word-break: break-word"> {{ slotProps.item.purpose }}</span>
-                    </v-tooltip>
-                    </div>
-
-                    <!-- Usado - 15% -->
-                    <div style="width: 24%; min-width: 0; text-align: center;" class="text-body-2 text-truncate">
-                      <span>{{ slotProps.item.instructions }}</span>
-                      <v-tooltip activator="parent" location="bottom" max-width="350px">
-                    <span style="white-space: normal; word-break: break-word"> {{ slotProps.item.instructions }}</span>
-                    </v-tooltip>
-                    </div>
-
-                    <!-- Moneda (con ícono) - 5% -->
-                    <div style="width: 10%; min-width: 0" class="text-body-2 text-truncate">
-                    <span> {{ slotProps.item.duration }} </span>
-                     <v-tooltip activator="parent" location="bottom" max-width="350px">
-                    <span style="white-space: normal; word-break: break-word"> {{ slotProps.item.duration }}</span>
-                    </v-tooltip>
-                    </div>
-
-                    <div style="width: 5%; min-width: 0" class="text-body-2 text-truncate">
-                    <span>{{ slotProps.item.dosage }}</span>
-                     <v-tooltip activator="parent" location="bottom" max-width="350px">
-                    <span style="white-space: normal; word-break: break-word"> {{ slotProps.item.dosage }}</span>
-                    </v-tooltip>
-                    </div>
-
-                    <!-- Acciones - 10% -->
-                    <div class="d-flex gap-1" style="width: 10%; justify-content: flex-end; flex-wrap: nowrap">
-                      <v-btn 
-                        size="35" 
-                        icon 
-                        variant="text" 
-                        color="green-darken-2" 
-                        @click="editItem(slotProps.item)"
-                        class="flex-shrink-0 mr-1" 
-                        title="Editar Presupuesto">
-                        <v-icon size="20">mdi-pencil</v-icon>
-                      </v-btn>
-
-                      <v-btn 
-                        size="35" 
-                        icon 
-                        variant="text" 
-                        color="red-darken-2" 
-                        @click="deleteItem(slotProps.item)"
-                        class="flex-shrink-0" 
-                        title="Eliminar Presupuesto">
-                        <v-icon size="20">mdi-delete</v-icon>
-                      </v-btn>
-                    </div>
-
-                  </v-card-text>
-                </v-card>
-              </td>
-            </tr>
-          </template>
-        </v-data-table>
+              <v-icon>mdi-delete</v-icon>
+            </v-btn>
+            </div>
+          </v-col>
+        </v-row>
+      </v-card>
+    </template>
+    <template v-else>
+      <v-col cols="12" class="text-center py-8 pa-0">
+        <v-icon size="64" color="grey-lighten-1">mdi-pill-off</v-icon>
+        <div class="text-h6 text-grey mt-4">
+          {{ $t('treatment.noTreatments') }}
+        </div>
+      </v-col>
+    </template>
     </v-card-text>
     </v-card>
-  
+  </v-container>
    <v-dialog
     v-model="dialog"
     fullscreen
@@ -321,13 +266,13 @@
 
                 <v-col cols="12" sm="6">
                      <v-text-field
-                        v-model="editedItem.duration"
-                        :label="$t('treatment.fields.duration')"
-                        variant="underlined"
-                        :rules="durationRules"
-                        hint="Ej: 5 días, 2 semanas, 1 mes"
-                        persistent-hint
-                      />
+    v-model="editedItem.duration"
+    :label="$t('treatment.fields.duration')"
+    variant="underlined"
+    :rules="durationRules"
+    hint="Ej: 5 días, 2 semanas, 1 mes"
+    persistent-hint
+  />
                 </v-col>
               </v-row>
 
@@ -357,69 +302,70 @@
               <!-- Step 3: Fechas -->
               <v-row dense v-if="step === 2">
                 <v-col cols="12" md="6">
-                  <v-menu
-                    v-model="startDateMenu"
-                    :close-on-content-click="false"
-                    :nudge-right="40"
-                    transition="scale-transition"
-                    offset-y
-                    min-width="290px"
-                  >
-                    <template v-slot:activator="{ props }">
-                      <v-text-field
-                        v-bind="props"
-                        :model-value="startDateInput"
-                        variant="underlined"
-                        :label="$t('treatment.fields.startDate')"
-                        :rules="dateRules"
-                        readonly
-                        clearable
-                      ></v-text-field>
-                    </template>
-                    <v-locale-provider>
-                      <v-date-picker
-                        color="#03626C"
-                        :model-value="startDateInput"
-                        @update:model-value="updateStartDate"
-                        format="yyyy-MM-dd"
-                        :max="editedItem.endDate ? new Date(editedItem.endDate) : null"
-                      ></v-date-picker>
-                    </v-locale-provider>
-                  </v-menu>
-                </v-col>
+  <v-menu
+    v-model="startDateMenu"
+    :close-on-content-click="false"
+    :nudge-right="40"
+    transition="scale-transition"
+    offset-y
+    min-width="290px"
+  >
+    <template v-slot:activator="{ props }">
+      <v-text-field
+        v-bind="props"
+        :model-value="startDateFormatted"
+        variant="underlined"
+        :label="$t('treatment.fields.startDate')"
+        :rules="dateRules"
+        readonly
+        clearable
+        @click:clear="editedItem.startDate = ''"
+      ></v-text-field>
+    </template>
+    <v-locale-provider>
+      <v-date-picker
+        color="#03626C"
+        :model-value="editedItem.startDate ? new Date(editedItem.startDate) : null"
+        @update:model-value="updateStartDate"
+        format="yyyy-MM-dd"
+        :max="editedItem.endDate ? new Date(editedItem.endDate) : null"
+      ></v-date-picker>
+    </v-locale-provider>
+  </v-menu>
+</v-col>
 
-                <v-col cols="12" md="6">
-                  <v-menu
-                    v-model="endDateMenu"
-                    :close-on-content-click="false"
-                    :nudge-right="40"
-                    transition="scale-transition"
-                    offset-y
-                    min-width="290px"
-                  >
-                    <template v-slot:activator="{ props }">
-                      <v-text-field
-                        v-bind="props"
-                        :model-value="endDateFormatted"
-                        variant="underlined"
-                        :label="$t('treatment.fields.endDate')"
-                        :rules="dateRules"
-                        readonly
-                        clearable
-                        @click:clear="editedItem.endDate = ''"
-                      ></v-text-field>
-                    </template>
-                    <v-locale-provider>
-                      <v-date-picker
-                        color="#03626C"
-                        :model-value="editedItem.endDate ? new Date(editedItem.endDate) : null"
-                        @update:model-value="updateEndDate"
-                        format="yyyy-MM-dd"
-                        :min="editedItem.startDate ? new Date(editedItem.startDate) : null"
-                      ></v-date-picker>
-                    </v-locale-provider>
-                  </v-menu>
-                </v-col>
+<v-col cols="12" md="6">
+  <v-menu
+    v-model="endDateMenu"
+    :close-on-content-click="false"
+    :nudge-right="40"
+    transition="scale-transition"
+    offset-y
+    min-width="290px"
+  >
+    <template v-slot:activator="{ props }">
+      <v-text-field
+        v-bind="props"
+        :model-value="endDateFormatted"
+        variant="underlined"
+        :label="$t('treatment.fields.endDate')"
+        :rules="dateRules"
+        readonly
+        clearable
+        @click:clear="editedItem.endDate = ''"
+      ></v-text-field>
+    </template>
+    <v-locale-provider>
+      <v-date-picker
+        color="#03626C"
+        :model-value="editedItem.endDate ? new Date(editedItem.endDate) : null"
+        @update:model-value="updateEndDate"
+        format="yyyy-MM-dd"
+        :min="editedItem.startDate ? new Date(editedItem.startDate) : null"
+      ></v-date-picker>
+    </v-locale-provider>
+  </v-menu>
+</v-col>
               </v-row>
 
               <!-- Navegación -->
@@ -487,12 +433,6 @@ import { shallowRef } from 'vue';
 
 
 export default {
-  props: {
-    selectedPerson: {
-      type: Object,
-      required: true
-    },
-  },
   data: () => ({
     selected: shallowRef([2]),
     selected2: null,
@@ -583,19 +523,6 @@ export default {
     startDateInput: null,
     endDateInput: null,
     editedIndex: -1,
-    
-    headers: [
-      { title: 'Medicación', key: 'medication' },
-      { title: 'Dosis', key: 'dosage' },
-      { title: 'Frecuencia', key: 'frquency' },
-      { title: 'Duración', key: 'duration' },
-      { title: 'Instrucciones', key: 'instructions' },
-      { title: 'Propósito', key: 'purpose' },
-      { title: 'Fecha de Inicio', key: 'startDate' },
-      { title: 'Fecha de Finalización', key: 'endDate' },
-      { title: 'Tipo', key: 'typeName' },
-      { title: 'Acciones', key: 'actions' },
-    ],
     search: "",
     nameRules: [
       (v) => !!v || "El campo es requerido",
@@ -705,35 +632,23 @@ export default {
     immediate: true
   }
 },
-created() {
-    this.tools = [
-      {
-        name: this.$t("treatment.titles.new"),
-        action: () => this.showAdd()
-      }
-    ]
-  },
   mounted() {
     this.home_id = JSON.parse(LocalStorageService.getItem("home_id"));
     this.person_id = JSON.parse(LocalStorageService.getItem("person_id"));
     this.initialize();
   },
   methods: {
-    obtenerFechaLocal() {
-    const hoy = new Date();
-    const year = hoy.getFullYear();
-    const month = String(hoy.getMonth() + 1).padStart(2, '0');
-    const day = String(hoy.getDate()).padStart(2, '0');
-    return `${year}-${month}-${day}`;
-  },
     formatIntuitiveDate(dateString) {
       if (!dateString) return "Sin fecha";
+
       // 1. Parsear la fecha de entrada (formato YYYY-MM-DD)
       const [year, month, day] = dateString.split("-");
       const inputDate = new Date(year, month - 1, day); // Mes es 0-based
+
       // 2. Obtener fecha actual (sin horas/minutos/segundos)
       const today = new Date();
       today.setHours(0, 0, 0, 0);
+
       // 3. Normalizar ambas fechas a UTC para evitar problemas de zona horaria
       const inputUTC = Date.UTC(
         inputDate.getFullYear(),
@@ -741,8 +656,10 @@ created() {
         inputDate.getDate()
       );
       const todayUTC = Date.UTC(today.getFullYear(), today.getMonth(), today.getDate());
+
       // 4. Calcular diferencia en días
       const diffDays = Math.floor((inputUTC - todayUTC) / (1000 * 60 * 60 * 24));
+
       // 5. Determinar el texto a mostrar
       switch (diffDays) {
         case 0:
@@ -754,24 +671,20 @@ created() {
         default:
           return inputDate
             .toLocaleDateString("es-ES", {
-          weekday: "short",
-          day: "numeric",
-          month: "short",
-          year: "numeric", // <-- Añadido: muestra el año
-        })
-        .replace(/\./g, "");
+              weekday: "short",
+              day: "numeric",
+              month: "short",
+            })
+            .replace(/\./g, "");
       }
     },
     getTypeColor(type) {
-      console.log('type');
-      console.log(type);
-       if (!type) return "#607D8B";
       const colorMap = {
-        Personal: "#4CAF50",  // Azul intenso claro
-        Hogar: "#FB8C00",  // Naranja intenso
+        Tarea: "warning",
+        Meta: "purple",
         // Agrega más tipos si es necesario
       };
-      return colorMap[type] || "purple"; // Color por defecto
+      return colorMap[type] || "grey-lighten-1"; // Color por defecto
     },
     parseDateWithoutTimezone(dateString) {
     if (!dateString) return null;
@@ -842,21 +755,11 @@ created() {
     return `${day}-${month}-${year}`;
   },
     // Filtra las personas para mostrar en cada card según el rol
-   /*updateStartDate(val) {
+   updateStartDate(val) {
       this.startDateInput = val;
       this.editedItem.startDate = this.startDateFormatted;
       this.startDateMenu = false;
-    },*/
-    updateStartDate(value) {
-    // value viene como objeto Date desde el date-picker
-    // Convertimos a formato YYYY-MM-DD
-    const year = value.getFullYear();
-    const month = String(value.getMonth() + 1).padStart(2, '0');
-    const day = String(value.getDate()).padStart(2, '0');
-    this.startDateInput = `${year}-${month}-${day}`;
-    this.editedItem.startDate = this.startDateInput;
-    this.startDateMenu = false;
-  },
+    },
     updateEndDate(val) {
       this.endDateInput = val;
       this.editedItem.endDate = this.endDateFormatted;
@@ -864,8 +767,6 @@ created() {
     },
     async showAdd() {
       this.editedIndex = -1;
-      this.startDateInput = this.obtenerFechaLocal();
-      this.editedItem.startDate = this.startDateInput;
      this.data = {};
       this.data.type = 'Tratamiento';
       try {
@@ -900,13 +801,12 @@ created() {
     async initialize() {
       this.data = {};
       this.data.home_id = this.home_id;
-      this.data.person_id = this.selectedPerson.id;
       try {
         this.loading = true;
         const result = await handleRequest({
           endpoint: "treatments-person",
           method: "POST",
-          data: this.data,
+          //data: this.data,
         });
 
         if (result.success) {
@@ -963,7 +863,13 @@ created() {
           }, {});
 
         if (Object.keys(updatedFields).length > 0) {
-          updatedFields.person_id = this.selectedPerson.id;            
+          updatedFields.startDate = this.editedItem.startDate
+            ? this.editedItem.startDate
+            : `${new Date().getFullYear()}-${String(new Date().getMonth() + 1).padStart(
+              2,
+              "0"
+            )}-${String(new Date().getDate()).padStart(2, "0")}`;
+            
            try {
             const result = await handleRequest({
               endpoint: "treatment",
@@ -1246,13 +1152,14 @@ created() {
   },
 };
 </script>
-<style>
+<style scoped>
 .icono-concavo {
-  width: 45px;
-  height: 45px;
+  width: 50px;
+  height: 50px;
   display: flex;
   align-items: center;
   justify-content: center;
+  border-radius: 10px;
   color: white;
   /* Mantenemos solo el efecto cóncavo en el ícono 
   box-shadow: inset;*/
@@ -1358,6 +1265,77 @@ created() {
   box-shadow: 0 0 0 rgba(0, 0, 0, 0.3);
 }
 
+.selected-tab {
+  background-color: #03626c;
+  /* Fondo del tab seleccionado */
+  color: white;
+  /* Texto blanco */
+  border-radius: 4px;
+  /* Esquinas redondeadas, opcional */
+}
+
+.people-scroll-container {
+  width: 100%;
+  overflow-x: auto;
+  padding-bottom: 12px;
+  /* Más espacio para el scroll */
+  scrollbar-width: thin;
+  /* Para navegadores modernos */
+}
+
+/* Estilo para la barra de scroll en WebKit */
+.people-scroll-container::-webkit-scrollbar {
+  height: 6px;
+}
+
+.people-scroll-container::-webkit-scrollbar-thumb {
+  background-color: rgba(0, 0, 0, 0.2);
+  border-radius: 3px;
+}
+
+.people-scroll-wrapper {
+  display: inline-flex;
+  gap: 12px;
+  /* Más espacio entre cards */
+  padding: 4px 8px;
+  /* Padding para que no peguen a los bordes */
+}
+
+.person-card {
+  cursor: pointer;
+  transition: all 0.3s ease;
+  width: 220px;
+  /* Ancho fijo */
+  flex-shrink: 0;
+  /* Evita que se reduzcan */
+  border-radius: 8px !important;
+  /* Bordes más redondeados */
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05) !important;
+  /* Sombra sutil por defecto */
+}
+
+.person-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.1) !important;
+}
+
+.selected-person {
+  border: 2px solid #03626c;
+  background-color: rgba(3, 98, 108, 0.08) !important;
+  /* Color más suave */
+}
+
+.current-user {
+  border-left: 3px solid #1976d2;
+  /* Indicador lateral para el usuario actual */
+}
+
+.person-info {
+  max-width: calc(220px - 60px);
+  /* 220px (card) - 40px (avatar) - 20px (márgenes) */
+  overflow: hidden;
+}
+
 .text-truncate {
   white-space: nowrap;
   overflow: hidden;
@@ -1365,24 +1343,53 @@ created() {
   display: block;
 }
 
-.v-data-table > .v-data-table__wrapper > table > thead,
-.v-data-table > .v-data-table__wrapper > .v-table > table > thead,
-.v-data-table__content > table > thead,
-.v-data-table__content > thead,
-table.v-table > thead,
-.v-table > .v-table__wrapper > table > thead {
-  display: none !important;
-  visibility: hidden !important;
-  height: 0 !important;
-  margin: 0 !important;
-  padding: 0 !important;
-  border: none !important;
-  border-spacing: 0 !important;
-  border-collapse: collapse !important;
+/* Mejor contraste para los subtítulos */
+.v-card-subtitle {
+  color: rgba(0, 0, 0, 0.7) !important;
 }
-.hidden-header .v-data-table__content > table > thead {
-  display: none !important;
+.v-select input {
+  color: #7e57c2;
+  /* purple text input */
 }
 
+/* Estilo base para la tarjeta */
+.v-card {
+  transition: all 0.2s ease;
+  position: relative;
+  overflow: hidden;
+}
 
+/* Efecto hover más pronunciado */
+.v-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.1) !important;
+}
+
+/* Estilo para el tiempo de la reunión */
+.meeting-time {
+  min-width: 60px;
+  padding-top: 2px; /* Alineación vertical */
+}
+
+/* Estilo para la sección de próximas tareas */
+.next-meetings {
+  background-color: rgba(245, 245, 245, 0.7);
+  border-radius: 8px;
+  padding: 8px;
+  transition: background-color 0.3s ease;
+}
+
+.next-meetings:hover {
+  background-color: rgba(245, 245, 245, 1);
+}
+
+/* Estilo para los avatares de participantes */
+.v-avatar {
+  transition: transform 0.2s ease;
+}
+
+.v-avatar:hover {
+  transform: scale(1.1);
+  z-index: 2;
+}
 </style>

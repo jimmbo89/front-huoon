@@ -19,136 +19,225 @@
       </v-col>
     </v-row>
   </v-snackbar>
-  <v-container>
-    <v-card class="pa-4" elevation="4" rounded="lg">
+  <v-container class="pa-4">
+    <v-card elevation="2" rounded="lg" flat>
+      <!-- Encabezado con foto y datos -->
       <v-card-text>
-        <v-row justify="space-between" align="center" class="mb-6">
-        <v-col cols="12" class="d-flex justify-space-between align-center">
-          <h2 class="text-body-2 font-weight-bold">{{ $t("files.listing.title") }}</h2>
+        <v-col cols="12" sm="9" md="9" class="d-flex align-center">
+          <v-avatar size="48" class="me-3" color="grey-lighten-4" variant="tonal">
+            <v-icon color="indigo">mdi-folder-star-outline</v-icon>
+          </v-avatar>
+          <div>
+            <div class="text-body-2 font-weight-bold mb-1">
+              {{ $t("files.listing.title") }}
+            </div>
+            <div class="text-body-2 text-grey-darken-1"></div>
+          </div>
+        </v-col>
 
+        <v-divider />
+        <v-card-actions class="pa-3 bg-grey-lighten-5 tools-bar">
           <v-btn
-            icon
-            color="deep-purple-accent-4"
-            variant="flat"
-            class="elevation-3"
-            @click="showAdd"
-            :title="this.$t('files.listing.addButton')"
+            v-for="tool in tools"
+            :key="tool.name"
+            @click="tool.action()"
+            size="small"
+            color="primary"
+            variant="text"
+            prepend-icon="mdi-plus"
+            class="text-capitalize"
           >
-            <v-icon>mdi-plus</v-icon>
-          </v-btn></v-col>
-        </v-row>
-        <v-row justify="space-between" align="center" class="mb-6">
-          <v-col
-            cols="12"
-            class="pt-6"
-            style="max-height: 60vh; min-height: 40vh; overflow-y: auto"
-          >
-            <template v-if="files.length > 0">
-              <v-card
-                v-for="(file, index) in files"
-                :key="index"
-                class="mb-4 rounded-lg pa-2"
-                density="comfortable"
-                elevation="2"
-              >
-                <v-row>
-                  <v-col cols="1" class="d-flex justify-start">
-                    <div
-                      class="icono-concavo d-flex flex-column justify-center justify-start"
-                      :class="`bg-${getTypeColor(file.type)}`"
-                    >
-                      <div class="date-display">
-                        {{ formatIntuitiveDate(file.date) }}
-                      </div>
-                    </div>
-                  </v-col>
-                  <v-col cols="7" class="d-flex align-center justify-start">
-                    <v-row align="center" class="gap-3">
-                      <div>
-                        <div class="font-weight-bold text-body-2">
-                          {{ file.name }}
-                        </div>
-                        <div
-                          class="text-body-2 d-flex align-center text-grey-darken-1 text-truncate"
-                        >
-                          {{ file.description }}
-                          <v-tooltip
-                            activator="parent"
-                            location="bottom"
-                            max-width="350px"
-                          >
-                            <span style="white-space: normal; word-break: break-word">
-                              {{ $t("files.fields.description") }}: {{ file.description }}
-                            </span>
-                          </v-tooltip>
-                        </div>
-                      </div>
-                    </v-row>
-                  </v-col>
-                  <v-col cols="2" class="d-flex align-center justify-start">
-                    <div class="d-flex align-center">
-                      <v-avatar color="#03626C" size="32" class="mr-2">
-                        <v-icon
-                          :icon="file.personal ? 'mdi-account' : 'mdi-home'"
-                          color="white"
-                        ></v-icon>
-                      </v-avatar>
-                      <span>{{ file.personal ? "Personal" : "Hogar" }}</span>
-                      <v-tooltip activator="parent" location="bottom" max-width="350px">
-                        <span style="white-space: normal; word-break: break-word">
-                          {{ $t("files.fields.type") }}:
-                          {{ file.personal ? "Personal" : "Hogar" }}
-                        </span>
-                      </v-tooltip>
-                    </div>
-                  </v-col>
+            {{ tool.name }}
+          </v-btn>
+        </v-card-actions>
+        <v-card-title class="d-flex flex-wrap align-center gap-4 pb-0">
+      <!-- Spacer (solo visible en md+) -->
+      <v-spacer class="d-none d-md-block"></v-spacer>
+      <!-- Campo de búsqueda global -->
+      <div class="flex-grow-1" style="max-width: 300px">
+        <v-text-field
+          v-model="search"
+          density="compact"
+          :label="$t('dataTable.search')"
+          prepend-inner-icon="mdi-magnify"
+          variant="solo-filled"
+          hide-details
+          single-line
+          flat
+          clearable
+        ></v-text-field>
+      </div>
+    </v-card-title>
+    <v-data-table
+    :headers="headers" 
+    :items="files"
+    :search="search"
+    :items-per-page-text="$t('dataTable.itemsPerPageText')"
+    :no-data-text="$t('dataTable.noDataText')"
+    :loading-text="$t('dataTable.loadingText')"
+    :loading="loading"
+    :hide-default-header="true"
+    class="mt-1"
+    style="
+      max-height: 68vh;
+      overflow-y: auto;
+      background: transparent;
+      border: none !important;
+      outline: none !important;
+      box-shadow: none !important;
+      padding: 0;
+    "
+  >
+    <!-- Header personalizado (simulado) -->
+    <template v-slot:top>
+      <v-card
+        :elevation="1"
+        :hover="false"
+        flat
+        class="mb-2 mx-1 rounded-lg"
+        style="
+          border: 1px solid #eceff1;
+          height: 40px;
+          min-height: 40px;
+          display: flex;
+          align-items: center;
+          transition: none !important;
+        "
+      >
+        <v-card-text
+          class="d-flex pa-2"
+          style="
+            width: 100%;
+            min-width: 0;
+            height: 100%;
+            padding: 0 16px !important;
+            display: flex;
+            align-items: center;
+          "
+        >
+          <div style="width: 7%; min-width: 0" class="text-left">
+            {{ $t("files.fields.date") }}
+          </div>
+          <div style="width: 53%; min-width: 0" class="text-left">
+            {{ $t("files.fields.name") }} / {{ $t("files.fields.description") }}
+          </div>
+          <div style="width: 20%; min-width: 0" class="text-left">
+            {{ $t("files.fields.type") }}
+          </div>
+          <div style="width: 13%; min-width: 0" class="text-center">
+            {{ $t("files.fields.file") }}
+          </div>
+          <div style="width: 7%; min-width: 0" class="d-flex justify-end">
+            {{ $t("settings.actions") }}
+          </div>
+        </v-card-text>
+      </v-card>
+    </template>
 
-                  <v-col cols="1" class="d-flex align-center justify-start text-truncate">
-                    <v-btn
-                      density="comfortable"
-                      :icon="getFileIcon(file)"
-                      :color="getFileColor(file)"
-                      :title="getTooltip(file)"
-                      variant="tonal"
-                      elevation="1"
-                      class="mr-1 mt-1 mb-1"
-                      @click="handleFileClick(file)"
-                    ></v-btn>
-                  </v-col>
-                  <v-col
-                    cols="1"
-                    class="d-flex align-center ml-auto pe-4"
-                    style="margin-left: auto !important"
-                  >
-                    <v-btn
-                      icon
-                      variant="text"
-                      color="green-darken-2"
-                      size="small"
-                      @click="editItem(file)"
-                    >
-                      <v-icon>mdi-pencil</v-icon>
-                    </v-btn>
-                    <v-btn
-                      icon
-                      variant="text"
-                      color="red-darken-2"
-                      size="small"
-                      @click="deleteItem(file)"
-                    >
-                      <v-icon>mdi-delete</v-icon>
-                    </v-btn>
-                  </v-col>
-                </v-row>
-              </v-card>
-            </template>
-            <template v-else>
-              <v-col cols="12" class="text-center py-8">
-                {{ $t("files.listing.noData") }}
-              </v-col>
-            </template>
-          </v-col>
-        </v-row>
+    <!-- Fila personalizada -->
+    <template v-slot:item="{ item }">
+      <v-card
+        class="mb-2 mx-1 rounded-lg"
+        elevation="1"
+        density="comfortable"
+        flat
+      >
+        <v-card-text
+          class="d-flex align-center pa-2"
+          style="width: 100%; min-width: 0"
+        >
+          <!-- Columna 1: Fecha con ícono cóncavo (5%) -->
+          <div style="width: 7%; min-width: 0" class="d-flex align-center justify-left">
+            <div
+              class="icono-concavo d-flex flex-column justify-center align-center"
+              :class="`bg-${getTypeColor(item.type)}`"
+              style="min-height: 48px; min-width: 48px; border-radius: 8px;">
+              <div class="date-display text-center" style="font-size: 0.9rem; line-height: 1.2;">
+                {{ formatIntuitiveDate(item.date) }}
+              </div>
+            </div>
+          </div>
+
+          <!-- Columna 2: Nombre y descripción (55%) -->
+          <div style="width: 53%; min-width: 0" class="d-flex flex-column">
+            <div class="font-weight-bold text-body-2 text-truncate">
+              {{ item.name }}
+            </div>
+            <div
+              class="text-body-2 text-grey-darken-1 text-truncate"
+              style="max-width: 100%;"
+            >
+              {{ item.description }}
+              <v-tooltip
+                activator="parent"
+                location="bottom"
+                max-width="350px"
+              >
+                <span style="white-space: normal; word-break: break-word">
+                  {{ item.description }}
+                </span>
+              </v-tooltip>
+            </div>
+          </div>
+
+          <!-- Columna 3: Tipo (Personal/Hogar con avatar) (20%) -->
+          <div style="width: 20%; min-width: 0" class="d-flex align-center">
+            <v-avatar color="#03626C" size="32" class="mr-2">
+              <v-icon
+                :icon="item.personal ? 'mdi-account' : 'mdi-home'"
+                color="white"
+              ></v-icon>
+            </v-avatar>
+            <span>{{ item.personal ? "Personal" : "Hogar" }}</span>
+            </div>
+
+          <!-- Columna 4: Botón de acción (13%) -->
+          <div style="width: 13%; min-width: 0" class="d-flex justify-center">
+            <v-btn
+              density="comfortable"
+              :icon="getFileIcon(item)"
+              :color="getFileColor(item)"
+              :title="getTooltip(item)"
+              variant="tonal"
+              elevation="1"
+              size="small"
+              @click="handleFileClick(item)"
+            ></v-btn>
+          </div>
+
+          <!-- Columna 5: Acciones (Editar + Eliminar) (7%) -->
+          <div
+            class="d-flex gap-1"
+            style="width: 7%; justify-content: flex-end; flex-wrap: nowrap"
+          >
+            <v-btn
+              size="35"
+              icon
+              variant="text"
+              color="green-darken-2"
+              @click="editItem(item)"
+              class="flex-shrink-0 mr-1"
+              :title="$t('buttons.edit')"
+            >
+              <v-icon size="20">mdi-pencil</v-icon>
+            </v-btn>
+
+            <v-btn
+              size="35"
+              icon
+              variant="text"
+              color="red-darken-2"
+              @click="deleteItem(item)"
+              class="flex-shrink-0"
+              :title="$t('buttons.delete')"
+            >
+              <v-icon size="20">mdi-delete</v-icon>
+            </v-btn>
+          </div>
+        </v-card-text>
+      </v-card>
+    </template>
+  </v-data-table>
       </v-card-text>
     </v-card>
   </v-container>
@@ -475,6 +564,7 @@ export default {
       { title: "files.fields.name", value: "name", width: "20%" },
       { title: "files.fields.date", value: "date", width: "10%" },
       { title: "files.fields.type", value: "personal", width: "10%" },
+      { title: "files.fields.type", value: "personalTranslated", width: "10%" },
       { title: "files.fields.description", value: "description", width: "30%" },
       { title: "files.fields.file", value: "archive", width: "5%" },
       { title: "files.fields.actions", value: "actions", sortable: false, width: "15%" },
@@ -563,6 +653,14 @@ export default {
       return this.input ? new Date(this.input) : new Date();
     },
   },
+  created() {
+    this.tools = [
+      {
+        name: this.$t("files.listing.addButton"),
+        action: () => this.showAdd(),
+      },
+    ];
+  },
   mounted() {
     this.person_id = JSON.parse(LocalStorageService.getItem("person_id"));
     this.home_id = JSON.parse(LocalStorageService.getItem("home_id"));
@@ -613,6 +711,7 @@ export default {
               weekday: "short",
               day: "numeric",
               month: "short",
+              year: "numeric"
             })
             .replace(/\./g, "");
       }
@@ -1256,12 +1355,29 @@ export default {
   object-fit: cover; /* Asegura que la imagen cubra el espacio */
   border-radius: 8px; /* Para que coincida con el contenedor */
 }
-.selected-tab {
-  background-color: #03626c;
-  /* Fondo del tab seleccionado */
-  color: white;
-  /* Texto blanco */
-  border-radius: 4px;
-  /* Esquinas redondeadas, opcional */
+.text-truncate {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+/* OCULTAR HEADER DE v-data-table - Vuetify 3.4.7 */
+/* Máxima especificidad para ocultar el thead */
+.v-data-table > .v-data-table__wrapper > table > thead,
+.v-data-table > .v-data-table__wrapper > .v-table > table > thead,
+.v-data-table__content > table > thead,
+.v-data-table__content > thead,
+table.v-table > thead,
+.v-table > .v-table__wrapper > table > thead {
+  display: none !important;
+  visibility: hidden !important;
+  height: 0 !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  border: none !important;
+  border-spacing: 0 !important;
+  border-collapse: collapse !important;
+}
+.hidden-header .v-data-table__content > table > thead {
+  display: none !important;
 }
 </style>

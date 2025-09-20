@@ -1,6 +1,14 @@
 <template>
-  <v-snackbar class="mt-12 rounded-lg" location="right top" :timeout="sb_timeout" :color="sb_type" elevation="24"
-    :multi-line="true" vertical v-model="snackbar">
+  <v-snackbar
+    class="mt-12 rounded-lg"
+    location="right top"
+    :timeout="sb_timeout"
+    :color="sb_type"
+    elevation="24"
+    :multi-line="true"
+    vertical
+    v-model="snackbar"
+  >
     <v-row>
       <v-col md="2">
         <v-avatar :icon="sb_icon" color="sb_type" size="40"></v-avatar>
@@ -17,25 +25,35 @@
       <v-card-text>
         <v-row dense>
           <!-- Foto del usuario -->
-          <!-- Foto y datos de la mascota (clickeable para cambiar) -->
-          <v-col cols="12" md="6">
-            <!-- Selector de mascota (activador del menú) -->
-            <div class="d-flex align-center cursor-pointer pet-selector"
+          <v-col cols="12" sm="10" md="10" class="d-flex align-center">
+          <v-avatar size="48" class="me-3" color="grey-lighten-4" variant="tonal">
+              <v-icon size="35" color="error">mdi-store-outline</v-icon>
+            </v-avatar>
+            <div>
+              <div class="text-body-2 font-weight-bold mb-1">
+                {{ $t("warehouse.list.title") }}
+              </div>
+            </div>
+            <!--<div
+              class="d-flex align-center cursor-pointer pet-selector"
               style="padding: 8px; border-radius: 12px; transition: background-color 0.2s"
-              @click="menuWarehouse = !menuWarehouse">
-              <!-- Foto del paciente -->
-              <div style="position: relative; display: inline-block;">
+              @click="menuWarehouse = !menuWarehouse"
+            >
+              <div style="position: relative; display: inline-block">
                 <div class="icon-wrapper me-4">
                   <v-icon icon="mdi-store" color="white" size="40px"></v-icon>
                 </div>
-                <!-- Botón de edición superpuesto -->
-                <v-btn icon variant="text" size="small" color="blue-grey" @click.stop="editItem(selectedWarehouse)"
-                  style="position: absolute; bottom: 0; right: 12px;">
+                <v-btn
+                  icon
+                  variant="text"
+                  size="small"
+                  color="blue-grey"
+                  @click.stop="editItem(selectedWarehouse)"
+                  style="position: absolute; bottom: 0; right: 12px"
+                >
                   <v-icon color="primary" size="20">mdi-pencil</v-icon>
                 </v-btn>
               </div>
-
-              <!-- Datos del paciente -->
               <div>
                 <div class="text-body-2 font-weight-bold mb-1">
                   {{ selectedWarehouse.title }}
@@ -43,72 +61,110 @@
                 <div class="text-body-2 text-grey-darken-1 text-truncated">
                   {{ selectedWarehouse.description }}
                   <v-tooltip activator="parent" location="bottom" max-width="350px">
-                   <span style="white-space: normal; word-break: break-word">
-                    {{ $t("warehouse.fields.description") }}: {{ selectedWarehouse.description }}
+                    <span style="white-space: normal; word-break: break-word">
+                      {{ $t("warehouse.fields.description") }}:
+                      {{ selectedWarehouse.description }}
                     </span>
                   </v-tooltip>
                 </div>
                 <div class="text-body-2 text-grey-darken-1 text-truncated">
                   {{ selectedWarehouse.productCount }}
                   <v-tooltip activator="parent" location="bottom" max-width="350px">
-                   <span style="white-space: normal; word-break: break-word">
-                    {{ $t("product.fields.quantity") }}: {{ selectedWarehouse.productCount }}
+                    <span style="white-space: normal; word-break: break-word">
+                      {{ $t("product.fields.quantity") }}:
+                      {{ selectedWarehouse.productCount }}
                     </span>
                   </v-tooltip>
                 </div>
               </div>
 
-              <!-- Icono de despliegue -->
-              <v-icon :class="{ 'rotate': menuWarehouse }" class="ms-2 transition-fast-in-fast-out" size="20"
-                color="grey">
+              <v-icon
+                :class="{ rotate: menuWarehouse }"
+                class="ms-2 transition-fast-in-fast-out"
+                size="20"
+                color="grey"
+              >
                 mdi-menu-down
               </v-icon>
             </div>
-
-            <!-- Menú desplegable con TARJETAS (no lista) -->
-            <v-menu v-model="menuWarehouse" :close-on-content-click="false" location="bottom start" offset-y
-              :min-width="null" :max-width="null" class="rounded-lg">
+            <v-menu
+              v-model="menuWarehouse"
+              :close-on-content-click="false"
+              location="bottom start"
+              offset-y
+              :min-width="null"
+              :max-width="null"
+              class="rounded-lg"
+            >
               <template #activator="{ props }">
                 <div v-bind="props"></div>
               </template>
               <v-card max-width="900px" class="mx-auto rounded-lg">
                 <v-card-text>
                   <v-container fluid>
-                    <!-- Eliminamos flex-nowrap y overflow-x -->
                     <v-row justify="center">
-                      <!-- Ajustamos columnas para 4 por fila -->
-                      <v-col 
-                        v-for="warehouse in personwarehouses" 
-                        :key="warehouse.id" 
-                        cols="12" sm="6" md="3" lg="3" xl="3"
+                      <v-col
+                        v-for="warehouse in personwarehouses"
+                        :key="warehouse.id"
+                        cols="12"
+                        sm="6"
+                        md="3"
+                        lg="3"
+                        xl="3"
                       >
-                        <v-card 
-                          class="text-center store-card" 
-                          elevation="3" 
+                        <v-card
+                          class="text-center store-card"
+                          elevation="3"
                           rounded="lg"
                           @click="selectWarehouse(warehouse)"
-                          :class="selectedWarehouse?.id === warehouse.id ? 'bg-blue-lighten-5' : ''"
+                          :class="
+                            selectedWarehouse?.id === warehouse.id
+                              ? 'bg-blue-lighten-5'
+                              : ''
+                          "
                         >
                           <div class="icon-wrapper mb-3">
                             <v-icon icon="mdi-store" color="white" size="50px"></v-icon>
                           </div>
-                          
-                          <!-- Texto truncado -->
-                          <div class="store-name text-truncate px-2">{{ warehouse.title }}</div>
-                          <div class="store-products text-truncate px-2">{{ warehouse.description }}</div>
-                          
-                          <v-tooltip activator="parent" location="bottom" max-width="350px">
+
+                          <div class="store-name text-truncate px-2">
+                            {{ warehouse.title }}
+                          </div>
+                          <div class="store-products text-truncate px-2">
+                            {{ warehouse.description }}
+                          </div>
+
+                          <v-tooltip
+                            activator="parent"
+                            location="bottom"
+                            max-width="350px"
+                          >
                             <span style="white-space: normal; word-break: break-word">
-                              {{ $t("warehouse.fields.description") }}: {{ warehouse.description }}
+                              {{ $t("warehouse.fields.description") }}:
+                              {{ warehouse.description }}
                             </span>
                           </v-tooltip>
-                          
-                          <v-icon 
-                            v-if="selectedWarehouse?.id === warehouse.id" 
-                            color="primary" 
+                          <div class="store-products text-truncate px-2">
+                            {{ warehouse.productCount }}
+                          </div>
+
+                          <v-tooltip
+                            activator="parent"
+                            location="bottom"
+                            max-width="350px"
+                          >
+                            <span style="white-space: normal; word-break: break-word">
+                              {{ $t("product.fields.quantity") }}:
+                              {{ warehouse.productCount }}
+                            </span>
+                          </v-tooltip>
+
+                          <v-icon
+                            v-if="selectedWarehouse?.id === warehouse.id"
+                            color="primary"
                             size="18"
-                            class="position-absolute" 
-                            style="top: 8px; right: 8px;"
+                            class="position-absolute"
+                            style="top: 8px; right: 8px"
                           >
                             mdi-check-circle
                           </v-icon>
@@ -118,163 +174,129 @@
                   </v-container>
                 </v-card-text>
               </v-card>
-
-            </v-menu>
+            </v-menu>-->
           </v-col>
-
-          <!-- Espaciado para centrar visualmente -->
-          <v-col cols="12" md="3"></v-col>
-
-          <v-col cols="12" sm="6" md="3">
-            <v-card class="pa-2 d-flex align-center signo-card" elevation="1" rounded="lg" @click="dialogAlerta = true"
-              style="cursor: pointer">
-              <!-- Ícono -->
-              <v-avatar size="40" class="me-3" color="purple-lighten-4" variant="tonal">
-                <v-icon color="warning">mdi-lightbulb-on-outline</v-icon>
-              </v-avatar>
-
-              <!-- Texto -->
-              <div>
-                <div class="text-body-2 font-weight-medium">
-                  {{ $t("pets.alerts.title") }}
-                </div>
-                <div class="text-caption text-grey-darken-1">
-                  {{ $t("pets.alerts.count", { count: suggestions.length }) }}
-                </div>
-              </div>
-            </v-card>
+          <v-col cols="12" sm="2" md="2">
+            <div class="d-flex align-right justify-end pa-2">
+              <v-switch v-model="type" true-value="Personal" false-value="Hogar" :base-color="switchColor"
+                :color="switchColor" hide-details inset class="mb-4 font-weight-bold">
+                <template v-slot:label>
+                  <span class="text-body-1" :style="{ color: switchColor }">
+                    {{ getCurrentName }}
+                  </span>
+                </template>
+              </v-switch>
+            </div>
           </v-col>
-          <!-- Botón flotante de añadir (posición fija) -->
+          <!-- Botón flotante de añadir (posición fija) 
           <v-btn icon size="large" color="deep-purple-accent-4" class="ma-4" elevation="6"
             style="position: fixed; top: 40px; right: 260px" @click="showAddWareHouse()">
             <v-icon size="32">mdi-plus</v-icon>
-          </v-btn>
+          </v-btn>-->
         </v-row>
-        <v-divider class="my-4" />
-                <v-row class="pa-0 ma-0">
-                    <v-col v-for="(tool, index) in warehouseTools" :key="index" cols="12" sm="6" md="6" lg="3" class="px-1">
-                        <v-card class="d-flex align-center pa-2" elevation="2" rounded="lg" density="comfortable"
-                            @click="tool.action()" style="cursor: pointer; height: 70px; width: 100%">
-                            <v-avatar size="40" class="me-3" :color="tool.color + ' lighten-4'" variant="tonal">
-                                <v-icon :color="tool.color">{{ tool.icon }}</v-icon>
-                            </v-avatar>
+        <v-card-actions class="pa-3 bg-grey-lighten-5 tools-bar mt-1" style="overflow-x: auto; white-space: nowrap;">
+  <v-btn
+    v-for="tool in tools"
+    :key="tool.name"
+    @click="tool.action()"
+    size="small"
+    color="primary"
+    variant="text"
+    :prepend-icon="tool.icon || 'mdi-plus'"
+    class="text-capitalize mr-2 flex-shrink-0"
+    style="white-space: nowrap;"
+  >
+    {{ tool.name }}
+  </v-btn>
+</v-card-actions>
 
-                            <div style="min-width: 0; flex: 1">
-                                <div class="text-body-2 font-weight-medium text-truncate">
-                                    {{ tool.name }}
+        <v-divider/>
+        <v-row dense>
+          <v-col cols="12" sm="12">
+            <v-row dense class="my-1">
+              <v-col cols="12" sm="12" md="12">
+                <v-card class="mx-auto" elevation="1" rounded="lg" border flat>
+                  <v-list-item height="60">
+                    <template v-slot:prepend>
+                      <v-avatar size="40" color="amber">
+                        <v-icon icon="mdi-chart-donut" color="white"></v-icon>
+                      </v-avatar>
+                    </template>
+
+                    <template v-slot:title>Estados de los productos por categorías</template>
+                    <template v-slot:subtitle>
+                      {{ new Date().toLocaleDateString() }}
+                    </template>
+                  </v-list-item>
+
+                  <v-divider></v-divider>
+
+                  <v-card-text class="pa-4">
+                      <v-row dense class="d-flex flex-wrap justify-left">
+                        <div
+                          v-for="category in categoryAvailability"
+                          :key="category.id"
+                          class="mx-1 my-1 d-flex justify-left"
+                        >
+                          <v-tooltip top>
+                            <template v-slot:activator="{ props }">
+                              <v-sheet
+                                class="pa-1 text-center d-flex flex-column justify-center align-center"
+                                rounded="lg"
+                                outlined
+                                v-bind="props"
+                                :style="{
+                                  width: $vuetify.display.xs ? '90px' : '120px',
+                                  height: $vuetify.display.xs ? '90px' : '120px'
+                                }"
+                                elevation="1"
+                              >
+                                <v-progress-circular
+                                  :model-value="category.percentage"
+                                  :size="$vuetify.display.xs ? 50 : 70"
+                                  width="5"
+                                  :color="getCategoryColor(category.percentage)"
+                                  class="mb-1"
+                                >
+                                  <strong class="font-weight-bold">{{ category.totalQuantity }}</strong>
+                                </v-progress-circular>
+                                <div class="mt-2 font-weight-medium text-center" style="line-height: 1.1">
+                                  {{ category.name }}
                                 </div>
-
-                                <template v-if="tool.count > 0">
-                                    <!-- Caso 1: Solo 1 registro -->
-                                    <template v-if="tool.count === 1">
-                                        <v-tooltip location="bottom" v-if="tool.lastItemName">
-                                            <template v-slot:activator="{ props }">
-                                                <div v-bind="props"
-                                                    class="text-caption text-grey-darken-1 text-truncate">
-                                                    {{ tool.lastItemName }}
-                                                </div>
-                                            </template>
-                                            <span>{{ tool.lastItemName }}</span>
-                                        </v-tooltip>
-                                        <div v-else class="text-caption text-grey-darken-1">
-                                            {{ $t("common.no_name") }}
-                                        </div>
-
-                                        <div class="text-caption text-grey-lighten-1 mt-1">
-                                            {{ formatIntuitiveDate(tool.lastDate) }}
-                                        </div>
-                                    </template>
-
-                                    <!-- Caso 2: Más de 1 registro -->
-                                    <template v-else>
-                                        <div class="text-caption text-grey-lighten-1">
-                                            <div class="font-weight-medium">
-                                                {{ tool.count }} {{ $t("common.items") }}
-                                            </div>
-                                            <div class="mt-1">
-                                                {{ formatIntuitiveDate(tool.lastDate) }}
-                                            </div>
-                                        </div>
-                                    </template>
-                                </template>
-                                <template v-else>
-                                    <div class="text-caption text-grey-darken-1">
-                                        {{ $t("common.no_records") }}
-                                    </div>
-                                </template>
-                            </div>
-                        </v-card>
-                    </v-col>
-                </v-row>
-        <!-- Encabezado -->
-        <!--<v-row justify="space-between" align="center" class="mb-6">
-           <h2 class="text-body-2 font-weight-bold">{{ $t("warehouse.list.title") }}</h2>
-          <v-btn icon color="deep-purple-accent-4" variant="flat" class="elevation-3" @click="showAddWareHouse">
-            <v-icon>mdi-plus</v-icon>
-          </v-btn>
-        </v-row>
-        <v-row>
-          <v-col cols="12" class="pa-0 pt-4">
-            <v-row>
-              <template v-for="(warehouse, index) in personwarehouses" :key="index">
-                <v-col cols="12" sm="6" md="3">
-                  <v-card elevation="2" density="comfortable" @click="showProducts(warehouse)" class="rounded-lg">
-                    <v-card-item class="pa-3">
-                      <template v-slot:prepend>
-                        <div class="icono-concavo">
-                          <v-icon icon="mdi-store-outline" color="error" size="x-large"></v-icon>
-                        </div>
-                      </template>
-
-                      <div class="title-container">
-                        <v-card-title class="text-body-2 text-truncate">
-                          {{ warehouse.title }}
-                          <v-tooltip activator="parent" location="bottom" max-width="350px">
-                            <span style="white-space: normal; word-break: break-word">
-                              {{ $t("warehouse.fields.name") }}: {{ warehouse.title }}
+                              </v-sheet>
+                            </template>
+                            <span>
+                              {{ category.totalQuantity }} productos de {{ totalGeneral }} totales ({{ category.percentage }}%)
                             </span>
                           </v-tooltip>
-                        </v-card-title>
-
-                        <div v-if="warehouse.productCount > 0" class="dynamic-circle" :class="{
-                          'bg-primary': warehouse.color === 'primary',
-                          'bg-error': !warehouse.color || warehouse.color === 'error'
-                        }">
-                          {{ warehouse.productCount }}
                         </div>
-                      </div>
-
-                      <v-card-subtitle class="pt-0 text-truncate">
-                        <span class="text-body-2">
-                          {{ warehouse.description }}
-                        </span>
-                        <v-tooltip activator="parent" location="bottom" max-width="350px">
-                          <span style="white-space: normal; word-break: break-word">
-                            {{ $t("warehouse.fields.description") }}: {{ warehouse.description }}
-                          </span>
-                        </v-tooltip>
-                      </v-card-subtitle>
-                    </v-card-item>
-                  </v-card>
-                </v-col>
-              </template>
+                      </v-row>
+                  </v-card-text>
+                </v-card>
+              </v-col>
             </v-row>
           </v-col>
-        </v-row>-->
-        <v-row>
-          <v-divider class="my-4" />
-
         </v-row>
-      </v-card-text>
-      <SuggestionsList :items="suggestions" :title="$t('finances.sections.suggestions')" icon="mdi-finance">
+        <v-divider class="my-2" />
+      <SuggestionsList
+        :items="suggestions"
+        :title="$t('finances.sections.suggestions')"
+        icon="mdi-finance"
+      >
         <template #detail="{ taskData, onClose }">
           <ChatTask :taskData="taskData" @close-dialog="onClose" />
         </template>
       </SuggestionsList>
+      </v-card-text>
     </v-card>
   </v-container>
-  <v-dialog v-model="dialog" fullscreen persistent transition="dialog-bottom-transition"
-    content-class="fullscreen-dialog">
+  <v-dialog
+    v-model="dialog"
+    fullscreen
+    persistent
+    transition="dialog-bottom-transition"
+    content-class="fullscreen-dialog"
+  >
     <v-form ref="form" v-model="valid" class="h-100">
       <v-card class="pa-10">
         <v-card-text class="pt-12">
@@ -287,19 +309,25 @@
             <!-- Side steps -->
             <v-col cols="3">
               <v-timeline align="start" side="end" dense>
-                <v-timeline-item v-for="(s, index) in steps" :key="index" :dot-color="
+                <v-timeline-item
+                  v-for="(s, index) in steps"
+                  :key="index"
+                  :dot-color="
                     step > index
                       ? 'green'
                       : step === index
                       ? 'deep-purple'
                       : 'grey-lighten-1'
-                  " :icon="
+                  "
+                  :icon="
                     step >= index
                       ? step === index
                         ? `mdi-numeric-${index + 1}`
                         : 'mdi-check'
                       : null
-                  " size="large">
+                  "
+                  size="large"
+                >
                   <template #opposite>
                     <div class="text-end">
                       <strong>{{ $t(`warehouse.steps.${s.title}.title`) }}</strong>
@@ -321,14 +349,24 @@
               <!-- Paso 1: Información básica -->
               <v-row dense v-if="step === 0">
                 <v-col cols="12" md="12" v-show="editedIndex === -1">
-                  <v-autocomplete v-model="editedItem.warehouse_id" :items="warehouses"
-                    :label="$t('warehouse.fields.warehouse')" item-title="title" item-value="id" variant="underlined">
+                  <v-autocomplete
+                    v-model="editedItem.warehouse_id"
+                    :items="warehouses"
+                    :label="$t('warehouse.fields.warehouse')"
+                    item-title="title"
+                    item-value="id"
+                    variant="underlined"
+                  >
                     <template v-slot:item="{ props, item }">
                       <v-list-item v-bind="props">
                         <v-list-item-subtitle class="d-flex flex-column">
                           <v-tooltip location="top right">
                             <template v-slot:activator="{ props }">
-                              <div class="description-text" v-bind="props" :title="item.raw.description">
+                              <div
+                                class="description-text"
+                                v-bind="props"
+                                :title="item.raw.description"
+                              >
                                 {{ $t("warehouse.fields.description") }}:
                                 {{ item.raw.description }}
                               </div>
@@ -337,7 +375,11 @@
                           </v-tooltip>
                           <v-tooltip location="top right">
                             <template v-slot:activator="{ props }">
-                              <div class="description-text" v-bind="props" :title="item.raw.location">
+                              <div
+                                class="description-text"
+                                v-bind="props"
+                                :title="item.raw.location"
+                              >
                                 {{ $t("warehouse.fields.home_location") }}:
                                 {{ item.raw.location }}
                               </div>
@@ -351,42 +393,73 @@
                 </v-col>
 
                 <v-col cols="12" md="12">
-                  <v-text-field v-model="editedItem.title" clearable :label="$t('warehouse.fields.name')"
-                    variant="underlined" :rules="nameRules"></v-text-field>
+                  <v-text-field
+                    v-model="editedItem.title"
+                    clearable
+                    :label="$t('warehouse.fields.name')"
+                    variant="underlined"
+                    :rules="nameRules"
+                  ></v-text-field>
                 </v-col>
 
                 <v-col cols="12" md="12">
-                  <v-text-field v-model="editedItem.location" clearable :label="$t('warehouse.fields.home_location')"
-                    variant="underlined" :rules="locationRules"></v-text-field>
+                  <v-text-field
+                    v-model="editedItem.location"
+                    clearable
+                    :label="$t('warehouse.fields.home_location')"
+                    variant="underlined"
+                    :rules="locationRules"
+                  ></v-text-field>
                 </v-col>
               </v-row>
 
               <!-- Paso 2: Configuración adicional -->
               <v-row dense v-if="step === 1">
                 <v-col cols="12" md="6">
-                  <v-select v-model="editedItem.status" :items="[
+                  <v-select
+                    v-model="editedItem.status"
+                    :items="[
                       { id: 0, label: $t('warehouse.status.public') },
                       { id: 1, label: $t('warehouse.status.private') },
-                    ]" item-title="label" item-value="id" :label="$t('warehouse.fields.status')" variant="underlined"
-                    :rules="statusRules"></v-select>
+                    ]"
+                    item-title="label"
+                    item-value="id"
+                    :label="$t('warehouse.fields.status')"
+                    variant="underlined"
+                    :rules="statusRules"
+                  ></v-select>
                 </v-col>
 
                 <v-col cols="12" md="12">
-                  <v-textarea v-model="editedItem.description" clearable :label="$t('warehouse.fields.description')"
-                    variant="underlined" :rules="descriptionRules"></v-textarea>
+                  <v-textarea
+                    v-model="editedItem.description"
+                    clearable
+                    :label="$t('warehouse.fields.description')"
+                    variant="underlined"
+                    :rules="descriptionRules"
+                  ></v-textarea>
                 </v-col>
               </v-row>
 
               <div class="d-flex justify-space-between mt-8">
-                <v-btn variant="text" class="text-grey-darken-1" @click="step > 0 ? step-- : this.close()">
+                <v-btn
+                  variant="text"
+                  class="text-grey-darken-1"
+                  @click="step > 0 ? step-- : this.close()"
+                >
                   {{ step === 0 ? $t("buttons.close") : $t("buttons.previous") }}
                 </v-btn>
 
-                <v-btn variant="text" class="text-deep-purple-accent-3" @click="nextStep" :disabled="!valid">
+                <v-btn
+                  variant="text"
+                  class="text-deep-purple-accent-3"
+                  @click="nextStep"
+                  :disabled="!valid"
+                >
                   {{
-                  step === steps.length - 1
-                  ? $t("buttons.saveAndClose")
-                  : $t("buttons.next")
+                    step === steps.length - 1
+                      ? $t("buttons.saveAndClose")
+                      : $t("buttons.next")
                   }}
                 </v-btn>
               </div>
@@ -400,16 +473,28 @@
   <v-dialog v-model="dialogDelete" max-width="500px">
     <v-card>
       <v-toolbar color="#DA7171">
-        <span class="text-subtitle-2 ml-4"> <span class="text-subtitle-2 ml-4"> {{ $t('deleteDialog.title', { item:
-            $t(`deleteDialog.items.warehouse`) }) }}</span></span>
+        <span class="text-subtitle-2 ml-4">
+          <span class="text-subtitle-2 ml-4">
+            {{
+              $t("deleteDialog.title", { item: $t(`deleteDialog.items.warehouse`) })
+            }}</span
+          ></span
+        >
       </v-toolbar>
-      <v-card-text class="mt-2 mb-2"> {{ $t('deleteDialog.message') }}</v-card-text>
+      <v-card-text class="mt-2 mb-2"> {{ $t("deleteDialog.message") }}</v-card-text>
       <v-divider></v-divider>
       <v-card-actions>
         <v-spacer></v-spacer>
-        <v-btn color="grey" variant="flat" @click="closeDelete">{{ $t('taskForm.buttons.cancel') }}</v-btn>
-        <v-btn color="#03626C" variant="flat" :loading="loading" @click="deleteItemConfirm">{{
-          $t('taskForm.buttons.confirmDelete') }}</v-btn>
+        <v-btn color="grey" variant="flat" @click="closeDelete">{{
+          $t("taskForm.buttons.cancel")
+        }}</v-btn>
+        <v-btn
+          color="#03626C"
+          variant="flat"
+          :loading="loading"
+          @click="deleteItemConfirm"
+          >{{ $t("taskForm.buttons.confirmDelete") }}</v-btn
+        >
       </v-card-actions>
     </v-card>
   </v-dialog>
@@ -417,43 +502,39 @@
     <v-card class="bg-grey-lighten-4">
       <v-card-text class="bg-grey-lighten-4">
         <!-- Aquí pasamos el 'selectedWorker' al componente dentro del diálogo -->
-        <Product :warehouseData="warehouseData" @warehouse-updated="handleWarehouseUpdate" />
+        <Warehouses
+        :key="type"
+          :warehouses="personwarehouses || []"
+          @warehouse-updated="handleWarehouseUpdate"
+          :types="types"
+          :type="type"
+           @update:type="type = $event"
+        />
       </v-card-text>
       <v-divider></v-divider>
       <v-card-actions>
         <v-spacer></v-spacer>
-        <v-btn @click="closeDialogProduct">Cerrar</v-btn>
+        <v-btn @click="closeDialogProduct">{{$t("buttons.close")}}</v-btn>
       </v-card-actions>
     </v-card>
   </v-dialog>
-  <v-dialog v-model="dialogAlerta" max-width="500">
-    <v-card rounded-lg>
-      <v-card-title class="text-body-2">Alertas para Hoy</v-card-title>
-      <v-card-text>
-        <v-list v-if="suggestions.length">
-          <v-list-item v-for="(alerta, i) in suggestions" :key="i">
-            <template v-slot:prepend>
-              <v-icon color="deep-orange" icon="mdi-alert"></v-icon>
-            </template>
-
-            <v-list-item-title class="text-subtitle-2">
-              {{ alerta.title }}
-            </v-list-item-title>
-            <v-list-item-subtitle class="text-caption text-truncate">
-              {{ alerta.description }}
-              <v-tooltip activator="parent" location="bottom" max-width="350px" class="custom-tooltip">
-                <span style="white-space: normal; word-break: break-word">
-                  {{ alerta.description }}
-                </span>
-              </v-tooltip>
-            </v-list-item-subtitle>
-          </v-list-item>
-        </v-list>
-        <div v-else class="text-caption text-grey">No hay alertas para hoy.</div>
+  <v-dialog v-model="dialogProductMotion" fullscreen transition="dialog-bottom-transition">
+    <v-card class="bg-grey-lighten-4">
+      <v-card-text class="bg-grey-lighten-4">
+        <!-- Aquí pasamos el 'selectedWorker' al componente dentro del diálogo -->
+        <MovementData
+        :key="type"
+          :warehouses="personwarehouses || []"
+          @warehouse-updated="handleWarehouseUpdate"
+          :types="types"
+          :type="type"
+           @update:type="type = $event"
+        />
       </v-card-text>
+      <v-divider></v-divider>
       <v-card-actions>
-        <v-spacer />
-        <v-btn text @click="dialogAlerta = false">Cerrar</v-btn>
+        <v-spacer></v-spacer>
+        <v-btn @click="closeDialogProductMotion">{{$t("buttons.close")}}</v-btn>
       </v-card-actions>
     </v-card>
   </v-dialog>
@@ -462,18 +543,22 @@
 <script>
 import LocalStorageService from "@/LocalStorageService";
 import { handleRequest } from "@/utils/api"; // Ruta al archivo
-import Product from "../product/Product.vue";
 import SuggestionsList from "../suggestion/SuggestionsList.vue";
 import ChatTask from "../chat/ChatTask.vue";
+import Warehouses from "./WarehouseData";
+import MovementData from "./MovementData";
+
 export default {
-    components: {
-    Product,
+  components: {
+    Warehouses,
     SuggestionsList,
-    ChatTask
+    ChatTask,
+    MovementData
   },
   data: () => ({
     snackbar: false,
     dialogProduct: false,
+    dialogProductMotion: false,
     dialogAlerta: false,
     warehouseData: {},
     menuWarehouse: false,
@@ -502,6 +587,7 @@ export default {
     warehouses: [],
     home_id: "",
     personwarehouses: [],
+    categoryAvailability: [],
     suggestions: [],
     statusuggestions: [],
     data: {},
@@ -547,6 +633,8 @@ export default {
     editedIndex: -1,
     isEditing: false,
     search: "",
+    types: [],
+    type: 'Personal',
   }),
   watch: {
     "editedItem.warehouse_id"(newVal) {
@@ -565,6 +653,34 @@ export default {
         this.editedItem.location = "";
       }
     },
+     type() {
+      // Actualiza budget_type según el valor del switch
+      //this.budget_type = newVal === 'Hogar' ? 'Hogar' : 'Personal';
+      this.editedItem.status = this.type === 'Personal' ? 0 : 1;
+      // Llama al método de inicialización
+      this.initialize();
+    }
+  },
+
+created() {
+    this.tools = [
+      {
+        name: this.$t("warehouse.formTitle.generateShoppingList"),
+        action: () => '',
+      },
+      {
+        name: this.$t("warehouse.formTitle.create"),
+        action: () => this.showAddWareHouse(),
+      },
+      {
+        name: this.$t("warehouse.formTitle.inventory"),
+        action: () => this.showProducts(),
+      },
+      {
+        name: this.$t("warehouse.formTitle.movements"),
+        action: () => this.showProductsMotions(),
+      },
+    ];
   },
   computed: {
     translatedHeaders() {
@@ -574,7 +690,9 @@ export default {
       }));
     },
     formTitle() {
-      return this.editedIndex === -1 ? "Agregar Nuevo Almacén" : "Editar Almacén";
+      return this.editedIndex === -1
+        ? this.$t("warehouse.formTitle.create")
+        : this.$t("warehouse.formTitle.edit");
     },
     nameRules() {
       return [
@@ -627,12 +745,33 @@ export default {
           }),
       ];
     },
+    totalGeneral() {
+      return this.categoryAvailability.reduce((sum, cat) => sum + cat.totalQuantity, 0);
+    },    
+     switchColor() {
+      return this.type === 'Personal' ? '#03626C' : '#FB8C00';
+    },
+    getCurrentName() {
+      const type = this.types.find(t => t.id === this.type);
+      return type ? type.name : this.type;
+    },
   },
   mounted() {
     this.home_id = JSON.parse(LocalStorageService.getItem("home_id"));
+    this.editedItem.status = this.type === 'Personal' ? 0 : 1;
     this.initialize();
   },
   methods: {
+    getColSize(totalCategories) {
+    if (totalCategories <= 2) return 6;   // 2 por fila → 6 columnas cada uno
+    if (totalCategories === 3) return 4;  // 3 por fila → 4 columnas cada uno
+    return 3;                             // 4+ por fila → 3 columnas cada uno
+  },
+    getCategoryColor(percentage) {
+      if (percentage >= 70) return "green-darken-2";
+      if (percentage >= 40) return "amber-darken-3";
+      return "red-darken-2";
+    },
     formatIntuitiveDate(dateString) {
       if (!dateString) return "";
 
@@ -668,65 +807,33 @@ export default {
             .replace(/\./g, ""); // Elimina los puntos de abreviaturas (ej: "mar." → "mar")
       }
     },
-    updateWarehouseTools() {
-  this.warehouseTools = [
-    {
-      name: this.$t("warehouse.titles.products"),
-      action: () => this.showProducts(),
-      icon: "mdi-package-variant",
-      color: "indigo",
-      count: this.selectedWarehouse.productCount || 0,
-      lastDate: this.lastAddedProductDate,
-      lastItemName: this.lastAddedProductName || this.$t("common.no_name"),
-    },
-    {
-      name: this.$t("warehouse.titles.lowStock"),
-      action: () => this.showLowStock(),
-      icon: "mdi-alert-box",
-      color: "orange",
-      count: this.lowStockItemsCount || 0,
-      lastItemName: this.mostCriticalLowStockItem || this.$t("common.no_name"),
-    },
-    {
-      name: this.$t("warehouse.titles.expiringSoon"),
-      action: () => this.showExpiringSoon(),
-      icon: "mdi-clock-alert-outline",
-      color: "red",
-      count: this.expiringSoonCount || 0,
-      lastItemName: this.nextToExpireItem || this.$t("common.no_name"),
-      lastDate: this.nextToExpireDate
-    }/*,
-    {
-      name: this.$t("warehouse.titles.categories"),
-      action: () => this.showCategories(),
-      icon: "mdi-shape-outline",
-      color: "green",
-      count: this.categoryCount || 0,
-      lastItemName: this.mostUsedCategory || this.$t("common.no_name"),
-    },
-    {
-      name: this.$t("warehouse.titles.storageLocations"),
-      action: () => this.showStorageLocations(),
-      icon: "mdi-map-marker-outline",
-      color: "blue",
-      count: this.locationCount || 0,
-      lastItemName: this.mostUsedLocation || this.$t("common.no_name"),
-    }*/
-  ];
-},
     selectWarehouse(warehouse) {
       // Si necesitas el objeto completo también:
       this.selectedWarehouse = { ...warehouse };
       this.menuWarehouse = false;
-      this.updateWarehouseTools();
+      //this.updateWarehouseTools();
     },
-     handleWarehouseUpdate(updatedData) {
+    /*handleWarehouseUpdate(updatedData) {
       // Actualizar los datos en el padre
       this.warehouseData = {
         ...this.warehouseData,
-        ...updatedData
+        ...updatedData,
       };
-    },
+    },*/
+    handleWarehouseUpdate(updatedWarehouse) {
+  // 1. Actualiza el almacén seleccionado (opcional, si lo estás usando)
+  /*if (this.warehouseData && this.warehouseData.id === updatedWarehouse.id) {
+    this.warehouseData = { ...updatedWarehouse };
+  }
+
+  // 2. Actualiza el array personwarehouses (¡esto es lo clave!)
+  this.personwarehouses = this.personwarehouses.map(wh =>
+    wh.id === updatedWarehouse.id ? updatedWarehouse : wh
+  );*/
+
+  // Opcional: si quieres recargar todo (menos eficiente)
+  this.initialize();
+},
     showProducts() {
       this.warehouseData = this.selectedWarehouse;
       if (!this.selectedWarehouse.id) {
@@ -737,6 +844,18 @@ export default {
     },
     closeDialogProduct() {
       this.dialogProduct = false; // Cerramos el diálogo
+      this.initialize();
+    },
+    showProductsMotions() {
+      this.warehouseData = this.selectedWarehouse;
+      if (!this.selectedWarehouse.id) {
+        this.showAlert("warning", "Primero selecciona un almacén.", 3000);
+        return;
+      }
+      this.dialogProductMotion = true;
+    },
+    closeDialogProductMotion() {
+      this.dialogProductMotion = false; // Cerramos el diálogo
       this.initialize();
     },
     nextStep() {
@@ -800,6 +919,7 @@ export default {
     async initialize() {
       this.data = {};
       this.data.home_id = this.home_id;
+      this.data.type = this.type;
       try {
         this.loading = true;
         const result = await handleRequest({
@@ -811,15 +931,18 @@ export default {
         if (result.success) {
           // Si la solicitud es exitosa, asignamos las sucursales
           this.personwarehouses = result.data?.store || [];
+          this.categoryAvailability = result.data?.categoryAvailability || [];
+          this.types = result.data?.types || [];
           this.suggestions = result.data?.suggestions || [];
           this.statusuggestions = result.data?.statusuggestions || [];
-           if (!this.selectedWarehouse?.id && this.personwarehouses.length > 0) {
+          if (!this.selectedWarehouse?.id && this.personwarehouses.length > 0) {
             this.selectedWarehouse = { ...this.personwarehouses[0] };
           }
-          this.updateWarehouseTools();
+          //this.updateWarehouseTools();
         } else {
           // Si no hay datos, asignamos un array vacío
           this.personwarehouses = [];
+          this.categoryAvailability = [];
           this.suggestions = [];
           this.statusuggestions = [];
           //this.showAlert('success', result.message || 'No hay almacénes disponibles.', 3000);
@@ -836,6 +959,7 @@ export default {
       this.loading = true;
       if (this.editedIndex === -1) {
         this.valid = false;
+        this.data = {};
         this.data.title = this.editedItem.title;
         this.data.description = this.editedItem.description;
         this.data.location = this.editedItem.location;
@@ -1048,7 +1172,7 @@ export default {
   height: 60px;
   margin: 0 auto;
   border-radius: 50%;
-  background: #F44336;
+  background: #f44336;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -1131,7 +1255,7 @@ export default {
 }
 
 .description-text {
-  max-width: 200px;
+  max-width: auto;
   /* Establece un límite de ancho */
   overflow: hidden;
   /* Oculta el texto que exceda */

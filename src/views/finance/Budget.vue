@@ -11,11 +11,8 @@
       </v-col>
     </v-row>
   </v-snackbar>
-  <v-container >
-
-
-
-    <v-card class="pa-4" elevation="4" rounded="lg">
+  <v-container class="pa-4">
+    <v-card elevation="2" rounded="lg" flat>
       <!-- Encabezado con foto y datos -->
       <v-card-text>
 
@@ -50,156 +47,183 @@
               {{ tool.name }}
             </v-btn>
           </v-card-actions>
+        <v-card-title class="d-flex flex-wrap align-center gap-4 pb-0">
+                <!-- Título -->
 
-
-        <!-- Encabezado
-        <v-row justify="space-between" align="center" class="mb-6">
-          <h2 class="text-body-2 font-weight-bold">{{ $t("viewTitles.budget") }}</h2>
-          <v-btn icon color="deep-purple-accent-4" variant="flat" class="elevation-3" @click="showAdd">
-            <v-icon>mdi-plus</v-icon>
-          </v-btn>
-        </v-row> -->
-        <template v-if="budgets.length > 0">
-          <!-- Tarjetas de presupuestos -->
-          <v-card v-for="(budget, index) in budgets" :key="index" class="mb-3 rounded-lg pa-2" elevation="2">
-            <v-row>
-              <v-col cols="1" class="d-flex flex-column align-center justify-center">
-                <div class="icono-concavo d-flex flex-column justify-center align-center" :style="{
-                    'background-color': getPeriodColor(budget.typeName),
-                    'color': getContrastText(getPeriodColor(budget.typeName))
-                  }" style="min-height: 48px; min-width: 48px">
-                  <div class="text-body-2 font-weight-medium">
-                    {{ getPeriodAbbreviation(budget.typeName) }}
-                  </div>
+                <!-- Spacer (solo visible en md+) -->
+                <v-spacer class="d-none d-md-block"></v-spacer>
+                <!-- Campo de búsqueda global -->
+                <div class="flex-grow-1" style="max-width: 300px">
+                    <v-text-field v-model="search" density="compact" :label="$t('dataTable.search')"
+                        prepend-inner-icon="mdi-magnify" variant="solo-filled" hide-details single-line
+                        flat></v-text-field>
                 </div>
-              </v-col>
-              <v-col cols="6" class="d-flex align-center pe-4">
-                <v-row align="center">
-                  <div>
-                    <div class="font-weight-bold text-body-2">
-                      <span>
-                        {{ budget.description }}
-                      </span>
-                      <v-tooltip activator="parent" location="bottom">
-                        <span>{{ $t('budget.fields.description') }}: {{ budget.description }}</span>
-                      </v-tooltip>
-                    </div>
-                    <div class="text-caption text-grey-darken-1">
-                      <span>
-                        {{ budget.categoryName }}
-                      </span>
-                      <v-tooltip activator="parent" location="bottom">
-                        <span>{{ $t('budget.fields.category') }}: {{ budget.categoryName }}</span>
-                      </v-tooltip>
-                    </div>
+            </v-card-title>
+          <v-data-table 
+          :headers="headers" 
+          :items="budgets" 
+          :search="search"
+          :items-per-page-text="$t('dataTable.itemsPerPageText')"
+          :no-data-text="$t('dataTable.noDataText')"
+          :loading-text="$t('dataTable.loadingText')"
+          :loading="loading"
+          :hide-default-header="true"
+          style="
+            max-height: 68vh;
+            overflow-y: auto;
+            background: transparent;
+            border: none !important;
+            outline: none !important;
+            box-shadow: none !important;
+            padding: 0;
+          "
+        >
+          <template v-slot:top>
+            <v-card
+            :elevation="1"
+            :hover="false"
+              flat
+              class="mb-2 mx-1 rounded-lg"
+              style="border: 1px solid #ECEFF1; height: 40px; min-height: 40px; display: flex; align-items: center; transition: none !important"
+            >
+              <v-card-text
+                class="d-flex pa-2"
+                style="width: 100%; min-width: 0; height: 100%; padding: 0 16px !important; display: flex; align-items: center"
+              >
+                <!-- Fecha / Periodo (10%) -->
+                <div style="width: 6%; min-width: 0" class="text-left">
+                  {{ $t('budget.fields.period') }}
+                </div>
+
+                <!-- Categoría / Descripción (40%) -->
+                <div style="width: 44%; min-width: 0" class="text-left">
+                  {{ $t('budget.fields.category') }} / {{ $t('budget.fields.description') }}
+                </div>
+
+                <!-- Monto (10%) -->
+                <div style="width: 10%; min-width: 0" class="text-left">
+                  {{ $t('budget.fields.amount') }}
+                </div>
+
+                <!-- Usado (15%) -->
+                <div style="width: 15%; min-width: 0" class="text-center">
+                  {{ $t('budget.fields.used_amount') }}
+                </div>
+
+                <!-- Tipo (10%) -->
+                <div style="width: 10%; min-width: 0" class="text-left">
+                  {{ $t('budget.fields.budget_type') }}
+                </div>
+
+                <!-- Moneda (5%) -->
+                <div style="width: 5%; min-width: 0" class="text-left">
+                  {{ $t('budget.fields.currency') }}
+                </div>
+
+                <!-- Acciones (10%) -->
+                <div style="width: 10%; min-width: 0" class="d-flex justify-end">
+                  {{ $t('settings.actions') }}
+                </div>
+              </v-card-text>
+            </v-card>
+          </template>
+          <template v-slot:item="slotProps">
+            <tr>
+              <td colspan="100%" style="padding: 0; border: none">
+                <v-card class="mb-2 mx-1 rounded-lg" elevation="1" density="comfortable" flat>
+                  <v-card-text class="d-flex align-center pa-2" style="width: 100%; min-width: 0">
+                    <div class="d-flex align-center" style="width: 6%; min-width: 0">
+                    <v-avatar class="mr-2 icono-concavo" :style="{
+                            'background-color': getTypeColor(slotProps.item.budget_type),
+                            'color': getContrastText(getTypeColor(slotProps.item.budget_type)),
+                            'min-height': '48px',
+                            'min-width': '48px',
+                            'border-radius': '8px'
+                          }">
+                     <div class="text-body-2 font-weight-medium">
+                          {{ getPeriodAbbreviation(slotProps.item.typeName) }}
+                        </div>
+                    </v-avatar>
                   </div>
-                </v-row>
-              </v-col>
-              <v-col cols="1" class="d-flex align-center pe-4">
-                <v-row align="center">
-                  <div>
-                    <div class="font-weight-bold text-body-2">
-                      <span>
-                        {{ formatCurrency(budget.amount) }}
-                      </span>
-                      <v-tooltip activator="parent" location="bottom">
-                        <span>{{ $t('budget.fields.amount') }}: {{ formatCurrency(budget.amount) }}</span>
-                      </v-tooltip>
+
+                    <!-- Categoría + Descripción - 40% -->
+                    <div style="width: 44%; min-width: 0" class="d-flex flex-column">
+                      <div class="text-body-2 text-truncate">
+                        {{ slotProps.item.description }}
+                        </div>
+                      <div class="text-caption text-grey-darken-1 text-truncate">
+                        {{ slotProps.item.categoryName }}
+                              </div>
                     </div>
-                    <!--<div class="text-caption text-grey-darken-1">
-                      <span>
-                        {{ budget.used_amount }}
-                      </span>
-                      <v-tooltip activator="parent" location="bottom">
-                        <span>{{ $t('budget.fields.used_amount') }}: {{ budget.used_amount }}</span>
-                      </v-tooltip>
+
+                    <!-- Monto - 10% -->
+                    <div style="width: 10%; min-width: 0" class="text-body-2 text-truncate">
+                      {{ formatCurrency(slotProps.item.amount) }}
                     </div>
-                    <div class="text-caption text-grey-darken-1">
-                      <span>
-                        {{ budget.remaining_amount }}
-                      </span>
-                      <v-tooltip activator="parent" location="bottom">
-                        <span>Disponible: {{ budget.remaining_amount }}</span>
-                      </v-tooltip>
-                    </div>-->
-                  </div>
-                </v-row>
-              </v-col>
-              
-              <v-col cols="1" class="d-flex align-center pe-4">
-                <v-row align="center">
-                  <div>
-                    <div class="text-caption text-grey-darken-1">
-                      <span>
-                        {{ formatCurrency(budget.used_amount) }}
-                      </span>
-                      <v-tooltip activator="parent" location="bottom">
-                        <span>{{ $t('budget.fields.used_amount') }}: {{ formatCurrency(budget.used_amount) }}</span>
-                      </v-tooltip>
+
+                    <!-- Usado - 15% -->
+                    <div style="width: 15%; min-width: 0; text-align: center;" class="text-caption text-grey-darken-1 text-truncate">
+                      {{ formatCurrency(slotProps.item.used_amount) }}
                     </div>
-                  </div>
-                </v-row>
-              </v-col>
-              <v-col cols="1" class="d-flex align-center pe-4">
-                <v-row align="center">
-                  <div>
-                    <div class="font-weight-bold text-body-2">
-                      <span>
-                        <v-icon :color=" getPeriodColor(budget.typeName)"
-                          style="font-size: 10px; filter: drop-shadow(0 0 2px currentColor)" icon="mdi-circle"
-                          class="mr-1"></v-icon>
+
+                    <!-- Tipo (con ícono) - 10% -->
+                    <div style="width: 10%; min-width: 0" class="d-flex align-center">
+                      <v-icon 
+                        :color="getTypeColor(slotProps.item.budget_type)"
+                        style="font-size: 10px; margin-right: 4px"
+                        icon="mdi-circle"
+                      ></v-icon>
+                      <span class="text-grey-darken-1 text-body-2 text-truncate">
+                        {{ slotProps.item.budget_type }}
                       </span>
-                      <span class="text-grey-darken-1 text-body-2">{{
-                        budget.budget_type
-                        }}</span>
-                      <v-tooltip activator="parent" location="bottom">
-                        <span>{{ $t('budget.fields.budget_type') }}: {{ budget.budget_type }}</span>
-                      </v-tooltip>
                     </div>
-                  </div>
-                </v-row>
-              </v-col>
-              <v-col cols="1" class="d-flex align-center pe-4">
-                <v-row align="center">
-                  <div>
-                    <div class="font-weight-bold text-body-2">
-                      <span>
-                        <v-icon :color=" getPeriodColor(budget.typeName)"
-                          style="font-size: 10px; filter: drop-shadow(0 0 2px currentColor)" icon="mdi-currency-sign"
-                          class="mr-1"></v-icon>
+
+                    <!-- Moneda (con ícono) - 5% -->
+                    <div style="width: 5%; min-width: 0" class="d-flex align-center">
+                      <v-icon 
+                        style="font-size: 10px; margin-right: 4px"
+                        icon="mdi-currency-sign"
+                      ></v-icon>
+                      <span class="text-grey-darken-1 text-body-2 text-truncate">
+                        {{ getCurrencySymbol(slotProps.item.currency) }}
                       </span>
-                      <span class="text-grey-darken-1 text-body-2">
-                        {{ getCurrencySymbol(budget.currency) }}
-                      </span>
-                      <v-tooltip activator="parent" location="bottom">
-                        <span>{{ $t('budget.fields.currency') }}: {{ getCurrencyName(budget.currency) }}</span>
-                      </v-tooltip>
                     </div>
-                  </div>
-                </v-row>
-              </v-col>
-              <v-col cols="1" class="d-flex align-center pe-4">
-                <v-btn icon variant="text" color="green-darken-2" size="small" @click="editItem(budget)">
-                  <v-icon>mdi-pencil</v-icon>
-                </v-btn>
-                <v-btn icon variant="text" color="red-darken-2" size="small" @click="deleteItem(budget)" class="mr-1">
-                  <v-icon>mdi-delete</v-icon>
-                </v-btn>
-              </v-col>
-            </v-row>
-          </v-card>
-        </template>
-        <template v-else>
-          <v-col cols="12" class="text-center py-8 pa-0">
-            <v-icon size="64" color="grey-lighten-1">mdi-wallet-outline</v-icon>
-            <div class="text-h6 text-grey mt-4">
-              {{ $t("budget.noRecords") }}
-            </div>
-          </v-col>
-        </template>
+
+                    <!-- Acciones - 10% -->
+                    <div class="d-flex gap-1" style="width: 10%; justify-content: flex-end; flex-wrap: nowrap">
+                      <v-btn 
+                        size="35" 
+                        icon 
+                        variant="text" 
+                        color="green-darken-2" 
+                        @click="editItem(slotProps.item)"
+                        class="flex-shrink-0 mr-1" 
+                        title="Editar Presupuesto">
+                        <v-icon size="20">mdi-pencil</v-icon>
+                      </v-btn>
+
+                      <v-btn 
+                        size="35" 
+                        icon 
+                        variant="text" 
+                        color="red-darken-2" 
+                        @click="deleteItem(slotProps.item)"
+                        class="flex-shrink-0" 
+                        title="Eliminar Presupuesto">
+                        <v-icon size="20">mdi-delete</v-icon>
+                      </v-btn>
+                    </div>
+
+                  </v-card-text>
+                </v-card>
+              </td>
+            </tr>
+          </template>
+        </v-data-table>
       </v-card-text>
     </v-card>
   </v-container>
+  
   <v-dialog v-model="dialog" fullscreen persistent transition="dialog-bottom-transition"
     content-class="fullscreen-dialog">
     <v-form ref="form" v-model="valid" class="h-100">
@@ -247,43 +271,6 @@
 
               <!-- Paso 1: Información básica -->
               <v-row dense v-if="step === 0">
-                <!--<v-col cols="12" md="6">
-                  <v-autocomplete
-                  v-model="editedItem.category_id"
-                  :items="categories"
-                  :label="$t('budget.fields.category')"
-                  item-title="nameCategory"
-                  item-value="id"
-                  variant="underlined"
-                  :rules="selectRules"
-                >
-                  <template v-slot:item="{ props, item }">
-                    <v-list-item
-                      v-bind="props"
-                      :style="{ 'margin-left': `${item.raw.level * 10}px` }"
-                    >
-                      <template v-slot:prepend>
-                        <v-avatar size="24">
-                          <template v-if="isImage(item.raw.iconCategory)">
-                            <img
-                              :src="`${$axios.defaults.baseURL}images/${item.raw.iconCategory}`"
-                              alt="icon"
-                              style="width: 100%; height: 100%; object-fit: cover;"
-                            />
-                          </template>
-                          <template v-else>
-                            <v-icon size="small">{{ getIconName(item.raw.iconCategory) }}</v-icon>
-                          </template>
-                        </v-avatar>
-                      </template>
-
-                      <v-list-item-subtitle>
-                        Descripción: {{ item.raw.descriptionCategory }}
-                      </v-list-item-subtitle>
-                    </v-list-item>
-                  </template>
-                </v-autocomplete>
-                </v-col>-->
                 <v-col cols="12" md="6">
           <v-autocomplete
             v-model="selectedParent"
@@ -414,60 +401,6 @@
 
               <!-- Step 2: Fechas y detalles -->
               <v-row dense v-if="step === 1">
-                <!--<v-col cols="12" sm="6">
-                  <v-menu
-                    v-model="startDateMenu"
-                    :close-on-content-click="false"
-                    :nudge-right="40"
-                    transition="scale-transition"
-                    offset-y
-                    min-width="290px"
-                  >
-                    <template v-slot:activator="{ props }">
-                      <v-text-field
-                        v-bind="props"
-                        :modelValue="startDateFormatted"
-                        variant="underlined"
-                        :label="$t('budget.fields.start_date')"
-                      ></v-text-field>
-                    </template>
-                    <v-locale-provider>
-                      <v-date-picker
-                        color="#03626C"
-                        :modelValue="startDateInput"
-                        @update:model-value="updateStartDate"
-                        format="yyyy-MM-dd"
-                      ></v-date-picker>
-                    </v-locale-provider>
-                  </v-menu>
-                </v-col>
-                <v-col cols="12" sm="6">
-                  <v-menu
-                    v-model="endDateMenu"
-                    :close-on-content-click="false"
-                    :nudge-right="40"
-                    transition="scale-transition"
-                    offset-y
-                    min-width="290px"
-                  >
-                    <template v-slot:activator="{ props }">
-                      <v-text-field
-                        v-bind="props"
-                        :modelValue="endDateFormatted"
-                        variant="underlined"
-                        :label="$t('budget.fields.end_date')"
-                      ></v-text-field>
-                    </template>
-                    <v-locale-provider>
-                      <v-date-picker
-                        color="#03626C"
-                        :modelValue="endDateInput"
-                        @update:model-value="updateEndDate"
-                        format="yyyy-MM-dd"
-                      ></v-date-picker>
-                    </v-locale-provider>
-                  </v-menu>
-                </v-col>-->
                 <v-autocomplete v-model="editedItem.type_id" :items="typesPeriodo" :label="$t('budget.fields.period')"
                   item-title="name" item-value="id" variant="underlined" :rules="selectRules">
                   <template v-slot:item="{ props, item }">
@@ -556,6 +489,16 @@ export default {
         subtitle: "dates_and_details",
       },
     ],
+    headers: [
+      { title: 'Periodo', key: 'period' },
+      { title: 'Categoría / Descripción', key: 'category_description' },
+      { title: 'Monto', key: 'amount' },
+      { title: 'Usado', key: 'used_amount' },
+      { title: 'Tipo', key: 'budget_type' },
+      { title: 'Moneda', key: 'currency' },
+      { title: 'Acciones', key: 'actions' },
+    ],
+    search: "",
     itemsPerPage: 6,
     currentPage: 1,
     snackbar: false,
@@ -630,7 +573,6 @@ export default {
       type_id: null,
     },
     editedIndex: -1,
-    search: "",
     selectRules: [(v) => !!v || "Seleccionar al menos un elemento"],
     amountRules: [
       (v) => !!v || "El monto es requerido",
@@ -686,7 +628,7 @@ export default {
       return [
         (v) => !!v || this.$t("budget.validationMessages.category.required"), // Validación de requerido
         /*(v) =>
-          !v || v.length <= 50 || this.$t("finances.validationMessages.type.maxLength"), // Validación de longitud máxima*/
+          !v || v.length <= 50 || this.$t("budget.validationMessages.type.maxLength"), // Validación de longitud máxima*/
       ];
     },
   },
@@ -723,14 +665,6 @@ export default {
         action: () => this.showAdd()
       }
     ]
-  // Si estamos editando y ya hay un category_id, sincronizar
-  /*if (this.editedItem.category_id) {
-    const child = this.categories.find(c => c.id === this.editedItem.category_id);
-    if (child && child.parent_id) {
-      this.selectedParent = child.parent_id;
-      // categoryChildren se llenará por el watcher de selectedParent
-    }
-  }*/
   },
   mounted() {
     this.home_id = JSON.parse(LocalStorageService.getItem("home_id"));
@@ -765,13 +699,15 @@ export default {
     return this.$t(`budget.currencies.${currency}`) || this.$t('general.not_specified');
   },
      getTypeColor(type) {
-       if (!type) return "grey-lighten-1";
+      console.log('type');
+      console.log(type);
+       if (!type) return "#607D8B";
       const colorMap = {
-        Personal: "indigo-lighten-2",  // Azul intenso claro
-    Hogar: "deep-orange-lighten-1",  // Naranja intenso
+        Personal: "#4CAF50",  // Azul intenso claro
+        Hogar: "#FB8C00",  // Naranja intenso
         // Agrega más tipos si es necesario
       };
-      return colorMap[type] || "grey-lighten-1"; // Color por defecto
+      return colorMap[type] || "#607D8B"; // Color por defecto
     },
    getPeriodColor(periodName) {
       const colorMap = {
@@ -1118,65 +1054,6 @@ export default {
       this.sb_timeout = sb_timeout;
       this.snackbar = true;
     },
-    compactBudgetData(budget) {
-      return [
-        {
-          label: this.$t("budget.fields.category"),
-          value: budget.category_name || "N/R",
-          fullLabel: this.$t("budget.fields.category"),
-          fullValue: budget.category_name || this.$t("budget.notRecorded"),
-          icon: "mdi-tag",
-          color: "indigo-darken-2",
-        },
-        {
-          label: this.$t("budget.fields.amount"),
-          value: `${budget.amount} ${budget.currency || ""}` || "N/R",
-          fullLabel: this.$t("budget.fields.amount"),
-          fullValue:
-            `${budget.amount} ${budget.currency || ""}` || this.$t("budget.notRecorded"),
-          icon: "mdi-cash",
-          color: "green-darken-2",
-        },
-        {
-          label: this.$t("budget.fields.used_amount"),
-          value: `${budget.used_amount} ${budget.currency || ""}` || "N/R",
-          fullLabel: this.$t("budget.fields.used_amount"),
-          fullValue:
-            `${budget.used_amount} ${budget.currency || ""}` ||
-            this.$t("budget.notRecorded"),
-          icon: "mdi-cash-minus",
-          color: "red-darken-2",
-        },
-        {
-          label: this.$t("budget.fields.budget_type"),
-          value: budget.budget_type || "N/R",
-          fullLabel: this.$t("budget.fields.budget_type"),
-          fullValue: budget.budget_type || this.$t("budget.notRecorded"),
-          icon: "mdi-calendar",
-          color: "orange-darken-2",
-        },
-      ].filter((item) => item.value !== "N/R");
-    },
-    compactDetails(budget) {
-      return [
-        {
-          label: this.$t("budget.fields.description"),
-          text: this.truncateText(budget.description) || "-",
-          fullLabel: this.$t("budget.fields.description"),
-          fullText: budget.description || this.$t("budget.notRecorded"),
-          icon: "mdi-information",
-          color: "teal-darken-1",
-        },
-        {
-          label: this.$t("budget.fields.status"),
-          text: budget.status || "-",
-          fullLabel: this.$t("budget.fields.status"),
-          fullText: budget.status || this.$t("budget.notRecorded"),
-          icon: "mdi-check-circle",
-          color: "blue-darken-1",
-        },
-      ].filter((detail) => detail.text !== "-");
-    },
     truncateText(text, length = 15) {
       if (!text) return null;
       return text.length > length ? text.substring(0, length) + "..." : text;
@@ -1201,49 +1078,37 @@ export default {
   align-items: center;
 }
 
-/* Truncamiento seguro con puntos suspensivos */
-.text-truncate {
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  max-width: 100%;
-  display: block;
-  line-height: 1.2;
-}
-
 /* Asegura que el tooltip no interfiera con el layout */
 .v-tooltip__activator {
   width: 100%;
   display: block;
 }
 .icono-concavo {
-  width: 48px;
-  height: 48px;
+  width: 45px;
+  height: 45px;
   display: flex;
   align-items: center;
   justify-content: center;
-  border-radius: 12px;
-  margin-right: 8px;
-  box-shadow: inset 0 2px 4px rgba(0,0,0,0.1);
-  transition: all 0.2s ease;
-  font-weight: 600;
-  text-transform: uppercase;
+  color: white;
+  /* Mantenemos solo el efecto cóncavo en el ícono 
+  box-shadow: inset;*/
+  position: relative;
+  overflow: hidden;
 }
-.icono-concavo:hover {
-  transform: scale(1.05);
-  box-shadow: inset 0 2px 6px rgba(0,0,0,0.15), 
-              0 2px 8px rgba(0,0,0,0.1);
+
+.icono-concavo::after {
+  content: "";
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  right: 2px;
+  bottom: 2px;
+  border-radius: 8px;
+  background: transparent;
 }
 .date {
   padding: 4px 8px;
   border-radius: 4px;
-}
-.v-card {
-  transition: all 0.2s ease;
-}
-.v-card:hover {
-  transform: translateY(-3px);
-  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.1) !important;
 }
 .fullscreen-dialog {
   height: 100vh !important;
@@ -1251,11 +1116,6 @@ export default {
   min-width: 100vh;
   margin: 0 !important;
   padding: 0 !important;
-}
-.text-truncate {
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
 }
 /* Estilos para los chips */
 .v-chip {
@@ -1274,9 +1134,32 @@ export default {
 }
 /* Estilos para los botones de acción */
 .v-btn--icon {
-  transition: all 0.2s ease;
+  transition:  none !important;
 }
-.v-btn--icon:hover {
-  transform: scale(1.1);
+
+.text-truncate {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+/* OCULTAR HEADER DE v-data-table - Vuetify 3.4.7 */
+/* Máxima especificidad para ocultar el thead */
+.v-data-table > .v-data-table__wrapper > table > thead,
+.v-data-table > .v-data-table__wrapper > .v-table > table > thead,
+.v-data-table__content > table > thead,
+.v-data-table__content > thead,
+table.v-table > thead,
+.v-table > .v-table__wrapper > table > thead {
+  display: none !important;
+  visibility: hidden !important;
+  height: 0 !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  border: none !important;
+  border-spacing: 0 !important;
+  border-collapse: collapse !important;
+}
+.hidden-header .v-data-table__content > table > thead {
+  display: none !important;
 }
 </style>

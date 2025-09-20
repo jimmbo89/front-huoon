@@ -13,99 +13,6 @@
   </v-snackbar>
     <v-card elevation="2" rounded="lg" flat>
       <v-card-text>
-        <v-card-actions class="pa-3 bg-grey-lighten-5 tools-bar mt-2">
-          <v-btn
-            v-for="tool in tools"
-            :key="tool.name"
-            @click="tool.action()"
-            size="small"
-            color="primary"
-            variant="text"
-            prepend-icon="mdi-plus"
-            class="text-capitalize"
-          >
-            {{ tool.name }}
-          </v-btn>
-        </v-card-actions>
-        
-          <v-divider/>
-        <v-row class="pa-0 ma-0 mt-1">
-          <v-col
-            v-for="(tool, index) in warehouseTools"
-            :key="index"
-            cols="12"
-            sm="6"
-            md="6"
-            lg="3"
-            class="px-1"
-          >
-            <v-card
-              class="d-flex align-center pa-2"
-              :class="{ 'oscurecer-persistente': tool.id === selectedTool }"
-              elevation="2"
-              rounded="lg"
-              density="comfortable"
-              @click="tool.action()"
-              style="cursor: pointer; height: 70px; width: 100%"
-            >
-              <v-avatar
-                size="40"
-                class="me-3"
-                :color="tool.color + ' lighten-4'"
-                variant="tonal"
-              >
-                <v-icon :color="tool.color">{{ tool.icon }}</v-icon>
-              </v-avatar>
-
-              <div style="min-width: 0; flex: 1">
-                <div class="text-body-2 font-weight-medium text-truncate">
-                  {{ tool.name }}
-                </div>
-
-                <template v-if="tool.count > 0">
-                  <!-- Caso 1: Solo 1 registro -->
-                  <template v-if="tool.count === 1">
-                    <v-tooltip location="bottom" v-if="tool.lastItemName">
-                      <template v-slot:activator="{ props }">
-                        <div
-                          v-bind="props"
-                          class="text-caption text-grey-darken-1 text-truncate"
-                        >
-                          {{ tool.lastItemName }}
-                        </div>
-                      </template>
-                      <span>{{ tool.lastItemName }}</span>
-                    </v-tooltip>
-                    <div v-else class="text-caption text-grey-darken-1">
-                      {{ $t("common.no_name") }}
-                    </div>
-
-                    <div class="text-caption text-grey-lighten-1 mt-1">
-                      {{ formatIntuitiveDate(tool.lastDate) }}
-                    </div>
-                  </template>
-
-                  <!-- Caso 2: Más de 1 registro -->
-                  <template v-else>
-                    <div class="text-caption text-grey-lighten-1">
-                      <div class="font-weight-medium">
-                        {{ tool.count }} {{ $t("common.product") }}
-                      </div>
-                      <div class="mt-1">
-                        {{ formatIntuitiveDate(tool.lastDate) }}
-                      </div>
-                    </div>
-                  </template>
-                </template>
-                <template v-else>
-                  <div class="text-caption text-grey-darken-1">
-                    {{ $t("common.no_records") }}
-                  </div>
-                </template>
-              </div>
-            </v-card>
-          </v-col>
-        </v-row>
         <v-card-title class="d-flex flex-wrap align-center gap-4 pb-0">
       <v-spacer class="d-none d-md-block"></v-spacer>
       <div class="flex-grow-1" style="max-width: 300px">
@@ -118,7 +25,6 @@
           hide-details
           single-line
           flat
-          clearable
         ></v-text-field>
       </div>
     </v-card-title>
@@ -126,7 +32,7 @@
     <!-- Tabla de datos -->
     <v-data-table
       :headers="headers"
-      :items="filteredProducts"
+      :items="this.products"
       :search="search"
       :items-per-page-text="$t('dataTable.itemsPerPageText')"
       :no-data-text="$t('dataTable.noDataText')"
@@ -252,14 +158,6 @@
                             </span>
                           </v-tooltip>
                         </div>
-                        <!--<div class="text-body-2 d-flex align-center text-grey-darken-1">
-                          {{ slotProps.item.total_price }}
-                          <v-tooltip activator="parent" location="bottom" max-width="350px">
-                            <span style="white-space: normal; word-break: break-word">
-                              {{ $t("product.fields.total_price") }}: {{ slotProps.item.total_price }}
-                            </span>
-                          </v-tooltip>
-                        </div>-->
                   </div>
                 </div>
 
@@ -298,27 +196,16 @@
                   class="d-flex gap-1"
                   style="width: 7%; justify-content: flex-end; flex-wrap: nowrap"
                 >
-                  <v-btn
+                   <v-btn
                     size="35"
                     icon
                     variant="text"
-                    color="green-darken-2"
-                    @click="editItem(slotProps.item)"
+                    color="blue-darken-2"
+                    @click="moveItem(slotProps.item)"
                     class="flex-shrink-0 mr-1"
-                    :title="$t('buttons.edit')"
+                    :title="$t('buttons.moveProduct')"
                   >
-                    <v-icon size="20">mdi-pencil</v-icon>
-                  </v-btn>
-                  <v-btn
-                    size="35"
-                    icon
-                    variant="text"
-                    color="red-darken-2"
-                    @click="deleteItem(slotProps.item)"
-                    class="flex-shrink-0"
-                    :title="$t('buttons.delete')"
-                  >
-                    <v-icon size="20">mdi-delete</v-icon>
+                    <v-icon size="20">mdi-arrow-split-horizontal</v-icon>
                   </v-btn>
                 </div>
               </v-card-text>
@@ -331,210 +218,94 @@
     </v-card>
 
   <!-- Crear/Editar Producto -->
-  <v-dialog v-model="dialog" fullscreen persistent transition="dialog-bottom-transition"
-    content-class="fullscreen-dialog">
+ <v-dialog v-model="dialog" max-width="600px">
     <v-form ref="form" v-model="valid" class="h-100">
-      <v-card class="pa-10">
-        <v-card-text class="pt-12">
+      <v-card class="pa-3">
+      <v-toolbar color="white">
+          <span class="text-subtitle-2 ml-4">{{ $t("buttons.moveProduct") }}</span>
+        </v-toolbar>
+          <!--<h5 class="text-grey-darken-2 font-weight-medium">
+            {{ $t("buttons.moveProduct") }}
+          </h5>-->
+        <v-card-text class="pt-3">
           <!-- Pasos laterales -->
-          <h5 class="text-grey-darken-2 font-weight-medium">
-            {{ $t(`product.formTitle.${editedIndex === -1 ? "create" : "edit"}`) }}
-          </h5>
-          <p class="text-grey-lighten-1">{{ $t("product.formInstructions") }}</p>
-
-          <v-row class="mt-12">
-            <v-col cols="3">
-              <v-timeline align="start" side="end" dense>
-                <v-timeline-item v-for="(s, index) in steps" :key="index" :dot-color="
-                      step > index
-                        ? 'green'
-                        : step === index
-                        ? 'deep-purple'
-                        : 'grey-lighten-1'
-                    " :icon="
-                      step >= index
-                        ? step === index
-                          ? `mdi-numeric-${index + 1}`
-                          : 'mdi-check'
-                        : null
-                    " size="large">
-                  <template #opposite>
-                    <div class="text-end">
-                      <strong>{{ $t(`product.steps.${s.title}.title`) }}</strong>
-                      <div class="text-caption text-grey">
-                        {{ $t(`product.steps.${s.title}.subtitle`) }}
-                      </div>
-                    </div>
-                  </template>
-                </v-timeline-item>
-              </v-timeline>
-            </v-col>
-
-            <!-- Contenido dinámico según paso -->
-            <v-col cols="9">
-              <h3 class="text-deep-purple-accent-3 mb-8">
-                {{ $t(`product.steps.${steps[step].title}.title`) }}
-              </h3>
-
-              <!-- Paso 1: Información básica -->
-              <v-row dense v-if="step === 0">
-                <v-col cols="12" md="6">
-                  <v-text-field v-model="editedItem.name" :label="$t('product.fields.name')" variant="underlined"
-                    :rules="validationRules.name"></v-text-field>
-                </v-col>
-                <v-col cols="12" md="6">
-                  <v-text-field v-model="editedItem.brand" :label="$t('product.fields.brand')"
-                    variant="underlined"></v-text-field>
-                </v-col>
-                <v-col cols="12" md="6">
-                  <v-file-input clearable v-model="file" ref="fileInput" :label="$t('product.fields.image')"
-                    variant="underlined" :prepend-icon="null" density="compact" name="file" accept=".png, .jpg, .jpeg"
-                    @change="onFileSelected"></v-file-input>
-                </v-col>
-                <v-col cols="12" md="6">
-                  <v-card elevation="6" class="mx-auto" max-width="210" max-height="120">
-                    <img v-if="imagenDisponible()" :src="imgedit" height="120" width="210" />
-                  </v-card>
+          <v-row>
+                <v-col cols="12" md="12">
+                  <v-text-field
+                    v-model="editedItem.name"
+                    :label="$t('product.fields.name')"
+                    variant="underlined"
+                    :rules="validationRules.name"
+                    :disabled="true"
+                    prepend-inner-icon="">
+                    <template v-slot:prepend-inner>
+                      <v-avatar
+                        size="30"
+                        class="mr-2"
+                        color="grey-lighten-4"
+                      >
+                        <v-img
+                          :src="getImageUrl(editedItem.image)"
+                          cover
+                        />
+                      </v-avatar>
+                    </template>
+                  </v-text-field>
                 </v-col>
                 <v-col cols="12" md="12">
-                  <v-textarea v-model="editedItem.additional_notes" :label="$t('product.fields.additional_notes')"
-                    variant="underlined"></v-textarea>
-                </v-col>
-              </v-row>
-
-              <!-- Paso 2: Información de compra -->
-              <v-row dense v-if="step === 1">
-                <v-col cols="12" md="4">
-                  <v-text-field v-model="editedItem.unit_price" :label="$t('product.fields.unit_price')"
-                    variant="underlined" type="number" :rules="validationRules.unit_price"></v-text-field>
-                </v-col>
-                <v-col cols="12" md="4">
                   <v-text-field v-model="editedItem.quantity" :label="$t('product.fields.quantity')"
-                    variant="underlined" type="number" :rules="validationRules.quantity"></v-text-field>
-                </v-col>
-                <v-col cols="12" md="4">
-                  <v-text-field :model-value="formattedTotalPrice" :label="$t('product.fields.total_price')"
-                    variant="underlined" type="number" readonly @update:model-value="
-                        (val) => (editedItem.total_price = parseFloat(val))
-                      "></v-text-field>
-                </v-col>
-                <v-col cols="12" md="6">
-                  <v-autocomplete v-model="editedItem.status_id" :items="status" :label="$t('product.fields.status')"
-                    item-title="nameStatus" item-value="id" variant="underlined" density="compact"
-                    :rules="validationRules.status_id" :no-data-text="$t('product.validation.no_data')">
-                    <template v-slot:item="{ props, item }">
-                      <v-list-item v-bind="props">
-                        <template v-slot:prepend>
-                          <v-avatar size="24">
-                            <v-icon>{{ item.raw.iconStatus }}</v-icon>
-                          </v-avatar>
-                        </template>
-                      </v-list-item>
-                    </template>
-                  </v-autocomplete>
-                </v-col>
-                <v-col cols="12" md="6">
-                  <v-autocomplete v-model="editedItem.category_id" :items="categories"
-                    :label="$t('product.fields.category')" item-title="nameCategory" item-value="id"
-                    variant="underlined" density="compact" :rules="validationRules.category_id"
-                    :no-data-text="$t('product.validation.no_data')">
-                    <template v-slot:item="{ props, item }">
-                      <v-list-item v-bind="props">
-                        <template v-slot:prepend>
-                          <v-avatar size="24">
-                            <template v-if="isImage(item.raw.iconCategory)">
-                              <img :src="`${this.$axios.defaults.baseURL}images/${
-                                    item.raw.iconCategory
-                                  }?t=${Date.now()}`" alt="icon" />
-                            </template>
-                            <template v-else>
-                              <v-icon>{{ getIconName(item.raw.iconCategory) }}</v-icon>
-                            </template>
-                          </v-avatar>
-                        </template>
-                      </v-list-item>
-                    </template>
-                  </v-autocomplete>
-                </v-col>
-                <v-col cols="12" md="6">
-                  <v-menu v-model="menu" :close-on-content-click="false" :nudge-right="40" transition="scale-transition"
-                    offset-y min-width="290px">
-                    <template v-slot:activator="{ props }">
-                      <v-text-field v-bind="props" :modelValue="dateInput" variant="underlined"
-                        :label="$t('product.fields.purchase_date')"
-                        :rules="validationRules.purchase_date"></v-text-field>
-                    </template>
-                    <v-locale-provider>
-                      <v-date-picker :title="$t('product.fields.purchase_date')" color="#03626C" :modelValue="dateInput"
-                        @update:model-value="updateDate" format="yyyy-MM-dd"></v-date-picker>
-                    </v-locale-provider>
-                  </v-menu>
-                </v-col>
-                <v-col cols="12" md="6">
-                  <v-menu v-model="menu2" :close-on-content-click="false" :nudge-right="40"
-                    transition="scale-transition" offset-y min-width="290px">
-                    <template v-slot:activator="{ props }">
-                      <v-text-field v-bind="props" :modelValue="dateInput1" variant="underlined"
-                        :label="$t('product.fields.expiration_date')"></v-text-field>
-                    </template>
-                    <v-locale-provider>
-                      <v-date-picker :title="$t('product.fields.expiration_date')" color="#03626C" :modelValue="dateInput1"
-                        format="yyyy-MM-dd" :min="dateInput" @update:model-value="updateDate1"></v-date-picker>
-                    </v-locale-provider>
-                  </v-menu>
-                </v-col>
-              </v-row>
-
-              <!-- Paso 3: Configuración adicional -->
-              <v-row dense v-if="step === 2">
-                <v-col cols="12" md="6">
-                  <v-text-field v-model="editedItem.frequency" :label="$t('product.fields.frequency')"
-                    variant="underlined" type="number" :rules="validationRules.frequency"></v-text-field>
-                </v-col>
-                <v-col cols="12" md="6">
-                  <v-select v-model="editedItem.type" :items="[$t('product.types.winter'), $t('product.types.summer')]"
-                    :label="$t('product.fields.type')" variant="underlined"></v-select>
+                    variant="underlined" type="number" :rules="validationRules.quantity" :disabled="true"></v-text-field>
                 </v-col>
                 <v-col cols="12" md="12">
-                  <v-text-field v-model="editedItem.purchase_place" :label="$t('product.fields.purchase_place')"
-                    variant="underlined"></v-text-field>
+                  <v-autocomplete v-model="editedItem.warehouse_id" :items="stores"
+                    :label="$t('warehouse.fields.warehouse')" item-title="title" item-value="warehouse_id" variant="underlined" :rules="selectRules">
+                    <template v-slot:item="{ props, item }">
+                      <v-list-item v-bind="props">
+                        <v-list-item-subtitle class="d-flex flex-column">
+                          <v-tooltip location="top right">
+                            <template v-slot:activator="{ props }">
+                              <div class="description-text" v-bind="props" :title="item.raw.description">
+                                {{ $t("warehouse.fields.description") }}:
+                                {{ item.raw.description }}
+                              </div>
+                            </template>
+                            <span>{{ item.raw.description }}</span>
+                          </v-tooltip>
+                          <v-tooltip location="top right">
+                            <template v-slot:activator="{ props }">
+                              <div class="description-text" v-bind="props" :title="item.raw.location">
+                                {{ $t("warehouse.fields.home_location") }}:
+                                {{ item.raw.location }}
+                              </div>
+                            </template>
+                            <span>{{ item.raw.location }}</span>
+                          </v-tooltip>
+                        </v-list-item-subtitle>
+                      </v-list-item>
+                    </template>
+                  </v-autocomplete>
                 </v-col>
-              </v-row>
-
-              <!-- Navegación -->
-              <div class="d-flex justify-space-between mt-8">
-                <v-btn variant="text" class="text-grey-darken-1" @click="step > 0 ? step-- : close()">
-                  {{ step === 0 ? $t("buttons.close") : $t("buttons.previous") }}
+                <v-col cols="12" md="4">
+                  <v-text-field v-model="editedItem.quantity_mov" :label="$t('product.fields.quantity')"
+                    variant="underlined" type="number" :rules="quantity_mov"></v-text-field>
+                </v-col>
+                </v-row>
+              </v-card-text>
+        <v-divider></v-divider>
+        <v-card-actions>
+          <v-spacer></v-spacer>
+          <v-btn variant="text" class="text-grey-darken-1" @click="close()">
+                  {{ $t("buttons.close") }}
                 </v-btn>
 
-                <v-btn variant="text" class="text-deep-purple-accent-3" @click="nextStep" :disabled="!valid">
+                <v-btn variant="text" class="text-deep-purple-accent-3" @click="save()" :disabled="!valid">
                   {{
-                  step === steps.length - 1 ? $t("buttons.saveAndClose") : $t("buttons.next")
+                 $t("buttons.move")
                   }}
                 </v-btn>
-              </div>
-            </v-col>
-          </v-row>
-        </v-card-text>
+        </v-card-actions>
       </v-card>
     </v-form>
-  </v-dialog>
-
-  <v-dialog v-model="dialogDelete" max-width="500px">
-    <v-card>
-      <v-toolbar color="#DA7171">
-        <span class="text-subtitle-2 ml-4"> {{ $t('deleteDialog.title', { item: $t(`deleteDialog.items.product`) })
-          }}</span>
-      </v-toolbar>
-      <v-card-text class="mt-2 mb-2"> {{ $t('deleteDialog.message') }}</v-card-text>
-      <v-divider></v-divider>
-      <v-card-actions>
-        <v-spacer></v-spacer>
-        <v-btn color="#DA7171" variant="flat" @click="closeDelete">{{ $t('taskForm.buttons.cancel') }}</v-btn>
-        <v-btn color="#03626C" variant="flat" :loading="loading" @click="deleteItemConfirm">{{
-          $t('taskForm.buttons.confirmDelete') }}</v-btn>
-      </v-card-actions>
-    </v-card>
   </v-dialog>
 
   <!--Almacén-->
@@ -616,12 +387,12 @@
                 </v-col>-->
 
                 <v-col cols="12" md="12">
-                  <v-text-field v-model="editedItemWarehouse.title" clearable :label="$t('warehouse.fields.name')"
+                  <v-text-field v-model="editedItemWarehouse.title"  :label="$t('warehouse.fields.name')"
                     variant="underlined" :rules="nameRules"></v-text-field>
                 </v-col>
 
                 <v-col cols="12" md="12">
-                  <v-text-field v-model="editedItemWarehouse.location" clearable
+                  <v-text-field v-model="editedItemWarehouse.location" 
                     :label="$t('warehouse.fields.home_location')" variant="underlined"
                     :rules="locationRules"></v-text-field>
                 </v-col>
@@ -638,7 +409,7 @@
                 </v-col>
 
                 <v-col cols="12" md="12">
-                  <v-textarea v-model="editedItemWarehouse.description" clearable
+                  <v-textarea v-model="editedItemWarehouse.description" 
                     :label="$t('warehouse.fields.description')" variant="underlined"
                     :rules="descriptionRules"></v-textarea>
                 </v-col>
@@ -736,6 +507,7 @@ export default {
       unit_price: 0, // Precio unitario
       total_price: 0, // Precio total
       quantity: 0, // Cantidad
+      quantity_mov: 0, // Cantidad
       purchase_date: null, // Fecha de compra
       purchase_place: "", // Lugar de compra
       expiration_date: null, // Fecha de expiración
@@ -764,6 +536,7 @@ export default {
       unit_price: 0, // Precio unitario
       total_price: 0, // Precio total
       quantity: 0, // Cantidad
+      quantity_mov: 0, // Cantidad
       purchase_date: null, // Fecha de compra
       purchase_place: "", // Lugar de compra
       expiration_date: null, // Fecha de expiración
@@ -792,6 +565,7 @@ export default {
       unit_price: 0, // Precio unitario
       total_price: 0, // Precio total
       quantity: 0, // Cantidad
+      quantity_mov: 0, // Cantidad
       purchase_date: null, // Fecha de compra
       purchase_place: "", // Lugar de compra
       expiration_date: null, // Fecha de expiración
@@ -873,7 +647,7 @@ export default {
       handler: "calculateTotalPrice",
       immediate: true,
     },
-    "editedItem.quantity": {
+    "editedItem.quantity_mov": {
       handler: "calculateTotalPrice",
       immediate: true,
     },
@@ -895,6 +669,16 @@ export default {
     },
   },
   computed: {
+    quantity_mov() {
+    return [
+      v => !!v || 'La cantidad es requerida',
+      v => (v && v > 0) || 'La cantidad debe ser mayor que 0',
+      v => {
+        if (!this.editedItem || !this.editedItem.quantity) return true;
+        return (v && v <= this.editedItem.quantity) || `La cantidad debe ser menor o igual a ${this.editedItem.quantity}`;
+      }
+    ];
+  },
     validationRules() {
       return {
         name: [
@@ -1055,103 +839,12 @@ export default {
     imgedit() {
       return this.imgMiniatura;
     },
-    dateFormatted() {
-      const date = this.input ? new Date(this.input) : new Date();
-      const day = date.getDate().toString().padStart(2, "0");
-      const month = (date.getMonth() + 1).toString().padStart(2, "0");
-      const year = date.getFullYear();
-      return `${year}-${month}-${day}`;
-    },
-    dateFormatted2() {
-      const date = this.input2 ? new Date(this.input2) : new Date();
-      const day = date.getDate().toString().padStart(2, "0");
-      const month = (date.getMonth() + 1).toString().padStart(2, "0");
-      const year = date.getFullYear();
-      return `${year}-${month}-${day}`;
-    },
-    getDate() {
-      return this.input ? new Date(this.input) : new Date();
-    },
-    getDate2() {
-      return this.input2 ? new Date(this.input2) : new Date();
-    },
     // Calcula automáticamente el precio total
     formattedTotalPrice() {
       return this.editedItem.total_price
         ? parseFloat(this.editedItem.total_price).toFixed(2)
         : "0.00";
     },
-   allProducts() {
-    return this.products; // ← asumiendo que `products` viene de data o prop
-  },
-
-  totalQuantity() {
-      return this.products.reduce((sum, product) => sum + (product.quantity || 0), 0);
-    },
-  // ✅ Productos con stock bajo (≤ 5 unidades) — basado en ALLPRODUCTS
-  lowStockProducts() {
-    return this.allProducts.filter(p => (p.quantity || 0) <= 5);
-  },
-  lowStockItemsCount() {
-   return this.lowStockProducts.reduce((sum, product) => sum + (product.quantity || 0), 0);
-  },
-  mostCriticalLowStockItem() {
-    if (this.lowStockProducts.length === 0) return null;
-    // Ordena por expiration_date (el que vence primero es más crítico)
-    const sorted = [...this.lowStockProducts].sort(
-      (a, b) => new Date(a.expiration_date) - new Date(b.expiration_date)
-    );
-    return sorted[0].name; // ← ¡Devuelve el NOMBRE, no la fecha!
-  },
-  lastLowStockDate() { // ← Fecha del más crítico
-    if (this.lowStockProducts.length === 0) return null;
-    const sorted = [...this.lowStockProducts].sort(
-      (a, b) => new Date(a.purchase_date) - new Date(b.purchase_date)
-    );
-    return sorted[0].purchase_date;
-  },
-
-  // ✅ Productos por vencer (esta semana o ya vencidos) — basado en ALLPRODUCTS
-  expiringSoonProducts() {
-    const today = new Date();
-    const oneWeekLater = new Date();
-    oneWeekLater.setDate(today.getDate() + 7);
-
-    return this.allProducts.filter(p => {
-      if (!p.expiration_date) return false;
-      const expDate = new Date(p.expiration_date);
-      return expDate <= oneWeekLater;
-    });
-  },
-  expiringSoonCount() {
-    return this.expiringSoonProducts.reduce((sum, product) => sum + (product.quantity || 0), 0);
-  },
-  nextToExpireItem() {
-    if (this.expiringSoonProducts.length === 0) return null;
-    const sorted = [...this.expiringSoonProducts].sort(
-      (a, b) => new Date(a.expiration_date) - new Date(b.expiration_date)
-    );
-    return sorted[0].name;
-  },
-  nextToExpireDate() {
-    if (this.expiringSoonProducts.length === 0) return null;
-    const sorted = [...this.expiringSoonProducts].sort(
-      (a, b) => new Date(a.expiration_date) - new Date(b.expiration_date)
-    );
-    return sorted[0].expiration_date;
-  },
-
-  // ✅ Productos a mostrar en la tabla (filtrados por selectedTool)
-  filteredProducts() {
-    switch (this.selectedTool) {
-      case "lowStock":
-        return this.lowStockProducts;
-      case "expiringSoon":
-        return this.expiringSoonProducts;
-      default:
-        return this.allProducts;
-    }
-  }
   },
   created() {
     this.tools = [
@@ -1163,49 +856,49 @@ export default {
   },
   mounted() {
     this.home_id = LocalStorageService.getItem("home_id");
-    this.editedItem.warehouse_id = this.warehouseData.warehouse_id;
     this.showPersonProducts();
-     this.updateWarehouseTools();
     this.selectedTool = "products";
   },
-  methods: {
-     selectTool(toolId) {
-    this.selectedTool = toolId;
-    //this.applyFilters();
-  },
-    updateWarehouseTools() {
-      this.warehouseTools = [
-        {
-          id: "products",
-          name: this.$t("warehouse.titles.products"),
-          action: () => this.selectTool("products"),
-          icon: "mdi-package-variant",
-          color: "indigo",
-          count: this.totalQuantity || 0,
-          lastDate: new Date().toISOString().split('T')[0],
-          lastItemName: this.lastAddedProductName || this.$t("common.no_name"),
-        },
-        {
-          id: "lowStock",
-          name: this.$t("warehouse.titles.lowStock"),
-          action: () => this.selectTool("lowStock"),
-          icon: "mdi-alert-box",
-          color: "orange",
-          count: this.lowStockItemsCount || 0,
-          lastItemName: this.mostCriticalLowStockItem || this.$t("common.no_name"),
-          lastDate: this.lastLowStockDate, // ← ¡Así asignas la fecha correctamente!
-        },
-        {
-          id: "expiringSoon",
-          name: this.$t("warehouse.titles.expiringSoon"),
-          action: () => this.selectTool("expiringSoon"),
-          icon: "mdi-clock-alert-outline",
-          color: "red",
-          count: this.expiringSoonCount || 0,
-          lastItemName: this.nextToExpireItem || this.$t("common.no_name"),
-          lastDate: this.nextToExpireDate,
-        },
-      ];
+  methods: {    
+    async moveItem(item) {
+      //this.originalItem = Object.assign({}, item);
+      this.editedItem = Object.assign({}, item);
+      this.editedItem.warehouse_id = null;
+      try {
+        const result = await handleRequest({
+          endpoint: "productcategory-productstatus-apk",
+          method: "POST",
+          data: this.data,
+        });
+
+        if (result.success) {
+           this.stores = (result.data?.productwarehouses || []).filter(
+        store => store.id !== this.warehouseData.id
+      );
+          this.categories = result.data?.productcategories || [];
+          this.status = result.data?.productstatus || [];
+        } else {
+          // Si no hay datos, asignamos un array vacío
+          this.categories = [];
+          this.stores = [];
+          this.status = [];
+          this.showAlert(
+            "info",
+            result.message || "No hay alamacenes disponibles.",
+            3000
+          );
+        }
+      } catch (error) {
+        this.showAlert(
+          "error",
+          "Ocurrió un error inesperado al cargar los almacenes.",
+          3000
+        );
+        this.loadingProduct = false;
+      } finally {
+        this.dialog = true;
+        this.loadingProduct = false;
+      }
     },
     getImageUrl(imagePath) {
       return `${this.$axios.defaults.baseURL}images/${imagePath}`;
@@ -1375,7 +1068,7 @@ export default {
     },
     calculateTotalPrice() {
       this.editedItem.total_price = (
-        this.editedItem.unit_price * this.editedItem.quantity
+        this.editedItem.unit_price * this.editedItem.quantity_mov
       ).toFixed(2);
     },
     nextStep() {
@@ -1425,54 +1118,12 @@ export default {
       // En otros casos, devolver un ícono por defecto
       return "mdi-help-circle";
     },
-    // Cambiar almacén seleccionado
-    /*selectStore(warehouse_id) {
-      this.editedItem.warehouse_id = warehouse_id;
-      this.currentPage = 1; // Reiniciar paginación al cambiar almacén
-      this.showPersonProducts();
-    },*/
-    /*async initialize() {
-      this.data = {};
-      this.data.home_id = this.home_id;
-      try {
-        this.loading = true;
-        const result = await handleRequest({
-          endpoint: "person-warehouse-home",
-          method: "POST",
-          data: this.data,
-        });
-
-        if (result.success) {
-          // Si la solicitud es exitosa, asignamos las sucursales
-          this.stores = result.data?.store || [];
-          if (this.stores.length > 0) {
-            // Seleccionar el primer almacén por defecto
-            this.editedItem.warehouse_id = this.stores[0].warehouse_id;
-          }
-        } else {
-          // Si no hay datos, asignamos un array vacío
-          this.stores = [];
-          //this.showAlert('success', result.message || 'No hay almacénes disponibles.', 3000);
-        }
-      } catch (error) {
-        this.loading = false;
-        // Captura de errores no controlados
-        this.showAlert(
-          "error",
-          "Ocurrió un error inesperado al cargar los almacenes.",
-          3000
-        );
-      } finally {
-        this.loading = false;
-        this.showPersonProducts();
-      }
-    },*/
     async showPersonProducts() {
       this.products = [];
       this.data = {};
       this.editedItem.home_id = this.home_id;
       this.data.home_id = this.home_id;
-      this.data.warehouse_id = this.editedItem.warehouse_id;
+      this.data.warehouse_id = this.warehouseData.warehouse_id;
       try {
         this.loading = true;
         const result = await handleRequest({
@@ -1494,7 +1145,6 @@ export default {
         // Captura de errores no controlados
         this.showAlert("error", "Ocurrió un error inesperado al cargar los roles.", 3000);
       } finally {
-        this.updateWarehouseTools();
         this.loading = false;
       }
     },
@@ -1562,7 +1212,59 @@ export default {
     },
 
     async save() {
-      if (this.editedIndex === -1) {
+      this.valid = false;
+        const fieldsToUpdate = [
+          "id",
+          "warehouse_id",
+          "product_id",
+          "unit_price",
+          "quantity",
+          "quantity_mov",
+          "total_price",
+        ];
+        let updatedFields = Object.keys(this.editedItem)
+          .filter(
+            (key) =>
+              fieldsToUpdate.includes(key) &&
+              this.editedItem[key] !== this.originalItem[key]
+          )
+          .reduce((obj, key) => {
+            obj[key] = this.editedItem[key];
+            return obj;
+          }, {});
+        if (Object.keys(updatedFields).length > 0) {
+          updatedFields.id = this.editedItem.id;
+          try {
+            const result = await handleRequest({
+              endpoint: "warehouse-product-move",
+              method: "POST",
+              data: updatedFields,
+            });
+
+            // Manejo de la respuesta según el resultado
+            if (result.success) {
+              this.showAlert("success", result.message, 3000);
+              this.showPersonProducts();
+            } else {
+              this.showAlert("warning", result.message, 3000);
+            }
+          } catch (error) {
+            // Este bloque captura errores inesperados fuera del manejo estándar
+            this.showAlert(
+              "error",
+              "Ocurrió un error inesperado al procesar la solicitud.",
+              3000
+            );
+          } finally {
+            this.loadingProduct = false;
+            this.editedIndex = -1;
+          }
+        } 
+        else {
+          this.loadingProductEdit = false;
+          this.showAlert("success", "No se realizaron cambios.", 3000);
+        }
+      /*if (this.editedIndex === -1) {
         this.loadingProduct = true;
         this.valid = false;
         const fieldsToUpdate = [
@@ -1707,107 +1409,8 @@ export default {
           this.loadingProductEdit = false;
           this.showAlert("success", "No se realizaron cambios.", 3000);
         }
-      }
+      }*/
       this.close();
-    },
-
-    async editItem(item) {
-      this.originalItem = Object.assign({}, item);
-      this.editedItem = Object.assign({}, item);
-      this.dateInput = item.purchase_date || null;
-      this.dateInput1 = item.expiration_date || null;
-      this.editedItem.purchase_date = item.purchase_date || null;
-      this.editedItem.expiration_date = item.expiration_date || null;
-      this.file = null;
-      this.editedIndex = 1;
-      // Crear la imagen y configurar el src
-      const img = new Image();
-      img.src = `${this.$axios.defaults.baseURL}images/${item.image}`; // Se asume que item.image_url es la URL de la imagen
-
-      // Usar una función asíncrona para manejar la carga de la imagen
-      img.onload = async () => {
-        try {
-          // Asignar la imagen cargada a imgMiniatura
-          this.imgMiniatura = `${this.$axios.defaults.baseURL}images/${item.image}`;
-        } catch (error) {
-          console.error("Error al cargar la imagen", error);
-          this.showAlert("error", "Error al cargar la imagen.", 3000);
-        }
-      };
-      this.loadingProductEdit = true;
-      this.data = {};
-      this.data.home_id = this.editedItem.home_id;
-      try {
-        const result = await handleRequest({
-          endpoint: "productcategory-productstatus-apk",
-          method: "POST",
-          data: this.data
-        });
-
-        if (result.success) {
-          // Si la solicitud es exitosa, asignamos las sucursales
-          this.categories = result.data?.productcategories || [];
-          this.status = result.data?.productstatus || [];
-        } else {
-          // Si no hay datos, asignamos un array vacío
-          this.categories = [];
-          this.status = [];
-          this.showAlert(
-            "info",
-            result.message || "No hay alamacenes disponibles.",
-            3000
-          );
-        }
-      } catch (error) {
-        this.showAlert(
-          "error",
-          "Ocurrió un error inesperado al cargar los almacenes.",
-          3000
-        );
-        this.loadingProductEdit = false;
-      } finally {
-        this.dialog = true;
-        this.loadingProductEdit = false;
-      }
-    },
-    deleteItem(item) {
-      this.editedItem.id = item.id;
-      this.dialogDelete = true;
-    },
-    closeDelete() {
-      this.dialogDelete = false;
-    },
-    async deleteItemConfirm() {
-      this.loading = true;
-      try {
-        let request = {
-          id: this.editedItem.id,
-        };
-        const result = await handleRequest({
-          endpoint: "person-home-warehouse-product-destroy",
-          method: "POST",
-          data: request,
-        });
-
-        // Manejo de la respuesta según el resultado
-        if (result.success) {
-          this.showAlert("success", result.message, 3000);
-          this.loading = false;
-          this.showPersonProducts();
-        } else {
-          this.showAlert("warning", result.message, 3000);
-        }
-      } catch (error) {
-        // Este bloque captura errores inesperados fuera del manejo estándar
-        this.showAlert(
-          "error",
-          "Ocurrió un error inesperado al procesar la solicitud.",
-          3000
-        );
-      } finally {
-        this.loading = false;
-        this.closeDelete();
-      }
     },
     showAlert(sb_type, sb_message, sb_timeout) {
       this.sb_type = sb_type;

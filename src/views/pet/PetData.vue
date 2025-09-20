@@ -22,8 +22,7 @@
                     <v-col cols="12" md="6">
                         <!-- Selector de mascota (activador del menú) -->
                         <div class="d-flex align-center cursor-pointer pet-selector"
-                            style="padding: 8px; border-radius: 12px; transition: background-color 0.2s"
-                            @click="menuPet = !menuPet">
+                            style="padding: 8px; border-radius: 12px; transition: background-color 0.2s">
                             <!-- Foto del paciente -->
                             <div style="position: relative; display: inline-block;">
                                 <v-avatar size="60" class="me-4">
@@ -53,56 +52,8 @@
                                     {{ selectedPet.breed ? $t("petDetails.breed.withValue", { breed: selectedPet.breed
                                     }) : "" }}
                                 </div>
-                                <div class="text-body-2 text-grey-darken-1">
-                                    {{ selectedPet.age ? $t("petDetails.age.withValue", { age: selectedPet.age
-                                    }) : "" }}
-                                </div>
-                                <div class="text-body-2 text-grey-darken-1">
-                                    {{ selectedPet.sex ? $t("petDetails.sex.withValue", { sex: selectedPet.sex
-                                    }) : "" }}
-                                </div>
                             </div>
-
-                            <!-- Icono de despliegue -->
-                            <v-icon v-if="selectedPet !== null" :class="{ 'rotate': menuPet }" class="ms-2 transition-fast-in-fast-out" size="20"
-                                color="grey">
-                                mdi-menu-down
-                            </v-icon>
                         </div>
-
-                        <!-- Menú desplegable con TARJETAS (no lista) -->
-                        <v-menu v-model="menuPet" :close-on-content-click="false" location="bottom start" offset-y
-                            :min-width="null" :max-width="null" class="rounded-lg">
-                            <template #activator="{ props }">
-                                <div v-bind="props"></div>
-                            </template>
-                            <v-card max-width="900px" class="mx-auto rounded-lg">
-                                <v-card-text>
-                                    <v-container fluid>
-                                        <v-row justify="center">
-                                            <v-col v-for="pet in pets" :key="pet.id" cols="auto" min-width="200px">
-                                                <v-card class="text-center store-card" elevation="3" rounded="lg"
-                                                    @click="selectPet(pet)"
-                                                    :class="selectedPet?.id === pet.id ? 'bg-blue-lighten-5' : ''">
-                                                    <div class="icon-wrapper rounded-lg mb-3">
-                                                        <v-img :src="`${this.$axios.defaults.baseURL}images/${
-                                                          pet.image }?t=${getCacheTimestamp()}`" alt="Foto de Mascota" width="100%" height="130"  cover
-                                                    class="rounded-lg" />
-                                                    </div>
-                                                    <div class="store-name">{{ pet.name }}</div>
-                                                    <div class="store-products">{{ pet.breed }}</div>
-                                                    <v-icon v-if="selectedPet?.id === pet.id" color="primary" size="18"
-                                                        class="position-absolute" style="top: 8px; right: 8px;">
-                                                        mdi-check-circle
-                                                    </v-icon>
-                                                </v-card>
-                                            </v-col>
-                                        </v-row>
-                                    </v-container>
-                                </v-card-text>
-                            </v-card>
-
-                        </v-menu>
                     </v-col>
 
                     <!-- Espaciado para centrar visualmente -->
@@ -111,279 +62,79 @@
                     <v-col cols="12" sm="6" md="3">
                     </v-col>
                 </v-row>
-                <!-- Fila completa para herramientas -->
-               <v-card-actions class="pa-3 bg-grey-lighten-5 tools-bar">
+                <!-- Fila completa para herramientas 
+                <v-card-actions class="pa-3 bg-grey-lighten-5 tools-bar">
                             <v-btn v-for="tool in tools" :key="tool.name" @click="tool.action" size="small"
                                 color="primary" variant="text" prepend-icon="mdi-plus" class="text-capitalize">
                                 {{ tool.name }}
                             </v-btn>
                 </v-card-actions>
-                <v-divider />
-                 <v-row dense class="my-1">
-                    <v-col cols="12" sm="12" md="12">
-                      <v-card class="mx-auto" elevation="1" rounded="lg" border flat>
-                        <v-list-item height="60">
-                          <template v-slot:prepend>
-                            <v-avatar size="40" color="blue-grey">
-                              <v-icon icon="mdi-calendar"></v-icon>
+                <v-divider />-->
+                <v-row dense class="mt-1">
+                    <v-col v-for="(tool, index) in petTools" :key="index" cols="12" sm="6" md="6" lg="3" class="px-1">
+                        <v-card class="d-flex align-center pa-2" elevation="2" rounded="lg" density="comfortable"  :class="{ 'oscurecer-persistente': selectedView === tool.type }"
+                           @click="abrirModal(tool)" style="cursor: pointer; height: 70px; width: 100%">
+                            <v-avatar size="40" class="me-3" :color="colors[index] + ' lighten-4'" variant="tonal">
+                                <v-icon :color="colors[index]">{{ tool.icon }}</v-icon>
                             </v-avatar>
-                          </template>
 
-                          <template v-slot:title> Salud De las Mascotas</template>
-                          <template v-slot:subtitle> {{ new Date().toLocaleDateString() }} </template>
-                          <template v-slot:append>
-                            <v-chip class="ma-2" color="blue-grey" label rounded="lg">
-                              <v-icon icon="mdi-emoticon" start></v-icon>
-                              <div class="text-subtitle-2">Estable</div>
-                            </v-chip>
-                          </template>
-                        </v-list-item>
+                            <div style="min-width: 0; flex: 1">
+                                <div class="text-body-2 font-weight-medium text-truncate">
+                                    {{ tool.name }}
+                                </div>
 
+                                <template v-if="tool.count > 0">
+                                    <!-- Caso 1: Solo 1 registro -->
+                                    <template v-if="tool.count === 1">
+                                        <v-tooltip location="bottom" v-if="tool.lastItemName">
+                                            <template v-slot:activator="{ props }">
+                                                <div v-bind="props"
+                                                    class="text-caption text-grey-darken-1 text-truncate">
+                                                    {{ tool.lastItemName }}
+                                                </div>
+                                            </template>
+                                            <span>{{ tool.lastItemName }}</span>
+                                        </v-tooltip>
+                                        <div v-else class="text-caption text-grey-darken-1">
+                                            {{ $t("common.no_name") }}
+                                        </div>
 
-
-
-
-                        <v-divider></v-divider>
-
-                        <v-card-text class="pa-4">
-                          <!-- Bloque de alerta -->
-                          <v-alert color="warning" variant="tonal" border="start" icon="mdi-alert-circle" rounded="lg"
-                            class="mb-4">
-                            ⚠️ 1 mascota con control pendiente. Revisa la alerta.
-                          </v-alert>
-
-                          <!-- Fila Estado General + KPI Circulares -->
-                          <v-row dense>
-                            <!-- KPI Circulares -->
-                            <v-col cols="12" sm="12">
-                              <v-row dense justify="space-between">
-
-                                <!-- Vacunas al día -->
-                                <v-col cols="6" sm="6" md="3">
-                                  <v-tooltip top>
-                                    <template v-slot:activator="{ props }">
-                                      <v-card class="pa-4 text-center" rounded="lg" outlined v-bind="props">
-                                        <v-progress-circular :model-value="stats.totalPets ? (stats.upToDateVaccinations / stats.totalPets) * 100 : 0" size="80" width="8" color="red-darken-2">
-                                          <strong>{{ stats.upToDateVaccinations }}/ {{ stats.totalPets }}</strong>
-                                        </v-progress-circular>
-                                        <div class="mt-2 font-weight-medium">Vacunas al día</div>
-                                      </v-card>
+                                        <div class="text-caption text-grey-lighten-1 mt-1">
+                                            {{ formatIntuitiveDate(tool.lastDate) }}
+                                        </div>
                                     </template>
-                                    <span>{{ stats.upToDateVaccinations }} de {{ stats.totalPets }} mascotas tienen las vacunas al día</span>
-                                  </v-tooltip>
-                                </v-col>
 
-                                <!-- Citas médicas -->
-                                <v-col cols="6" sm="6" md="3">
-                                  <v-tooltip top>
-                                    <template v-slot:activator="{ props }">
-                                      <v-card class="pa-4 text-center" rounded="lg" outlined v-bind="props" style="cursor: pointer;"> <!--
-                                        @click="this.dialogCardConsultations = true"-->
-                                        <v-progress-circular
-                                          :model-value="stats.totalPets ? (stats.pendingControls / stats.totalPets) * 100 : 0"
-                                          size="80" width="8" color="amber-darken-3">
-                                          <strong>{{ stats.pendingControls }}/{{ stats.totalPets }} </strong>
-                                        </v-progress-circular>
-                                        <div class="mt-2 font-weight-medium">Controles Pendientes</div>
-                                      </v-card>
+                                    <!-- Caso 2: Más de 1 registro -->
+                                    <template v-else>
+                                        <div class="text-caption text-grey-lighten-1">
+                                            <div class="font-weight-medium">
+                                                {{ tool.count }} {{ $t("common.items") }}
+                                            </div>
+                                            <div class="mt-1">
+                                                {{ formatIntuitiveDate(tool.lastDate) }}
+                                            </div>
+                                        </div>
                                     </template>
-                                    <span><span>{{ stats.pendingControls }} de {{ stats.totalPets }} mascotas tienen controles pendientes</span></span>
-                                  </v-tooltip>
-                                </v-col>
-                                <!-- Vacunas completas -->
-                                <v-col cols="6" sm="6" md="3">
-                                  <v-tooltip top>
-                                    <template v-slot:activator="{ props }">
-                                      <v-card class="pa-4 text-center" rounded="lg" outlined v-bind="props">
-                                        <v-progress-circular :model-value="stats.totalPets ? (stats.upcomingVetVisits / stats.totalPets) * 100 : 0" size="80" width="8" color="green-darken-2">
-                                          <strong>{{ stats.upcomingVetVisits }}/{{ stats.totalPets }}</strong>
-                                        </v-progress-circular>
-                                        <div class="mt-2 font-weight-medium">Citas veterinarias</div>
-                                      </v-card>
-                                    </template>
-                                    <span>{{ stats.upcomingVetVisits }}  de {{ stats.totalPets }} mascotas tienen vacunas completas</span>
-                                  </v-tooltip>
-                                </v-col>
-
-                              </v-row>
-                            </v-col>
-                          </v-row>
-                        </v-card-text>
-                      </v-card>
+                                </template>
+                                <template v-else>
+                                    <div class="text-caption text-grey-darken-1">
+                                        {{ $t("common.no_records") }}
+                                    </div>
+                                </template>
+                            </div>
+                        </v-card>
                     </v-col>
-                  </v-row>
-                <!--<v-row justify="space-between" align="center" class="mb-6">
-          <v-col
-            cols="12"
-            class="ma-0 pt-6"
-            style="max-height: 60vh; min-height: 40vh; overflow-y: auto"
-          >
-              <template v-if="pets.length > 0">
-                <v-card
-                  v-for="(pet, index) in pets"
-                  :key="index"
-                  class="mb-4 rounded-lg pa-2"
-                  :class="{ 'selected-pet-card': isSelected(pet) }"
-                  density="comfortable"
-                  elevation="2"
-                  @click="selectPet(pet)"
-                >
-                  <v-row>
-                    <v-col cols="1" class="d-flex justify-start">
-                      <v-dialog max-width="500" class="rounded-lg">
-                        <template v-slot:activator="{ props: activatorProps }">
-                          <div
-                            v-bind="activatorProps"
-                            class="icono-concavo d-flex flex-column justify-center justify-start"
-                          >
-                            <v-img
-                              :src="`${this.$axios.defaults.baseURL}images/${
-                                pet.image
-                              }?t=${getCacheTimestamp()}`"
-                              cover
-                              class="img-concava"
-                            />
-                          </div>
-                        </template>
-
-                        <template v-slot:default="{ isActive }">
-                          <v-card class="modal-imagen">
-                            <v-img
-                              :src="`${this.$axios.defaults.baseURL}images/${pet.image}`"
-                              max-height="500"
-                              contain
-                            />
-                            <v-card-actions>
-                              <v-spacer></v-spacer>
-                              <v-btn
-                                text="Cerrar"
-                                variant="flat"
-                                @click="isActive.value = false"
-                              ></v-btn>
-                            </v-card-actions>
-                          </v-card>
-                        </template>
-                      </v-dialog>
-                    </v-col>
-                    <v-col cols="3" class="d-flex align-center justify-start">
-                      <v-row align="center" class="gap-3">
-                        <div>
-                          <div class="font-weight-bold text-body-2">
-                            {{ pet.name }}
-                          </div>
-                          <div
-                            class="text-body-2 d-flex align-center text-grey-darken-1 text-truncate"
-                          >
-                            {{ pet.breed }}
-                            <v-tooltip
-                              activator="parent"
-                              location="bottom"
-                              max-width="350px"
-                            >
-                              <span style="white-space: normal; word-break: break-word">
-                                {{ $t("pets.fields.breed") }}: {{ pet.breed }}
-                              </span>
-                            </v-tooltip>
-                          </div>
-                          <div
-                            class="text-body-2 d-flex align-center text-grey-darken-1 text-truncate"
-                          >
-                            {{ pet.microship }}
-                            <v-tooltip
-                              activator="parent"
-                              location="bottom"
-                              max-width="350px"
-                            >
-                              <span style="white-space: normal; word-break: break-word">
-                                {{ $t("pets.fields.microchip") }}: {{ pet.microship }}
-                              </span>
-                            </v-tooltip>
-                          </div>
-                        </div>
-                      </v-row>
-                    </v-col>
-                    <v-col cols="1" class="d-flex align-center justify-start">
-                      <div>
-                        <span class="text-body-2"> {{ pet.categoryName }}</span>
-                        <v-tooltip activator="parent" location="bottom" max-width="350px">
-                          <span style="white-space: normal; word-break: break-word">
-                            {{ $t("pets.fields.category") }}: {{ pet.categoryName }}
-                          </span>
-                        </v-tooltip>
-                      </div>
-                    </v-col>
-                    <v-col cols="1" class="d-flex align-center justify-start">
-                      <div>
-                        <span class="text-body-2"> {{ pet.color }}</span>
-                        <v-tooltip activator="parent" location="bottom" max-width="350px">
-                          <span style="white-space: normal; word-break: break-word">
-                            {{ $t("pets.fields.color") }}: {{ pet.color }}
-                          </span>
-                        </v-tooltip>
-                      </div>
-                    </v-col>
-                    <v-col cols="2" class="d-flex align-center justify-start">
-                      <div>
-                        <span class="text-body-2">
-                          {{ $vuetify.date.format(pet.date_birth, "fullDate") }}
-                        </span>
-                        <v-tooltip activator="parent" location="bottom" max-width="350px">
-                          <span style="white-space: normal; word-break: break-word">
-                            {{ $t("pets.fields.date_birth") }}:
-                            {{ $vuetify.date.format(pet.date_birth, "fullDate") }}
-                          </span>
-                        </v-tooltip>
-                      </div>
-                    </v-col>
-                    <v-col cols="3" class="d-flex align-center justify-start">
-                      <div>
-                        <span class="text-body-2"> {{ pet.signs }}</span>
-                        <v-tooltip activator="parent" location="bottom" max-width="350px">
-                          <span style="white-space: normal; word-break: break-word">
-                            {{ $t("pets.fields.signs") }}: {{ pet.signs }}
-                          </span>
-                        </v-tooltip>
-                      </div>
-                    </v-col>
-                    <v-col
-                      cols="1"
-                      class="d-flex align-center ml-auto pe-4"
-                      style="margin-left: auto !important"
-                    >
-                      <v-btn
-                        icon
-                        variant="text"
-                        color="green-darken-2"
-                        size="small"
-                        @click="editItem(pet)"
-                      >
-                        <v-icon>mdi-pencil</v-icon>
-                      </v-btn>
-                      <v-btn
-                        icon
-                        variant="text"
-                        color="red-darken-2"
-                        size="small"
-                        @click="deleteItem(pet)"
-                      >
-                        <v-icon>mdi-delete</v-icon>
-                      </v-btn>
-                    </v-col>
-                  </v-row>
-                </v-card>
-              </template>
-              <template v-else>
-                <v-col cols="12" class="text-center py-8">
-                  {{ $t("pets.empty") }}
+                </v-row>
+                <v-row dense class="mt-1">
+                <v-col cols="12">
+                  <component
+                    :is="getComponentByType(selectedView)"
+                    v-if="selectedView"
+                    :key="selectedView"
+                    :selected-pet="selectedPet"
+                  />
                 </v-col>
-              </template>
-          </v-col>
-        </v-row>-->
-                <SuggestionsList :items="suggestions" :title="$t('finances.sections.suggestions')" icon="mdi-finance">
-                    <template #detail="{ taskData, onClose }">
-                        <ChatTask :taskData="taskData" @close-dialog="onClose" />
-                    </template>
-                </SuggestionsList>
+      </v-row>
             </v-card-text>
         </v-card>
     </v-container>
@@ -556,39 +307,30 @@
             </v-card>
         </v-form>
     </v-dialog>
-    <v-dialog v-model="dialogPetData" fullscreen transition="dialog-bottom-transition">
-    <v-card>
-      <v-card-text class="bg-grey-lighten-4">
-        <!-- Aquí pasamos el 'selectedWorker' al componente dentro del diálogo -->
-        <PetData :selectedPet="selectedPet"/>
-      </v-card-text>
-      <v-divider></v-divider>
-      <v-card-actions>
-        <v-spacer></v-spacer>
-        <v-btn text @click="closeDialogPetData">Cerrar</v-btn>
-      </v-card-actions>
-    </v-card>
-  </v-dialog>
-    <v-dialog v-model="dialogPet">
-        <v-card max-width="900px" class="mx-auto">
-            <v-card-title class="text-body-2"> Seleccionar Mascota </v-card-title>
+    <v-dialog v-model="dialogMedication" fullscreen transition="dialog-bottom-transition">
+        <v-card>
             <v-card-text>
-                <v-container fluid>
-                    <v-row justify="center">
-                        <v-col v-for="pet in pets" :key="pet.id" cols="auto" min-width="200px">
-                            <v-card class="text-center store-card" elevation="3" rounded="lg" @click="selectPet(pet)">
-                                <div class="icon-wrapper mb-3">
-                                    <v-img :src="`${$axios.defaults.baseURL}images/${
-                      pet.image
-                    }?t=${getCacheTimestamp()}`" alt="Foto de Mascota" width="100%" height="150" contain />
-                                </div>
-                                <div class="store-name">{{ pet.name }}</div>
-                                <div class="store-products">{{ pet.breed }}</div>
-                            </v-card>
-                        </v-col>
-                    </v-row>
-                </v-container>
+                <!-- Aquí pasamos el 'selectedWorker' al componente dentro del diálogo -->
+                <CurrentMedication :pet="selectedPet" />
             </v-card-text>
+            <v-divider></v-divider>
+            <v-card-actions>
+                <v-spacer></v-spacer>
+                <v-btn text @click="closeDialogMedication">Cerrar</v-btn>
+            </v-card-actions>
+        </v-card>
+    </v-dialog>
+    <v-dialog v-model="dialogDiet" fullscreen transition="dialog-bottom-transition">
+        <v-card>
+            <v-card-text>
+                <!-- Aquí pasamos el 'selectedWorker' al componente dentro del diálogo -->
+                <PetDiet :pet="selectedPet" />
+            </v-card-text>
+            <v-divider></v-divider>
+            <v-card-actions>
+                <v-spacer></v-spacer>
+                <v-btn text @click="closeDialogDiet">Cerrar</v-btn>
+            </v-card-actions>
         </v-card>
     </v-dialog>
 </template>
@@ -598,21 +340,30 @@ import LocalStorageService from "@/LocalStorageService";
 import { handleRequest } from "@/utils/api"; // Ruta al archivo
 import _ from "lodash";
 
-import SuggestionsList from "../suggestion/SuggestionsList.vue";
-import ChatTask from "../chat/ChatTask.vue";
-import PetData from "./PetData.vue";
+import Vaccination from "./Vaccination.vue";
+import Deworming from "./Deworming.vue";
+import VetVisit from "./VetVisit.vue";
+import CurrentMedication from "./CurrentMedication.vue";
+import PetDiet from "./PetDiet.vue";
 export default {
   components: {
-    ChatTask,
-    SuggestionsList,
-    PetData
+    Vaccination,
+    Deworming,
+    VetVisit,
+    CurrentMedication,
+    PetDiet,
+  },
+   props: {
+    selectedPet: {
+      type: Object,
+      required: true
+    },
   },
   data: () => ({
-    currentView: null, 
-    dialogPetData: false,
-    dialogPet: false,
-    selectedPet: {},
-   
+    selectedView: "vaccination",
+    currentView: null,
+    dialogMedication: false,
+    dialogDiet: false,
     petTools: [],
     dialog: false,
     nuevoValor: "",
@@ -630,9 +381,6 @@ export default {
     pets: [],
     categories: [],
     types: [],
-    stats: {},
-    suggestions: [],
-    statusuggestions: [],
     data: {},
 
     steps: [
@@ -712,6 +460,9 @@ export default {
         ? "Agregar Historia Clínica"
         : "Editar Historia Clínica";
     },
+    alertasHoy() {
+      return this.listaAlertas.length;
+    },
 
     dateFormatted() {
       const date = this.input ? new Date(this.input) : new Date();
@@ -726,7 +477,7 @@ export default {
     tools() {
       return [
         // 1. Vacunación
-        /*{
+        {
           name: this.$t("petTitles.vaccines"),
           action: () => this.showVaccines(),
           icon: "mdi-needle",
@@ -748,18 +499,13 @@ export default {
           name: this.$t("petTitles.currentMedications"),
           action: () => this.showMedications(),
           icon: "mdi-pill",
-        },*/
+        },
         // 5. Alimentación
         {
-          name: this.$t("pets.addButton"),
-          action: () => this.showAdd(),
+          name: this.$t("petTitles.diet"),
+          action: () => this.showDiet(),
           icon: "mdi-food",
         },
-        {
-          name: this.$t("pets.managePet"),
-          action: () => this.showPetData(),
-          icon: "mdi-pill",
-        }
       ];
     },
     imgedit() {
@@ -773,6 +519,25 @@ export default {
     this.initialize();
   },
   methods: {
+    getComponentByType(type) {
+      if (!type) return null;
+
+      // Normalización: minúsculas + eliminar tildes
+      const normalized = type
+        .toLowerCase()
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "");
+
+      const map = {
+        vaccination: Vaccination,
+        deworming: Deworming,
+        vetvisits: VetVisit,
+        currentmedications: CurrentMedication,
+        petdiet: PetDiet
+      };
+
+      return map[normalized] || null;
+    },
     getCacheTimestamp() {
       // Usamos medianoche (00:00:00) del día actual
       const now = new Date();
@@ -814,26 +579,8 @@ export default {
             .replace(/\./g, ""); // Elimina los puntos de abreviaturas (ej: "mar." → "mar")
       }
     },
-    showPetData() {
-      if (!this.selectedPet.id) {
-        this.showAlert("warning", "Primero selecciona una mascota.", 3000);
-        return;
-      }
-      this.dialogPetData = true;
-    },
-    closeDialogPetData() {
-      this.dialogPetData = false; // Cerramos el diálogo
-      this.initialize();
-    },
     isSelected(pet) {
       return this.selectedPet.id === pet.id;
-    },
-    selectPet(pet) {
-      // Si necesitas el objeto completo también:
-      this.selectedPet = { ...pet };
-      this.menuPet = false;
-      this.dialogPet = false;
-      this.initialize();
     },
     parseDateString(dateString) {
       if (!dateString) return null;
@@ -878,8 +625,25 @@ export default {
       this.currentTask = null; // Limpia la tarea actual
       this.initialize();
     },
+    formatoFecha(fecha) {
+      if (!fecha) return "";
+
+      const d = new Date(fecha);
+      const locale = this.$i18n.locale;
+      const options = {
+        year: "numeric",
+        month: "short",
+        day: "numeric",
+        hour: "2-digit",
+        minute: "2-digit",
+        timeZone: "UTC", // Forzar UTC
+      };
+
+      return d.toLocaleDateString(locale, options);
+    },
     abrirModal(item) {
-      switch (item.type) {
+      this.selectedView = item.type;
+      /*switch (item.type) {
         case "physicalExam":
           this.showAddPhysicalExam();
           break;
@@ -903,7 +667,12 @@ export default {
           break;
         default:
           break;
-      }
+      }*/
+    },
+    // Método para manejar la paginación
+    updatePage(page) {
+      this.page = page;
+      this.initialize(); // Recarga los almacenes con la nueva página
     },
 
     updateDate(value) {
@@ -915,7 +684,7 @@ export default {
       this.editedItem.date_birth = this.input;
       this.menu = false;
     },
-    async showAdd() {
+    /*async showAdd() {
       this.step = 0;
       (this.file = null), (this.editedIndex = -1);
       (this.imgMiniatura = ""), (this.data = {});
@@ -941,7 +710,7 @@ export default {
       } finally {
         this.dialog = true;
       }
-    },
+    },*/
     close() {
       this.dialog = false;
       this.loading = false;
@@ -954,31 +723,25 @@ export default {
     async initialize() {
       this.data = {};
       this.data.home_id = this.home_id;
+      this.data.pet_id = this.selectedPet.id;
       try {
         this.loading = true;
         const result = await handleRequest({
-          endpoint: "get-pet-person",
+          endpoint: "get-pet",
           method: "POST",
           data: this.data,
         });
 
         if (result.success) {
           // Si la solicitud es exitosa, asignamos las sucursale
-          this.pets = result.data?.pets || [];
-          this.stats = result.data?.stats || {};
-          this.suggestions = result.data?.suggestions || [];
-          this.statusuggestions = result.data?.statusuggestions || [];
+          this.pets = result.data?.pet || [];
           console.log("this.selectedPet");
           console.log(this.selectedPet);
-          if (!this.selectedPet?.id && this.pets.length > 0) {
-            this.selectedPet = { ...this.pets[0] };
-          }
+          
+          this.updatePetTools();
         } else {
           // Si no hay datos, asignamos un array vací
           this.pets = [];
-          this.stats = {};
-          this.suggestions = [];
-          this.statusuggestions = [];
         }
       } catch (error) {
         this.loading = false;
@@ -987,6 +750,60 @@ export default {
       } finally {
         this.loading = false;
       }
+    },
+    updatePetTools() {
+      this.petTools = [
+        {
+          name: this.$t("petTitles.vaccines"),
+          action: () => this.showVaccines(),
+          icon: "mdi-needle",
+          color: "green",
+          type: "vaccination",
+          count: this.pets?.vaccinations.count,
+          lastDate: this.pets?.vaccinations.date,
+          lastItemName: this.pets?.vaccinations.name || this.$t("common.no_name"),
+        },
+        {
+          name: this.$t("petTitles.deworming"),
+          action: () => this.showDeworming(),
+          icon: "mdi-bug",
+          color: "orange",
+          type: "deworming",
+          count: this.pets?.dewormings.count,
+          lastDate: this.pets?.dewormings.date,
+          lastItemName: this.pets?.dewormings.name || this.$t("common.no_name"),
+        },
+        {
+          name: this.$t("petTitles.vetVisits"),
+          action: () => this.showVetVisits(),
+          icon: "mdi-medical-bag",
+          color: "blue",
+          type: "vetvisits",
+          count: this.pets?.vetvisits.count,
+          lastDate: this.pets?.vetvisits.date,
+          lastItemName: this.pets?.vetvisits.name || this.$t("common.no_name"),
+        },
+        {
+          name: this.$t("petTitles.currentMedications"),
+          action: () => this.showMedications(),
+          icon: "mdi-pill",
+          color: "red",
+          type: "currentmedications",
+          count: this.pets?.medications.count,
+          lastDate: this.pets?.medications.date,
+          lastItemName: this.pets?.medications.name || this.$t("common.no_name"),
+        },
+        {
+          name: this.$t("petTitles.diet"),
+          action: () => this.showDiet(),
+          icon: "mdi-food",
+          color: "purple",
+          type: "petdiet",
+          count: this.pets?.diets.count,
+          lastDate: this.pets?.diets.date,
+          lastItemName: this.pets?.diets.name || this.$t("common.no_name"),
+        },
+      ];
     },
     async save() {
       this.data = {};
@@ -1418,5 +1235,17 @@ export default {
 .modal-imagen {
   background: transparent !important;
   box-shadow: none !important;
+}
+
+.oscurecer-persistente {
+  background-color: rgba(0, 0, 0, 0.04) !important; /* Sutil gris claro */
+  border-color: rgba(0, 0, 0, 0.12) !important;     /* Borde más marcado */
+  transform: translateY(-1px) !important;           /* Efecto leve de elevación */
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.12) !important;
+}
+
+/* Si quieres un efecto más fuerte (ej. si usas tema oscuro) */
+.oscurecer-persistente.v-card--light {
+  background-color: rgba(0, 0, 0, 0.08) !important;
 }
 </style>

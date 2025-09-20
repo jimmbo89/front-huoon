@@ -1,6 +1,74 @@
 const english = {
   messages: {
     greet: "Hello', {user}",
+    login: {
+      title: "Log in to Your Account",
+      subtitle: "Welcome Back! Select method to log in:",
+      or: "Or sign in with",
+      forgotPassword: "Forgot password?",
+      noAccount: "Don't have an account?",
+      signUp: "Sign Up",
+      signInButton: "Sign In →",
+      privacy: "Privacy Policy",
+      support: "Support",
+      footer: "© 2025 Huoon · {privacy} · {support}",
+
+      fields: {
+        name: "Name",
+        email: "Email",
+        password: "Password",
+        user: "User",
+      },
+
+      placeholders: {
+        name: "Name",
+        email: "johndoe@mail.com",
+        password: "password",
+        user: "User",
+      },
+
+      buttons: {
+        google: "Google",
+        facebook: "Facebook",
+      },
+    },
+    slides: {
+      welcome: {
+        title: "Welcome to",
+        emphasis: "Huoon",
+        subtitle: "your organized home",
+        description:
+          "Centralize tasks, members, products, and home documents in one place.",
+      },
+      shareHome: {
+        title: "Share your home",
+        emphasis: "with your family",
+        subtitle: "",
+        description:
+          "Create a collaborative home where everyone participates: partner, children, roommates, or caregivers.",
+      },
+      smartTasks: {
+        title: "Smart tasks",
+        emphasis: "and reminders",
+        subtitle: "",
+        description:
+          "Automate routines, receive important alerts, and keep your home up to date easily.",
+      },
+      controlFromPhone: {
+        title: "Everything under control",
+        emphasis: "from your phone",
+        subtitle: "",
+        description:
+          "Check purchase info, payments, recipes, calendars, and more from anywhere.",
+      },
+      designedForYou: {
+        title: "Designed for you",
+        emphasis: "and your well-being",
+        subtitle: "",
+        description:
+          "Huoon adapts to your lifestyle: includes useful tools for all household members, including children and seniors.",
+      },
+    },
     chat: {
       initialMessage: "Hello 👋 How can I help you today, {name}?",
       title: "Task Assistant",
@@ -140,9 +208,20 @@ const english = {
     },
     common: {
       items: "items",
+      product: "products",
       last: "Last",
       no_records: "No records",
+      no_name: "Unnamed",
     },
+    activity: {
+    title: "Show product movements",
+    origin_warehouse: "Origin warehouse",
+    destination_warehouse: "Destination warehouse",
+    product: "Product",
+    quantity: "Quantity",
+    date: "Date",
+    performed_by: "Performed",
+  },
     settings: {
       category: "Categories",
       warehouse: "Warehouses",
@@ -152,6 +231,7 @@ const english = {
       hometype: "Home Types",
       type: "Health Types",
       history: "Medical History",
+      actions: "Actions",
     },
     taskForm: {
       noTasksToday: "You have no tasks to do today",
@@ -188,6 +268,11 @@ const english = {
         previous: "Previous",
         next: "Next",
         saveAndClose: "Save and Close",
+        delete: "Delete",
+        edit: "Edit",
+        moveProduct: "Move to another warehouse",
+        create: "Create",
+        move: "Move",
       },
       validation: {
         required: "This field is required",
@@ -253,6 +338,12 @@ const english = {
         budget: "budget",
         income: "income",
         expense: "expense",
+        blood_pressure: "blood pressure",
+        pulse: "pulse",
+        respiratory_rate: "respiratory rate",
+        temperature: "temperature",
+        weight: "weight",
+        height: "height",
       },
     },
     personDetails: {
@@ -310,10 +401,10 @@ const english = {
         },
       },
       fields: {
-        blood_pressure: "Blood Pressure (mmHg)",
-        pulse: "Heart Rate (bpm)",
-        temperature: "Temperature (°C)",
-        respiratory_rate: "Respiratory Rate (rpm)",
+        blood_pressure: "Blood Pressure",
+        pulse: "Heart Rate",
+        temperature: "Temperature",
+        respiratory_rate: "Respiratory Rate",
         exam_date: "Exam Date",
         weight: "Weight (kg)",
         height: "Height (m)",
@@ -324,6 +415,50 @@ const english = {
         digestive_observations: "Digestive Observations",
         urinary_observations: "Urinary Observations",
         other_findings: "Other Findings",
+      },
+      forms: {
+        blood_pressure: {
+          title: {
+            add: "Add Blood Pressure",
+            edit: "Edit Blood Pressure",
+          },
+        },
+        pulse: {
+          title: {
+            add: "Add Pulse",
+            edit: "Edit Pulse",
+          },
+        },
+        temperature: {
+          title: {
+            add: "Add Temperature",
+            edit: "Edit Temperature",
+          },
+        },
+        respiratory_rate: {
+          title: {
+            add: "Add Respiratory Rate",
+            edit: "Edit Respiratory Rate",
+          },
+        },
+        weight: {
+          title: {
+            add: "Add Weight",
+            edit: "Edit Weight",
+          },
+        },
+        height: {
+          title: {
+            add: "Add Height",
+            edit: "Edit Height",
+          },
+        },
+        bmi: {
+          title: {
+            add: "Add Body Mass Index",
+            edit: "Edit Body Mass Index",
+          },
+        },
       },
       titles: {
         new: "New Physical Exam",
@@ -356,7 +491,7 @@ const english = {
         medication: "Medication",
         dosage: "Dosage",
         frequency: "Frequency",
-        duration: "Duration (ex: 5 days, 2 weeks)",
+        duration: "Duration",
         durationHint:
           "Specify duration with number and unit (days, weeks, months)",
         instructions: "Instructions",
@@ -366,7 +501,7 @@ const english = {
         observations: "Observations",
       },
       titles: {
-        new: "New Treatment",
+        new: "Add New Treatment",
         edit: "Edit Treatment",
       },
       validationMessages: {
@@ -412,15 +547,25 @@ const english = {
         type: "Condition Type",
         description: "Medical Condition",
         details: "Clinical Details",
-        startDate: "Onset Date",
+        startDate: "Date",
         endDate: "Resolution Date",
-        status: "Current Status",
-        severity: "Severity Level",
+        status: "Status",
+        severity: "Severity",
       },
       titles: {
         new: "Add New Personal History",
         edit: "Edit Personal History",
         view: "Personal Medical History",
+        vaccination: {
+          new: "Add Vaccination",
+          edit: "Edit Vaccination",
+          view: "Vaccination Details",
+        },
+        allergy: {
+          new: "Add Allergy",
+          edit: "Edit Allergy",
+          view: "Allergy Details",
+        },
       },
       validationMessages: {
         type: {
@@ -452,7 +597,7 @@ const english = {
         relationship: "Relationship",
         disease: "Disease/Condition",
         details: "Medical Details",
-        date: "Date Recorded",
+        date: "Date",
         diagnosis_age: "Age at Diagnosis",
       },
       titles: {
@@ -498,6 +643,8 @@ const english = {
         date: "Exam Date",
         file: "File",
         attach_file: "Attach File",
+        vaccination: "Vaccination",
+        allergy: "Allergy",
       },
       actions: {
         viewFile: "View File",
@@ -546,7 +693,7 @@ const english = {
         description: "Description",
         cie10_code: "CIE-10 Code",
         notes: "Notes",
-        date: "Diagnosis Date",
+        date: "Date",
       },
       titles: {
         new: "New Diagnosis",
@@ -588,7 +735,7 @@ const english = {
         profesional: "Professional",
         reason: "Consultation Reason",
         medicalNotes: "Medical Notes",
-        date: "Consultation Date",
+        date: "Date",
       },
       validationMessages: {
         type: {
@@ -606,6 +753,11 @@ const english = {
           required: "Date is required",
           invalid: "Date is not valid",
         },
+      },
+      titles: {
+        new: "Add Medical Appointment", // o "Schedule Appointment"
+        edit: "Edit Medical Appointment",
+        view: "Medical Appointments", // o "Appointments"
       },
     },
     personManagement: {
@@ -698,6 +850,7 @@ const english = {
         budget: "Budget", // New field
         category: "Category", // Also recommended if missing
         currency: "Currency",
+        saldo: "Balance",
       },
       actions: {
         viewFile: "View Receipt",
@@ -770,7 +923,7 @@ const english = {
         balance: "Balance",
         movements: "Movements",
         suggestions: "Suggestions",
-        budget: "Budget",
+        budget: "Budgets",
       },
       currentAmount: "<strong>{amount}</strong> current",
       charts: {
@@ -813,7 +966,7 @@ const english = {
       },
       fields: {
         category: "Category",
-        budget_type: "Budget Type",
+        budget_type: "Type",
         amount: "Amount",
         used_amount: "Used Amount",
         start_date: "Start Date",
@@ -898,8 +1051,11 @@ const english = {
     },
     warehouse: {
       formTitle: {
-        create: "Create new warehouse",
+        create: "Create warehouse",
         edit: "Edit warehouse",
+        generateShoppingList: "Generate Shopping List",
+        inventory: "Inventory",
+        movements: "Movements",
       },
       formInstructions: "Complete the required information for the warehouse",
       steps: {
@@ -916,12 +1072,12 @@ const english = {
         warehouse: "Warehouses",
         name: "Name",
         home_location: "Home location",
-        status: "Status",
+        status: "Type",
         description: "Description",
       },
       status: {
-        public: "Public",
-        private: "Private",
+        public: "Household",
+        private: "Personal",
       },
       validation: {
         required: "{field} is required",
@@ -987,7 +1143,7 @@ const english = {
         total_price: "Total price",
         status: "Status",
         category: "Category",
-        purchase_date: "Purchase date",
+        purchase_date: "Date",
         expiration_date: "Expiration date",
         frequency: "Frequency (hours)",
         type: "Type",
@@ -1216,7 +1372,7 @@ const english = {
           residents: "Number of residents",
           image: "Home image",
           status: "Status",
-          ranking: "Household ranking",
+          ranking: "Ranking",
         },
         membersTable: {
           avatar: "Avatar",
@@ -1251,6 +1407,7 @@ const english = {
       empty: "No registered pets",
       search: "Search pets...",
       addButton: "Register new pet",
+      managePet: "Pet information",
       instructions: "Fill all required fields to register your pet",
       steps: {
         basic: {
@@ -1333,7 +1490,7 @@ const english = {
       formInstructions: "Complete the vaccination information",
       fields: {
         name: "Vaccine Name",
-        date: "Application Date",
+        date: "Date",
         next_date: "Next Dose",
         pet: "Pet",
         notes: "Observations",
@@ -1371,7 +1528,7 @@ const english = {
         name: "Product",
         dosage: "Dosage",
         unit: "Unit",
-        date: "Application Date",
+        date: "Date",
         next_date: "Next Application",
         pet: "Pet",
         notes: "Observations",
@@ -1407,15 +1564,15 @@ const english = {
       },
       formInstructions: "Fill in the veterinary visit details",
       fields: {
-        date: "Visit date",
-        vet_name: "Veterinarian name",
+        date: "date",
+        vet_name: "Veterinarian",
         clinic: "Clinic or office",
         reason: "Reason for visit",
         diagnosis: "Diagnosis",
         treatment_given: "Treatment given",
         recommendations: "Recommendations",
         next_visit: "Next appointment",
-        image: "Attached document",
+        image: "Document",
       },
       steps: {
         basic: {
@@ -1458,7 +1615,7 @@ const english = {
         unit: "Unit",
         type_id: "Frequency",
         route: "Administration route",
-        start_date: "Start date",
+        start_date: "Date",
         end_date: "End date",
         notes: "Notes",
         prescribed_by: "Prescribed by",

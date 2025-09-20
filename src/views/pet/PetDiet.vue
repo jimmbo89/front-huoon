@@ -19,120 +19,216 @@
       </v-col>
     </v-row>
   </v-snackbar>
-   <v-container class="pa-4">
-  <v-card class="pa-4" elevation="4" rounded="lg">
-        <v-card-text>
-        <v-row justify="space-between" align="center" class="mb-6">
-        <v-col cols="12" class="d-flex justify-space-between align-center">
-           <h2 class="text-body-2 font-weight-bold">{{ $t("pet_diets.listing.title") }}</h2>
-          <v-btn icon color="deep-purple-accent-4" variant="flat" class="elevation-3" @click="showAdd" :title=" this.$t('pet_diets.listing.addButton')">
-            <v-icon>mdi-plus</v-icon>
-          </v-btn>
-          </v-col>
-        </v-row>
-      <template v-if="diets.length > 0">
   <v-card
-    v-for="(diet, index) in diets"
-    :key="index"
-    class="mb-4 rounded-lg pa-2"
-    density="comfortable"
-    elevation="2"
+    class="pa-0 mt-2"
+    elevation="1"
+    rounded="lg"
+    style="position: relative; overflow: visible; z-index: auto"
   >
-    <v-row no-gutters>
-      <!-- Barra lateral de color e info (fecha de inicio) -->
-      <!--<v-col cols="1" class="d-flex justify-start">
+      <!-- Encabezado con foto y datos -->
+      <v-card-text>
+        <v-card-actions class="pa-3 bg-grey-lighten-5 tools-bar">
+          <v-btn
+            v-for="tool in tools"
+            :key="tool.name"
+            @click="tool.action()"
+            size="small"
+            color="primary"
+            variant="text"
+            prepend-icon="mdi-plus"
+            class="text-capitalize"
+          >
+            {{ tool.name }}
+          </v-btn>
+        </v-card-actions>
+        <v-card-title class="d-flex flex-wrap align-center gap-4 pb-0">
+      <!-- Spacer (solo visible en md+) -->
+      <v-spacer class="d-none d-md-block"></v-spacer>
+      <!-- Campo de búsqueda global -->
+      <div class="flex-grow-1" style="max-width: 300px">
+        <v-text-field
+          v-model="search"
+          density="compact"
+          :label="$t('dataTable.search')"
+          prepend-inner-icon="mdi-magnify"
+          variant="solo-filled"
+          hide-details
+          single-line
+          flat
+          clearable
+        ></v-text-field>
+      </div>
+    </v-card-title>
+    <v-data-table
+  :headers="headers"
+  :items="diets"
+  :search="search"
+  :items-per-page-text="$t('dataTable.itemsPerPageText')"
+  :no-data-text="$t('dataTable.noDataText')"
+  :loading-text="$t('dataTable.loadingText')"
+  :loading="loading"
+  :hide-default-header="true"
+  class="mt-1"
+  style="
+    max-height: 68vh;
+    overflow-y: auto;
+    background: transparent;
+    border: none !important;
+    outline: none !important;
+    box-shadow: none !important;
+    padding: 0;
+  "
+>
+  <!-- Header personalizado (simulado) -->
+  <template v-slot:top>
+    <v-card
+      :elevation="1"
+      :hover="false"
+      flat
+      class="mb-2 mx-1 rounded-lg"
+      style="
+        border: 1px solid #eceff1;
+        height: 40px;
+        min-height: 40px;
+        display: flex;
+        align-items: center;
+        transition: none !important;
+      "
+    >
+      <v-card-text
+        class="d-flex pa-2"
+        style="
+          width: 100%;
+          min-width: 0;
+          height: 100%;
+          padding: 0 16px !important;
+          display: flex;
+          align-items: center;
+        "
+      >
+        <!--<div style="width: 7%; min-width: 0" class="text-left">
+          {{ $t("pet_diets.fields.start_date") }}
+        </div>-->
+        <div style="width: 33%; min-width: 0" class="text-left">
+          {{ $t("pet_diets.fields.name") }}
+        </div>
+        <div style="width: 10%; min-width: 0" class="text-left">
+          {{ $t("pet_diets.fields.type_id") }}
+        </div>
+        <div style="width: 15%; min-width: 0" class="text-left">
+          {{ $t("pet_diets.fields.brand") }}
+        </div>
+        <div style="width: 34%; min-width: 0" class="text-left">
+          {{ $t("pet_diets.fields.special_instructions") }}
+        </div>
+        <div style="width: 7%; min-width: 0" class="d-flex justify-end">
+          {{ $t("settings.actions") }}
+        </div>
+      </v-card-text>
+    </v-card>
+  </template>
+
+  <!-- Fila personalizada para cada dieta -->
+  <template v-slot:item="{ item }">
+    <v-card
+      class="mb-2 mx-1 rounded-lg"
+      elevation="1"
+      density="comfortable"
+      flat
+    >
+      <v-card-text
+        class="d-flex align-center pa-2"
+        style="width: 100%; min-width: 0"
+      >
+        <!-- Columna 1: Fecha de inicio con ícono cóncavo (7%) 
+        <div style="width: 7%; min-width: 0" class="d-flex align-center justify-left">
+          <div
+            class="icono-concavo d-flex flex-column justify-center align-left"
+            :class="`bg-${getTypeColor('diet')}`"
+            style="min-height: 48px; min-width: 48px; border-radius: 8px;"
+          >
+            <div class="date-display text-center" style="font-size: 0.85rem; line-height: 1.2;">
+              {{ formatIntuitiveDate(item.start_date) }}
+            </div>
+          </div>
+        </div>-->
+
+        <!-- Columna 2: Nombre de la dieta (25%) -->
+        <div style="width: 33%; min-width: 0" class="d-flex flex-column">
+          <div class="font-weight-bold text-body-2 text-truncate">
+            {{ item.name }}
+          </div>
+          <div class="text-caption text-grey-darken-1 text-truncate">
+            {{ item.foodTypeTranslated }} • {{ item.portion_size }} {{ item.unit }}
+          </div>
+        </div>
+
+        <!-- Columna 3: Tipo traducido (10%) -->
+        <div style="width: 10%; min-width: 0" class="d-flex flex-column">
+          <div class="text-body-2 text-truncate">
+            {{ item.nameTranslated }}
+          </div>
+          <v-tooltip activator="parent" location="bottom" max-width="350px">
+            <span style="white-space: normal; word-break: break-word">
+              {{ $t("pet_diets.fields.type_id") }}: {{ item.nameTranslated }}
+            </span>
+          </v-tooltip>
+        </div>
+
+        <!-- Columna 4: Marca (10%) -->
+        <div style="width: 15%; min-width: 0" class="d-flex flex-column">
+          <div class="text-body-2 text-truncate">
+            {{ item.brand || '—' }}
+          </div>
+        </div>
+
+        <!-- Columna 6: Instrucciones especiales (23%) -->
+        <div style="width: 34%; min-width: 0" class="d-flex flex-column">
+          <div class="text-body-2 text-grey-darken-1 text-truncate" style="max-width: 100%;">
+            {{ item.special_instructions }}
+            <v-tooltip activator="parent" location="bottom" max-width="350px">
+              <span style="white-space: normal; word-break: break-word">
+                {{ item.special_instructions }}
+              </span>
+            </v-tooltip>
+          </div>
+        </div>
+
+        <!-- Columna 7: Acciones (15%) -->
         <div
-          class="icono-concavo d-flex flex-column justify-center align-center"
-          :class="`bg-${getTypeColor('diet')}`"
-          style="width: 48px; height: 100%; border-radius: 8px 0 0 8px;"
+          class="d-flex gap-1"
+          style="width: 7%; justify-content: flex-end; flex-wrap: nowrap"
         >
-          <div class="text-center text-white text-caption font-weight-medium">
-            {{ formatIntuitiveDate(diet.start_date) }}
-          </div>
-        </div>
-      </v-col>-->
+          <v-btn
+            size="35"
+            icon
+            variant="text"
+            color="green-darken-2"
+            @click="editItem(item)"
+            class="flex-shrink-0 mr-1"
+            :title="$t('buttons.edit')"
+          >
+            <v-icon size="20">mdi-pencil</v-icon>
+          </v-btn>
 
-      <!-- Tipo de alimento y marca -->
-      <v-col cols="3" class="d-flex align-center justify-start pl-4">
-        <div>
-          <div class="font-weight-bold text-body-2">
-            {{ diet.name }}
-          </div>
-          <div class="text-caption text-grey">
-            {{ diet.foodTypeTranslated }} • {{ diet.portion_size }} {{ diet.unit }}
-          </div>
+          <v-btn
+            size="35"
+            icon
+            variant="text"
+            color="red-darken-2"
+            @click="deleteItem(item)"
+            class="flex-shrink-0"
+            :title="$t('buttons.delete')"
+          >
+            <v-icon size="20">mdi-delete</v-icon>
+          </v-btn>
         </div>
-      </v-col>
-      <v-col cols="2" class="d-flex align-center justify-start text-truncate">
-        <div class="text-truncate" style="max-width: 100%">
-          <span class="text-body-2">
-            {{ diet.nameTranslated	 }}
-          </span>
-          <v-tooltip activator="parent" location="bottom" max-width="350px">
-            <span style="white-space: normal; word-break: break-word">
-              {{ $t("pet_diets.fields.type_id") }}: {{ diet.nameTranslated }}
-            </span>
-          </v-tooltip>
-        </div>
-      </v-col>
-      <v-col cols="2" class="d-flex align-center justify-start text-truncate">
-        <div class="text-truncate" style="max-width: 100%">
-          <span class="text-body-2">
-            {{ diet.brand	 }}
-          </span>
-          <v-tooltip activator="parent" location="bottom" max-width="350px">
-            <span style="white-space: normal; word-break: break-word">
-              {{ $t("pet_diets.fields.brand") }}: {{ diet.brand }}
-            </span>
-          </v-tooltip>
-        </div>
-      </v-col>
-      <!-- Instrucciones especiales -->
-      <v-col cols="4" class="d-flex align-center justify-start">
-        <div class="text-truncate" style="max-width: 100%">
-          <span class="text-body-2 d-inline-block" style="max-width: 100%">
-            {{ diet.special_instructions || '—' }}
-          </span>
-          <v-tooltip activator="parent" location="bottom" max-width="350">
-            <span style="white-space: normal; word-break: break-word">
-              {{ $t("pet_diets.fields.special_instructions") }}: {{ diet.special_instructions }}
-            </span>
-          </v-tooltip>
-        </div>
-      </v-col>
-
-      <!-- Botones de acción -->
-      <v-col cols="1" class="d-flex align-center justify-end pr-4">
-        <v-btn
-          icon
-          variant="text"
-          color="green-darken-2"
-          size="small"
-          @click="editItem(diet)"
-        >
-          <v-icon>mdi-pencil</v-icon>
-        </v-btn>
-        <v-btn
-          icon
-          variant="text"
-          color="red-darken-2"
-          size="small"
-          @click="deleteItem(diet)"
-        >
-          <v-icon>mdi-delete</v-icon>
-        </v-btn>
-      </v-col>
-    </v-row>
-  </v-card>
-</template>
-            <template v-else>
-              <v-col cols="12" class="text-center py-8">
-                {{ $t("pet_diets.listing.noData") }}
-              </v-col>
-            </template>
+      </v-card-text>
+    </v-card>
+  </template>
+</v-data-table>
      </v-card-text>
     </v-card>
- </v-container>
  <v-dialog
   v-model="dialog"
   fullscreen
@@ -371,7 +467,7 @@ import { handleRequest } from "@/utils/api"; // Ruta al archivo
 import { format } from "date-fns";
 export default {
      props: {
-    pet: {
+    selectedPet: {
       type: Object,
       required: true
     },
@@ -446,6 +542,16 @@ export default {
       home_id: null  
     },
     editedIndex: -1,
+    headers: [
+  { title: "Fecha inicio", value: "start_date", width: "7%" },
+  { title: "Nombre", value: "name", width: "25%" },
+  { title: "Tipo", value: "foodTypeTranslated", width: "10%" },
+  { title: "Tipo", value: "nameTranslated", width: "10%" },
+  { title: "Marca", value: "brand", width: "10%" },
+  { title: "Porción", value: "portion", width: "10%" },
+  { title: "Instrucciones", value: "special_instructions", width: "23%" },
+  { title: "Acciones", value: "actions", sortable: false, width: "15%" },
+],
     search: "",
     menu: false,
     input: null,
@@ -502,6 +608,14 @@ export default {
     getDate1() {
       return this.input1 ? new Date(this.input1) : new Date();
     },
+  },
+  created() {
+    this.tools = [
+      {
+        name: this.$t("pet_diets.listing.addButton"),
+        action: () => this.showAdd(),
+      },
+    ];
   },
   mounted() {
     this.person_id = JSON.parse(LocalStorageService.getItem("person_id"));
@@ -652,7 +766,7 @@ export default {
     async initialize() {
       try {
         this.data = {};
-        this.data.pet_id = this.pet.id;
+        this.data.pet_id = this.selectedPet.id;
         this.loading = true;
         const result = await handleRequest({
           endpoint: "get-pet-diets",
@@ -708,7 +822,7 @@ export default {
           }, {});
         if (Object.keys(updatedFields).length > 0) {
           updatedFields.home_id = this.home_id;
-          updatedFields.pet_id = this.pet.id;
+          updatedFields.pet_id = this.selectedPet.id;
 
           try {
             const result = await handleRequest({
@@ -953,5 +1067,24 @@ export default {
 .modal-imagen {
   background: transparent !important;
   box-shadow: none !important;
+}
+/* Máxima especificidad para ocultar el thead */
+.v-data-table > .v-data-table__wrapper > table > thead,
+.v-data-table > .v-data-table__wrapper > .v-table > table > thead,
+.v-data-table__content > table > thead,
+.v-data-table__content > thead,
+table.v-table > thead,
+.v-table > .v-table__wrapper > table > thead {
+  display: none !important;
+  visibility: hidden !important;
+  height: 0 !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  border: none !important;
+  border-spacing: 0 !important;
+  border-collapse: collapse !important;
+}
+.hidden-header .v-data-table__content > table > thead {
+  display: none !important;
 }
 </style>

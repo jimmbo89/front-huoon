@@ -1,14 +1,6 @@
 <template>
-  <v-snackbar
-    class="mt-12"
-    location="right top"
-    :timeout="sb_timeout"
-    :color="sb_type"
-    elevation="24"
-    :multi-line="true"
-    vertical
-    v-model="snackbar"
-  >
+  <v-snackbar class="mt-12" location="right top" :timeout="sb_timeout" :color="sb_type" elevation="24"
+    :multi-line="true" vertical v-model="snackbar">
     <v-row>
       <v-col md="2">
         <v-avatar :icon="sb_icon" color="sb_type" size="40"></v-avatar>
@@ -19,999 +11,759 @@
       </v-col>
     </v-row>
   </v-snackbar>
-
-  <v-container class="bg-grey-lighten-4">
-    <v-row no-gutters class="ma-0">
-      <v-col cols="12" class="px-0 mb-6">
-        <v-card
-          class="pt-4 rounded-lg"
-          elevation="1"
-
-          style="max-height: 600px; display: flex; flex-direction: column"
-        >
-          <!-- Chat Body -->
-          <div
-            ref="chatBody"
-            class="chat-body px-4 py-2"
-            style="overflow-y: auto; flex-grow: 1"
-          >
-            <div
-              v-for="(msg, i) in messages"
-              :key="i"
-              class="d-flex mb-8"
-              :class="msg.from === 'user' ? 'justify-end' : 'justify-start'"
-            >
-              <div
-                class="d-flex align-end"
-                :class="msg.from === 'user' ? 'flex-row-reverse' : ''"
-              >
-                <v-avatar v-if="msg.from !== 'user'" size="28" class="mb-2 mr-3">
-                  <v-img src="@/assets/logo-verde.png" alt="Imagen de perfil"></v-img>
-                </v-avatar>
-                <v-avatar v-else size="28" class="mb-2 ml-3">
-                  <v-img
-                    :src="`${this.$axios.defaults.baseURL}images/${imageUrl}`"
-                    alt="Imagen de usuario"
-                  ></v-img>
-                </v-avatar>
-                <div
-                  class="chat-bubble px-8 py-3 rounded-xl"
-                  :class="
-                    msg.from === 'user'
-                      ? 'bg-primary text-white'
-                      : 'bg-grey-lighten-2 text-black'
-                  "
-                >
-                  {{ msg.text }}
-                </div>
-              </div>
-            </div>
-          </div>
-          <div v-if="isTyping" class="d-flex justify-start align-center mb-8 mb-2 ml-3">
-            <div class="d-flex align-end">
-              <v-avatar size="28" class="mb-2 mr-3">
-                <v-img src="@/assets/logo-verde.png" alt="Avatar" />
-              </v-avatar>
-              <div class="chat-bubble px-8 py-3 rounded-xl bg-grey-lighten-2 text-black">
-                <span class="typing-indicator">•••</span>
-              </div>
-            </div>
-          </div>
-          <!-- Herramientas -->
-          <v-divider />
-          <v-card-actions class="pa-3 bg-grey-lighten-5 tools-bar">
-            <v-btn
-              v-for="tool in tools"
-              :key="tool.name"
-              @click="tool.action"
-              size="small"
-              color="primary"
-              variant="text"
-              prepend-icon="mdi-plus"
-              class="text-capitalize"
-            >
-              {{ tool.name }}
-            </v-btn>
-          </v-card-actions>
-
-          <!-- Input -->
-
-          <v-card-actions
-            class="pa-4 bg-white rounded-b-2xl d-flex align-center"
-            style="gap: 12px"
-          >
-            <!-- Input + texto temporal en un solo bloque -->
-            <div style="flex: 1; display: flex; flex-direction: column; overflow: hidden">
-              <v-textarea
-                v-model="texto"
-                :placeholder="$t('chat.inputPlaceholder')"
-                variant="outlined"
-                hide-details
-                density="compact"
-                rounded
-                rows="1"
-                no-resize
-                @keyup.enter="sendMessage"
-                style="overflow-y: auto; max-height: 120px; resize: none"
-                class="custom-textarea"
-              />
-              <div
-                v-if="escuchando && textoTemporal"
-                style="
-                  margin-top: 10px;
-                  font-size: 12px;
-                  color: gray;
-                  font-style: italic;
-                  white-space: pre-wrap;
-                  word-break: break-word;
-                  max-height: 60px;
-                  overflow-y: auto;
-                "
-              >
-                {{ textoTemporal }}
-              </div>
-            </div>
-
-            <!-- Botón de dictado -->
-            <v-btn
-              color="primary"
-              @click="toggleDictado"
-              :disabled="!compatible"
-              :loading="cargando"
-              :icon="escuchando ? 'mdi-microphone-off' : 'mdi-microphone'"
-              :title="
-                !compatible ? 'Reconocimiento de voz no compatible con tu navegador' : ''
-              "
-            ></v-btn>
-
-            <!-- Botón de enviar -->
-            <v-btn icon="mdi-send" color="primary" @click="sendMessage" />
-          </v-card-actions>
-        </v-card>
+  <v-container class="pa-4">
+  <v-card class="pa-4" elevation="4" rounded="lg">
+      <!-- Encabezado con foto y datos -->
+      <v-card-text>
+    <!-- Encabezado -->
+    <v-row justify="space-between" align="center" class="mb-6">
+        <v-col cols="12" class="d-flex justify-space-between align-center">
+      <h2 class="text-body-2 font-weight-bold">{{ $t("viewTitles.tasks") }}</h2>
+      <v-btn icon color="deep-purple-accent-4" variant="flat" class="elevation-3" @click="showAdd">
+        <v-icon>mdi-plus</v-icon>
+      </v-btn>
       </v-col>
+    </v-row>
+   <div class="d-flex flex-wrap align-center gap-2">
+  <v-spacer></v-spacer>
+  <v-text-field
+    v-model="searchDate"
+    label="Buscar por fecha"
+    variant="outlined"
+    placeholder="DD-MM-YYYY"
+    density="compact"
+    style="max-width: 350px"
+    clearable
+    :rules="dateRules"
+  >
+    <template v-slot:append-inner>
+      <v-locale-provider>
+        <v-menu 
+          v-model="dateMenu" 
+          :close-on-content-click="false" 
+          transition="scale-transition" 
+          offset-y 
+          min-width="auto"
+        >
+          <template v-slot:activator="{ props }">
+            <v-icon
+              v-bind="props"
+              color="#03626C"
+              @click="dateMenu = true"
+            >
+              mdi-calendar
+            </v-icon>
+          </template>
+          <v-date-picker 
+            color="#03626C"
+            v-model="pickerDate"
+            @update:model-value="updateSearchDate"
+          ></v-date-picker>
+        </v-menu>
+      </v-locale-provider>
+    </template>
+  </v-text-field>
+</div>
+    <v-row class="no-gutters">
+      <v-col cols="12" style="max-height: 60vh; min-height: 40vh; overflow-y: auto">
+    <template v-if="filteredTasks.length > 0">
+      <!-- Tarjetas de reuniones -->
+      <v-card v-for="(meeting, index) in filteredTasks" :key="index" class="mb-4 rounded-lg pa-2" density="comfortable" elevation="2"
+        :class="{ 'smooth-hover': true }">
+        <v-row class="align-center">
+          <!-- Barra lateral de color e info -->
+          <v-col cols="1" class="d-flex justify-start">
+           <div class="icono-concavo d-flex flex-column justify-center justify-start pa-0"
+              :class="`bg-${getTypeColor(meeting.type)}`">
+            <div class="date-display">
+              {{ formatIntuitiveDate(meeting.start_date) }}
+            </div>
+            <div v-if="meeting.start_time" class="time-display">
+              {{ formatTime(meeting.start_time) }}
+            </div>
+          </div>
+          </v-col>
 
-      <v-col cols="12" class="pa-0">
-        <v-row>
+          <!-- Contenido principal -->
+          <v-col cols="6" class="d-flex align-center justify-start pa-0">
+              <v-row align="center" class="gap-3">
+                <div>
+                  <div class="font-weight-bold text-body-2">{{ meeting.title }}</div>
+                  <div class="text-caption d-flex align-center text-grey-darken-1">
+                    {{ meeting.description }}
+                  </div>
+                </div>
+            </v-row>
+          </v-col>
+          <v-col cols="1" class="d-flex align-center justify-start">
+            <!-- Info usuario -->
+            <v-row align="center" class="gap-3">
+              <div class="avatar-row d-flex flex-wrap justify-end gap-1">
+                <v-tooltip v-for="person in meeting.people" :key="person.id" bottom :open-delay="300"
+                  :close-delay="100">
+                  <template v-slot:activator="{ props }">
+                    <v-avatar class="avatar-item hover-expand" size="32" v-bind="props">
+                      <v-img :src="`${this.$axios.defaults.baseURL}images/${
+                          person.image
+                        }`" alt="avatar" />
+                    </v-avatar>
+                  </template>
+                  <span>{{ person.name }}<br />{{ person.roleName }}</span>
+                </v-tooltip>
+              </div>
+            </v-row>
+          </v-col>
+          <v-col cols="1" class="d-flex align-center justify-start pa-0">
+            <div>
+              <v-icon :color="getTypeColor(meeting.type)"
+                style="font-size: 10px; filter: drop-shadow(0 0 2px currentColor)" icon="mdi-circle"
+                class="mr-1"></v-icon>
+              <span class="text-black">{{ meeting.typeName }}</span>
+            </div>
+          </v-col>
+          <v-col cols="1" class="d-flex align-center justify-start pa-0">
+            <div>
+              <span class="text-black">{{ meeting.namePriority }}</span>
+            </div>
+          </v-col>
+          <v-col cols="1" class="d-flex align-center justify-start pa-0">
+            <v-row>
+              <!-- Fecha y estado -->
+              <div class="text-end">
+                <v-dialog v-model="meeting.statusDialog" width="400">
+                  <template v-slot:activator="{ props }">
+                    <v-btn v-bind="props" :color="
+                        '#' + (getStatusById(meeting.status_id)?.colorStatus || 'grey')
+                      " variant="text" size="small" :prepend-icon="
+                        getStatusById(meeting.status_id)?.iconStatus || 'mdi-help-circle'
+                      ">
+                      {{ getStatusById(meeting.status_id)?.nameStatus || "Desconocido" }}
+                    </v-btn>
+                  </template>
+                  <v-card>
+                    <v-card-title class="pa-4 text-center">
+                      {{ $t("taskForm.updateStatus") }}
+                    </v-card-title>
+                    <v-divider></v-divider>
+                    <v-card-text class="pa-0">
+                      <v-row class="px-2 pb-1" dense>
+                        <v-col cols="12" v-for="(statusOption, i) in status" :key="i" class="py-1">
+                          <v-card @click="changeTaskStatus(meeting, statusOption.id)" :class="[
+                              'status-option mx-1',
+                              { 'current-status': meeting.status_id === statusOption.id },
+                            ]" :style="
+                              meeting.status_id === statusOption.id
+                                ? {
+                                    'background-color': `#${statusOption.colorStatus}`,
+                                    'border-color': `#${statusOption.colorStatus}`,
+                                    color: 'white',
+                                  }
+                                : {}
+                            " variant="outlined" :elevation="meeting.status_id === statusOption.id ? 2 : 0"
+                            style="border-radius: 12px; cursor: pointer">
+                            <v-card-item class="pa-2">
+                              <div class="d-flex align-center">
+                                <v-icon :color="
+                                    meeting.status_id === statusOption.id
+                                      ? 'white'
+                                      : '#' + statusOption.colorStatus
+                                  " :icon="statusOption.iconStatus" size="large" class="mr-3"></v-icon>
+                                <v-card-title :style="{
+                                    color:
+                                      meeting.status_id === statusOption.id
+                                        ? 'white'
+                                        : 'inherit',
+                                    'font-size': '1rem',
+                                  }">
+                                  {{ statusOption.nameStatus }}
+                                </v-card-title>
+                                <v-spacer></v-spacer>
+                                <v-icon v-if="meeting.status_id === statusOption.id" color="white"
+                                  icon="mdi-check-circle"></v-icon>
+                              </div>
+                            </v-card-item>
+                          </v-card>
+                        </v-col>
+                      </v-row>
+                    </v-card-text>
+                    <v-divider></v-divider>
+                    <v-card-actions>
+                      <v-spacer></v-spacer>
+                      <v-btn variant="flat" color="#03626C" @click="meeting.statusDialog = false">
+                        {{ $t("buttons.cancel") }}
+                      </v-btn>
+                    </v-card-actions>
+                  </v-card>
+                </v-dialog>
+              </div>
+            </v-row>
+          </v-col>
 
-          <template v-for="(card, index) in cards" :key="index">
-            <v-col cols="12" sm="6" md="3" v-if="!card.menu">
-              <v-card
-                elevation="1"
-                density="comfortable"
-                @click="$router.push(card.to)"
-                class="rounded-lg"
-              >
-                <v-card-item class="pa-2">
-                  <template v-slot:prepend>
-                    <div class="icono-concavo">
-                      <v-icon
-                        :icon="card.icon"
-                        :color="card.color"
-                        size="x-large"
-                      ></v-icon>
+          <!-- Acciones -->
+          <v-col cols="1" class="d-flex align-center ml-auto pe-4" style="margin-left: auto !important">
+            <v-btn icon variant="text" color="green-darken-2" size="small" @click="editItem(meeting)">
+              <v-icon>mdi-pencil</v-icon>
+            </v-btn>
+            <v-btn icon variant="text" color="red-darken-2" size="small" @click="deleteItem(meeting)">
+              <v-icon>mdi-delete</v-icon>
+            </v-btn>
+          </v-col>
+        </v-row>
+      </v-card>
+    </template>
+    <template v-else>
+      <v-col cols="12" class="text-center py-8 pa-0">
+        <v-icon size="64" color="grey-lighten-1">mdi-check-circle-outline</v-icon>
+        <div class="text-h6 text-grey mt-4">{{ $t("taskForm.noTasksToday") }}</div>
+      </v-col>
+    </template>
+  </v-col>
+  </v-row>
+  </v-card-text>
+  </v-card>
+  </v-container>
+  <v-dialog v-model="dialog" fullscreen persistent transition="dialog-bottom-transition"
+    content-class="fullscreen-dialog">
+    <v-form ref="form" v-model="valid" class="h-100">
+      <v-card class="pa-10">
+        <v-card-text class="pt-12">
+          <!-- Pasos laterales -->
+
+          <h5 class="text-grey-darken-2 font-weight-medium">{{ formTitle }}</h5>
+          <p class="text-grey-lighten-1">{{ $t("formInstructions") }}</p>
+          <v-row class="mt-12">
+            <v-col cols="3">
+              <v-timeline align="start" side="end" dense>
+                <v-timeline-item v-for="(s, index) in steps" :key="index" :dot-color="
+                    step > index
+                      ? 'green'
+                      : step === index
+                      ? 'deep-purple'
+                      : 'grey-lighten-1'
+                  " :icon="
+                    step >= index
+                      ? step === index
+                        ? `mdi-numeric-${index + 1}`
+                        : 'mdi-check'
+                      : null
+                  " size="large">
+                  <template #opposite>
+                    <div class="text-end">
+                      <strong>{{ $t(`steps.${s.title}.title`) }}</strong>
+                      <div class="text-caption text-grey">
+                        {{ $t(`steps.${s.title}.subtitle`) }}
+                      </div>
                     </div>
                   </template>
-
-                  <!-- Contenedor para título + círculo dinámico -->
-                  <div class="title-container">
-                    <v-card-title class="text-body-2">
-                      {{ $t(`menu.${card.name}.title`) || card.title }}
-                    </v-card-title>
-                    <div
-                      v-if="getDynamicValue(card.to) > 0"
-                      class="dynamic-circle"
-                      :class="{ primary: card.color === 'primary' }"
-                    >
-                      {{ getDynamicValue(card.to) }}
-                    </div>
-                  </div>
-
-                  <v-card-subtitle>
-                    <span class="text-body-2">
-
-                      {{ $t(`menu.${card.name}.description`) || card.description }}
-                    </span>
-                    <v-tooltip activator="parent" location="bottom">
-                      <span style="white-space: normal; word-break: break-word">
-                        {{ card.description }}
-                      </span>
-                    </v-tooltip>
-                  </v-card-subtitle>
-                </v-card-item>
-              </v-card>
+                </v-timeline-item>
+              </v-timeline>
             </v-col>
 
+            <!-- Contenido dinámico según paso -->
+            <v-col cols="9">
+              <h3 class="text-deep-purple-accent-3 mb-8">
+                {{ $t(`steps.${steps[step].title}.title`) }}
+              </h3>
 
-          </template>
-        </v-row>
-      </v-col>
+              <v-row dense v-if="step === 0">
+                <v-col cols="12" sm="6">
+                  <v-text-field v-model="editedItem.title" :label="$t('taskForm.fields.title')" variant="underlined"
+                    :rules="nameRules" />
+                </v-col>
 
-       <v-col
-        cols="12"
-        class="ma-0 pa-0 pt-6"
-        style="max-height: 60vh; min-height: 40vh; overflow-y: auto"
-      >
-
-        <template v-if="tasks.length === 0 && loading_task!=true" >
-          <v-col cols="12" class="text-center py-8 pa-0">
-            <v-icon size="64" color="grey-lighten-1">mdi-check-circle-outline</v-icon>
-            <div class="text-body-2 text-grey mt-4">
-              {{ $t("taskForm.noTasksToday") }}
-            </div>
-          </v-col>
-        </template>
-
-        <template v-else>
-          <div style="padding: 1px">
-
-
-
-            <v-card
-              v-for="meeting in tasks"
-              :key="meeting.id"
-              class="rounded-lg"
-              density="comfortable"
-              elevation="1"
-            >
-              <v-card-item class="">
-
-
-
-                <!-- Icono/Color lateral -->
-
-                <template v-slot:prepend>
-                  <div
-                    class="icono-concavo-card-task d-flex flex-column justify-center align-center"
-                    :class="`bg-${getTypeColor(meeting.module || meeting.type)}`"
-                  >
-
-
-                    <div class="date-display text-center">
-                      {{ formatIntuitiveDate(meeting.start_date) }}
-                    </div>
-                    <div v-if="meeting.start_time" class="time-display text-center">
-                      {{ formatTime(meeting.start_time) }}
-                    </div>
-
-
-                  </div>
-                </template>
-     <!-- Contenido principal - Modificado para ajuste automático -->
-                <div class="d-flex align-start px-1" style="width: 100%; flex-wrap: wrap">
-                  <!-- Información de la tarea - Ahora con texto multilínea -->
-                  <div
-                    class="flex-grow-1"
-                    style="min-width: 60%; max-width: 60%; word-break: break-word"
-                  >
-
-                    <v-card-title class="text-body-2 " style="white-space: normal">
-                      {{ meeting.title }}
-                    </v-card-title>
-                    <v-card-subtitle class="">
-                      <div style="white-space: normal">{{ meeting.description }}</div>
-                    </v-card-subtitle>
-                  </div>
-
-                  <!-- Avatares - Con ajuste automático -->
-                  <div
-                    class="avatar-container mx-4"
-                    style="min-width: 10%; max-width: 10%; align-self: center"
-                  >
-                    <div class="avatar-row d-flex flex-wrap justify-end gap-1">
-                      <v-tooltip
-                        v-for="person in meeting.people"
-                        :key="person.id"
-                        bottom
-                        :open-delay="300"
-                        :close-delay="100"
-                      >
-                        <template v-slot:activator="{ props }">
-                          <v-avatar
-                            class="avatar-item hover-expand"
-                            size="32"
-                            v-bind="props"
-                          >
-                            <v-img
-                              :src="`${this.$axios.defaults.baseURL}images/${person.image}`"
-                              alt="avatar"
-                            />
+                <v-col cols="12" sm="6">
+                  <v-select v-model="editedItem.priority_id" :items="priorities" item-title="namePriority"
+                    item-value="id" :label="$t('taskForm.fields.priority')" variant="underlined" required>
+                    <!-- Cómo se muestra en la lista desplegable -->
+                    <template v-slot:item="{ props, item }">
+                      <v-list-item v-bind="props" :title="item.raw.namePriority"
+                        :subtitle="item.raw.descriptionPriority">
+                        <template v-slot:prepend>
+                          <v-icon :color="'#' + item.raw.colorPriority">
+                            mdi-priority-high
+                          </v-icon>
+                        </template>
+                      </v-list-item>
+                    </template>
+                  </v-select>
+                </v-col>
+                <v-col cols="12" md="12">
+                  <v-textarea v-model="editedItem.description" :label="$t('taskForm.fields.description')"
+                    variant="underlined" rows="3"></v-textarea>
+                </v-col>
+              </v-row>
+              <v-row dense v-if="step === 1">
+                <v-col cols="6" v-for="role in roles" :key="role.id">
+                  <v-card class="mx-auto" max-width="98%">
+                    <v-list v-model:selected="selectedItems[role.id]" @update:selected="updateSelection(role, $event)"
+                      select-strategy="leaf" multiple>
+                      <v-list-subheader>{{ role.nameRol }}</v-list-subheader>
+                      <v-list-item v-for="person in filteredPeople(role.id)" :key="`${role.id}-${person.id}`"
+                        :value="person.id" active-class="text-green"
+                        :prepend-avatar="`${$axios.defaults.baseURL}images/${person.imagePerson}`" class="py-3">
+                        <!-- Contenido del ítem - Nueva estructura Vuetify 3 -->
+                        <template v-slot:prepend>
+                          <v-avatar>
+                            <v-img :src="`${$axios.defaults.baseURL}images/${person.imagePerson}`" />
                           </v-avatar>
                         </template>
-                        <span>{{ person.name }}<br />{{ person.roleName }}</span>
-                      </v-tooltip>
-                    </div>
-                  </div>
 
-                  <!-- Tipo - Con texto multilínea -->
-                  <div
-                    class="type-container mx-2"
-                    style="
-                      min-width: 5%;
-                      max-width: 5%;
-                      align-self: center;
-                      word-break: break-word;
-                    "
-                  >
-                    <div class="d-flex align-center">
-                      <v-icon
-                        :color="getTypeColor(meeting.module || meeting.type)"
-                        style="font-size: 10px; filter: drop-shadow(0 0 2px currentColor)"
-                        icon="mdi-circle"
-                        class="mr-1"
-                      ></v-icon>
-                      <span
-                        class="text-grey-darken-1 text-body-2"
-                        style="white-space: normal"
-                      >
-                        {{ meeting.moduleName || meeting.typeName }} 
-                      </span>
-                    </div>
-                  </div>
+                        <!-- Nombre y rol -->
+                        <v-list-item-title>{{ person.namePerson }}</v-list-item-title>
+                        <v-list-item-subtitle class="mb-1 text-high-emphasis opacity-100">
+                          {{ person.roleName }}
+                        </v-list-item-subtitle>
 
-                  <!-- Prioridad - Con texto multilínea -->
-                  <div
-                    class="priority-container mx-2"
-                    style="
-                      min-width: 5%;
-                      max-width: 5%;
-                      align-self: center;
-                      word-break: break-word;
-                    "
-                  >
-                    <span
-                      class="text-grey-darken-1 text-body-2"
-                      style="white-space: normal"
-                    >
-                      {{ meeting.namePriority }}
-                    </span>
-                  </div>
+                        <!-- Icono de selección -->
+                        <template v-slot:append>
+                          <v-icon v-if="isPersonSelected(person.id, role.id)" :color="
+                              getRoleIcon(role.id) === 'mdi-star'
+                                ? 'green-darken-3'
+                                : 'green-darken-3'
+                            ">
+                            {{
+                            getRoleIcon(role.id) === "mdi-star"
+                            ? "mdi-star"
+                            : "mdi-circle-slice-8"
+                            }}
+                          </v-icon>
+                          <v-icon v-else class="opacity-30" :color="
+                              getRoleIcon(role.id) === 'mdi-star'
+                                ? 'green-darken-3'
+                                : undefined
+                            ">
+                            {{
+                            getRoleIcon(role.id) === "mdi-star"
+                            ? "mdi-star-outline"
+                            : "mdi-checkbox-blank-circle-outline"
+                            }}
+                          </v-icon>
+                        </template>
+                      </v-list-item>
+                    </v-list>
+                  </v-card>
+                </v-col>
+              </v-row>
+              <v-row dense v-if="step === 2">
+                <v-col cols="12" md="6">
+                    <v-locale-provider>
+                  <v-menu v-model="menu" :close-on-content-click="false" :nudge-right="40" transition="scale-transition"
+                    offset-y min-width="290px">
+                    <template v-slot:activator="{ props }">
+                      <v-text-field v-bind="props" :modelValue="this.editedItem.start_date" variant="underlined"
+                        :label="$t('taskForm.today')"></v-text-field>
+                    </template>
+                      <v-date-picker color="#03626C" :modelValue="parseDateString(this.editedItem.start_date)" @update:model-value="updateDate"
+                        format="yyyy-MM-dd"></v-date-picker>
+                  </v-menu>
+                    </v-locale-provider>
+                </v-col>
 
-                  <!-- Estado - Con ajuste automático -->
-                  <div style="min-width: 12%; max-width: 12%; align-self: center">
-                    <v-dialog v-model="meeting.statusDialog" width="500">
+                <v-col cols="12" md="6">
+                  <v-text-field v-model="editedItem.start_time" :active="timePickerDialog" :focused="timePickerDialog"
+                    :label="$t('taskForm.fields.time')" readonly variant="underlined"
+                    @click="timePickerDialog = true"></v-text-field>
+
+                  <v-dialog v-model="timePickerDialog" width="auto">
+                    <v-locale-provider>
+                      <v-time-picker v-model="editedItem.start_time" format="24hr" color="#03626C"
+                        @update:model-value="timePickerDialog = false"></v-time-picker>
+                    </v-locale-provider>
+                  </v-dialog>
+                </v-col>
+                <v-col cols="12" md="6">
+                  <v-text-field v-model="editedItem.estimated_time" type="number"
+                    :label="$t('taskForm.fields.estimatedTime')" variant="underlined"
+                    :rules="[(v) => v > 0 || 'Debe ser un número válido']"></v-text-field>
+                </v-col>
+                <v-col cols="12" md="6">
+                  <v-text-field v-model="editedItem.geo_location" :label="$t('taskForm.fields.location')"
+                    variant="underlined"></v-text-field>
+                </v-col>
+                <v-col cols="12" md="6">
+                  <v-select v-model="editedItem.recurrence" :items="recurrences" item-title="name" item-value="id"
+                    :label="$t('taskForm.fields.recurrence')" variant="underlined" density="compact"
+                    :rules="selectRules">
+                  </v-select>
+                </v-col>
+                <v-col cols="12" md="6" v-if="editedIndex !== -1">
+                  <v-autocomplete v-model="editedItem.status_id" :items="status" :label="$t('taskForm.fields.status')"
+                    item-title="nameStatus" item-value="id" variant="underlined" density="compact" :rules="selectRules">
+                    <!-- Slot para el item seleccionado (en el input) -->
+                    <template v-slot:selection="{ item }">
+                      <div class="d-flex align-center">
+                        <v-avatar size="24" :color="'#' + item.raw.colorStatus" class="mr-2">
+                          <v-icon>{{ item.raw.iconStatus }}</v-icon>
+                        </v-avatar>
+                        <span>{{ item.raw.nameStatus }}</span>
+                      </div>
+                    </template>
+
+                    <!-- Slot para los items del dropdown -->
+                    <template v-slot:item="{ props, item }">
+                      <v-list-item v-bind="props" :style="{
+                          'background-color':
+                            item.props.value === editedItem.status_id
+                              ? `#${item.raw.colorStatus}20` // Aplica opacidad (20 = 12%)
+                              : 'transparent',
+                        }">
+                        <template v-slot:prepend>
+                          <v-avatar size="24" :color="'#' + item.raw.colorStatus">
+                            <v-icon>{{ item.raw.iconStatus }}</v-icon>
+                          </v-avatar>
+                        </template>
+                        <v-list-item-subtitle class="d-flex flex-column">
+                          <div>{{ item.raw.descriptionStatus }}</div>
+                        </v-list-item-subtitle>
+                      </v-list-item>
+                    </template>
+                  </v-autocomplete>
+                </v-col>
+                <v-row v-if="editedItem.type === 'Evento'">
+                  <v-col cols="12" md="6">
+                   <v-locale-provider>
+                    <v-menu v-model="menu2" :close-on-content-click="false" offset-y min-width="auto">
                       <template v-slot:activator="{ props }">
-                        <v-btn
-
-                          v-bind="props"
-                          :color="
-                            '#' +
-                            (getStatusById(meeting.status_id)?.colorStatus || 'grey')
-                          "
-                        variant="outlined"
-                          size="small"
-                          class="text-body-2"
-                          :prepend-icon="
-                            getStatusById(meeting.status_id)?.iconStatus ||
-                            'mdi-help-circle'
-                          "
-
-                        >
-                          {{
-                            getStatusById(meeting.status_id)?.nameStatus || "Desconocido"
-                          }}
-
-                        </v-btn>
+                        <v-text-field v-bind="props" :model-value="this.editedItem.end_date"
+                          :label="$t('taskForm.fields.endDate')" variant="underlined" readonly></v-text-field>
                       </template>
-                      <v-card>
-                        <v-card-title class="pa-4 text-center text-subtitle-2">
-                          {{ $t("taskForm.updateStatus") }}
-                        </v-card-title>
-                        <v-divider></v-divider>
-                        <v-card-text class="pa-4 text-center text-subtitle-2">
-                          <v-row class="px-2 pb-1" dense>
-                            <v-col
-                              cols="12"
-                              v-for="(statusOption, i) in status"
-                              :key="i"
-                              class="py-1"
-                            >
-                              <v-card
-                                @click="changeTaskStatus(meeting, statusOption.id)"
-                                :class="[
-                                  'mx-1',
-                                  {
-                                    'current-status':
-                                      meeting.status_id === statusOption.id,
-                                  },
-                                ]"
-                                :style="
-                                  meeting.status_id === statusOption.id
-                                    ? {
-                                        'background-color': `#${statusOption.colorStatus}`,
-                                        'border-color': `#${statusOption.colorStatus}`,
-                                      
-                                      }
-                                    : {
-                                        'border-color': '#9e9e9e',
-                                      }
-                                "
-                                vvariant="outlined"
-                                :elevation="meeting.status_id === statusOption.id ? 2 : 0"
-                                style="border-radius: 12px; cursor: pointer"
-                              >
-                                <v-card-item class="pa-2">
-                                  <div class="d-flex align-center">
-                                    <v-icon
-                                      :color="
-                                        meeting.status_id === statusOption.id
-                                          ? 'white'
-                                          : '#' + statusOption.colorStatus
-                                      "
-                                      :icon="statusOption.iconStatus"
-                                      size="large"
-                                      class="mr-3"
-                                    ></v-icon>
-                                    <v-card-title
-                                   class="pa-4 text-center text-subtitle-2"
-                                      :style="{
-                                        color:
-                                          meeting.status_id === statusOption.id
-                                            ? 'white'
-                                            : 'inherit',
-                                   
-                                      }"
-                                    >
-                                      {{ statusOption.nameStatus }}
-                                    </v-card-title>
-                                    <v-spacer></v-spacer>
-                                    <v-icon
-                                      v-if="meeting.status_id === statusOption.id"
-                                      color="white"
-                                      icon="mdi-check-circle"
-                                    ></v-icon>
-                                  </div>
-                                </v-card-item>
-                              </v-card>
-                            </v-col>
-                          </v-row>
-                        </v-card-text>
-                        <v-divider></v-divider>
-                        <v-card-actions>
-                          <v-spacer></v-spacer>
-                          <v-btn
-                            variant="outline"
-                            color="default"
-                            @click="meeting.statusDialog = false"
-                          >
-                            {{ $t("buttons.cancel") }}
-                          </v-btn>
-                        </v-card-actions>
-                      </v-card>
-                    </v-dialog>
-                  </div>
-                </div>
-              </v-card-item>
-            </v-card>
-            </div>
-            </template>
-          </v-col>
-    </v-row>
-  </v-container>
-  <v-dialog v-model="dialogChatTask" fullscreen transition="dialog-bottom-transition">
+                      <v-date-picker :modelValue="parseDateString(this.editedItem.end_date)" @update:model-value="updateDate1"
+                        format="yyyy-MM-dd" color="#03626C"
+                        :min="editedItem.start_date"></v-date-picker>
+                    </v-menu>
+                    </v-locale-provider>
+                  </v-col>
+
+                  <v-col cols="12" md="6">
+                    <v-select v-model="editedItem.end_time" :items="timeSlots" :label="$t('taskForm.fields.endTime')"
+                      variant="underlined"></v-select>
+                  </v-col>
+                </v-row>
+              </v-row>
+
+              <div class="d-flex justify-space-between mt-8">
+                <v-btn variant="text" class="text-grey-darken-1" @click="step > 0 ? step-- : this.close()">
+                  {{ step === 0 ? $t("buttons.close") : $t("buttons.previous") }}
+                </v-btn>
+
+                <v-btn variant="text" class="text-deep-purple-accent-3" @click="nextStep" :disabled="!valid">
+                  {{
+                  step === steps.length - 1
+                  ? $t("buttons.saveAndClose")
+                  : $t("buttons.next")
+                  }}
+                </v-btn>
+              </div>
+            </v-col>
+          </v-row>
+        </v-card-text>
+      </v-card>
+    </v-form>
+  </v-dialog>
+  <v-dialog v-model="dialogDelete" max-width="500px">
     <v-card>
-      <v-card-text>
-        <!-- Pasamos los parámetros al componente ChatTask -->
-        <ChatTask
-          :taskData="currentTask"
-          @close-dialog="closeDialgChat()"
-          @close-all-dialogs="closeAllDialogs($event)"
-        />
-      </v-card-text>
+      <v-toolbar color="#DA7171">
+        <span class="text-subtitle-2 ml-4">
+          {{ $t("deleteDialog.title", { item: $t(`deleteDialog.items.task`) }) }}</span>
+      </v-toolbar>
+      <v-card-text class="mt-2 mb-2"> {{ $t("deleteDialog.message") }}</v-card-text>
       <v-divider></v-divider>
       <v-card-actions>
         <v-spacer></v-spacer>
-        <v-btn text @click="closeDialgChat()">Cerrar</v-btn>
+        <v-btn color="grey" variant="flat" @click="closeDelete">{{
+          $t("taskForm.buttons.cancel")
+          }}</v-btn>
+        <v-btn color="#03626C" variant="flat" :loading="loading" @click="deleteItemConfirm">
+          {{ $t("taskForm.buttons.confirmDelete") }}</v-btn>
       </v-card-actions>
     </v-card>
   </v-dialog>
-  <v-dialog v-model="dialogChatFinance" fullscreen transition="dialog-bottom-transition">
-    <v-card>
-      <v-card-text>
-        <!-- Pasamos los parámetros al componente ChatTask -->
-        <ChatFinance
-          :financeData="currentFinance"
-          :transactionIntent="currentIntentFinance"
-          @close-dialog="closeDialgChat()"
-          @close-all-dialogs="closeAllDialogs($event)"
-        />
-      </v-card-text>
-      <v-divider></v-divider>
-      <v-card-actions>
-        <v-spacer></v-spacer>
-        <v-btn text @click="closeDialgChat()">Cerrar</v-btn>
-      </v-card-actions>
-    </v-card>
+
+  <v-dialog v-model="dialogAssignedPeople" max-width="400px">
+    <v-form ref="form" v-model="valid" enctype="multipart/form-data">
+      <v-card>
+        <v-toolbar color="#03626C">
+          <span class="text-subtitle-2 ml-4">{{ formTitlePerson }}</span>
+        </v-toolbar>
+        <v-card-text>
+          <v-container>
+            <v-row>
+              <v-col cols="12" md="12">
+                <v-autocomplete :no-data-text="'No hay datos disponibles'" v-model="selectedPerson" :items="people"
+                  label="Personas" prepend-icon="mdi-account" item-title="namePerson" item-value="id"
+                  variant="underlined" :rules="selectRules">
+                  <template v-slot:item="{ props, item }">
+                    <v-list-item v-bind="props"
+                      :prepend-avatar="`${this.$axios.defaults.baseURL}images/${item.raw.imagePerson}`"
+                      :title="item.raw.namePerson">
+                      <v-list-item-subtitle class="d-flex flex-column">
+                        <div>Rol: {{ item.raw.roleName }}</div>
+                      </v-list-item-subtitle>
+                    </v-list-item>
+                  </template>
+                </v-autocomplete>
+                <v-select v-model="selectedRole" :items="roles" item-title="nameRol" item-value="id" label="Rol"
+                  variant="underlined" density="compact" :rules="selectRules" prepend-icon="mdi-briefcase">
+                  <template v-slot:item="{ props, item }">
+                    <v-list-item v-bind="props" :subtitle="item.raw.descriptionRol"></v-list-item>
+                  </template>
+                </v-select>
+              </v-col>
+            </v-row>
+          </v-container>
+        </v-card-text>
+        <v-divider></v-divider>
+        <v-card-actions>
+          <v-spacer></v-spacer>
+          <v-btn color="#DA7171" variant="flat" @click="closeAssignedPeople">Cancelar</v-btn>
+          <v-btn color="#03626C" variant="flat" @click="saveAssignedPeople" :disabled="!valid">Aceptar</v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-form>
   </v-dialog>
-  <v-dialog v-model="dialogChatBudget" fullscreen transition="dialog-bottom-transition">
-    <v-card>
-      <v-card-text>
-        <!-- Pasamos los parámetros al componente ChatTask -->
-        <ChatBudget
-          :budgetData="currentBudget"
-          @close-dialog="closeDialgChat()"
-          @close-all-dialogs="closeAllDialogs($event)"
-        />
-      </v-card-text>
-      <v-divider></v-divider>
-      <v-card-actions>
-        <v-spacer></v-spacer>
-        <v-btn text @click="closeDialgChat()">Cerrar</v-btn>
-      </v-card-actions>
-    </v-card>
-  </v-dialog>
-  <v-dialog
-    v-model="dialogChatWarehouse"
-    fullscreen
-    transition="dialog-bottom-transition"
-  >
-    <v-card>
-      <v-card-text>
-        <!-- Pasamos los parámetros al componente ChatTask -->
-        <ChatWarehouse
-          :warehouseData="currentWarehouse"
-          @close-dialog="closeDialgChat()"
-          @close-all-dialogs="closeAllDialogs($event)"
-        />
-      </v-card-text>
-      <v-divider></v-divider>
-      <v-card-actions>
-        <v-spacer></v-spacer>
-        <v-btn text @click="closeDialgChat()">Cerrar</v-btn>
-      </v-card-actions>
-    </v-card>
-  </v-dialog>
-  <v-dialog v-model="dialogChatProduct" fullscreen transition="dialog-bottom-transition">
-    <v-card>
-      <v-card-text>
-        <!-- Pasamos los parámetros al componente ChatTask -->
-        <ChatProduct
-          :productData="currentProduct"
-          @close-dialog="closeDialgChat()"
-          @close-all-dialogs="closeAllDialogs($event)"
-        />
-      </v-card-text>
-      <v-divider></v-divider>
-      <v-card-actions>
-        <v-spacer></v-spacer>
-        <v-btn text @click="closeDialgChat()">Cerrar</v-btn>
-      </v-card-actions>
-    </v-card>
-  </v-dialog>
-  <v-dialog v-model="dialogChatDesire" fullscreen transition="dialog-bottom-transition">
-    <v-card>
-      <v-card-text>
-        <!-- Pasamos los parámetros al componente ChatTask -->
-        <ChatDesire
-          :desireData="currentDesire"
-          @close-dialog="closeDialgChat()"
-          @close-all-dialogs="closeAllDialogs($event)"
-        />
-      </v-card-text>
-      <v-divider></v-divider>
-      <v-card-actions>
-        <v-spacer></v-spacer>
-        <v-btn text @click="closeDialgChat()">Cerrar</v-btn>
-      </v-card-actions>
-    </v-card>
+
+  <v-dialog v-model="dialogAddPeople" max-width="400px">
+    <v-form ref="form" v-model="valid" enctype="multipart/form-data">
+      <v-card>
+        <v-toolbar color="#03626C">
+          <span class="text-subtitle-2 ml-4">Agregar Persona a la tarea</span>
+        </v-toolbar>
+        <v-card-text>
+          <v-container>
+            <v-row>
+              <v-col cols="12" md="12">
+                <v-autocomplete :no-data-text="'No hay datos disponibles'" v-model="person_id" :items="people"
+                  label="Personas" prepend-icon="mdi-account" item-title="namePerson" item-value="id"
+                  variant="underlined" :rules="selectRules">
+                  <template v-slot:item="{ props, item }">
+                    <v-list-item v-bind="props"
+                      :prepend-avatar="`${this.$axios.defaults.baseURL}images/${item.raw.imagePerson}`"
+                      :title="item.raw.namePerson">
+                      <v-list-item-subtitle class="d-flex flex-column">
+                        <div>Rol: {{ item.raw.roleName }}</div>
+                      </v-list-item-subtitle>
+                    </v-list-item>
+                  </template>
+                </v-autocomplete>
+                <v-select v-model="role_id" :items="roles" item-title="nameRol" item-value="id" label="Rol"
+                  variant="underlined" density="compact" :rules="selectRules" prepend-icon="mdi-briefcase">
+                  <template v-slot:item="{ props, item }">
+                    <v-list-item v-bind="props" :subtitle="item.raw.descriptionRol"></v-list-item>
+                  </template>
+                </v-select>
+              </v-col>
+            </v-row>
+          </v-container>
+        </v-card-text>
+        <v-divider></v-divider>
+        <v-card-actions>
+          <v-spacer></v-spacer>
+          <v-btn color="#DA7171" variant="flat" @click="closeAddPeople">Cancelar</v-btn>
+          <v-btn color="#03626C" variant="flat" @click="saveAddPeople" :disabled="!valid"
+            :loading="loading">Aceptar</v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-form>
   </v-dialog>
 </template>
 
 <script>
+import { ref } from "vue";
 import LocalStorageService from "@/LocalStorageService";
 import { handleRequest } from "@/utils/api"; // Ruta al archivo
-import router from "@/router/index";
-import { shallowRef } from "vue";
 import _ from "lodash";
-import ChatTask from "../views/chat/ChatTask.vue";
-import ChatFinance from "./chat/ChatFinance.vue";
-import ChatBudget from "./chat/ChatBudget.vue";
-import ChatWarehouse from "./chat/ChatWarehouse.vue";
-import ChatProduct from "./chat/ChatProduct.vue";
-import ChatDesire from "./chat/ChatDesire.vue";
+import { shallowRef } from "vue";
 
-/*import { Line as LineChart } from 'vue-chartjs'
-
-import { Chart as ChartJS, Title, Tooltip, Legend, BarElement, CategoryScale, LinearScale, PointElement, LineElement } from 'chart.js'
-ChartJS.register(Title, Tooltip, Legend, BarElement, CategoryScale, LinearScale, PointElement, LineElement,)*/
 export default {
   components: {
-    //"v-time-picker": VTimePicker,
-    ChatFinance,
-    ChatTask,
-    ChatBudget,
-    ChatWarehouse,
-    ChatProduct,
-    ChatDesire,
   },
-  //components: { LineChart },
-  data() {
-    return {
-      selected: shallowRef([2]),
-      dialogChatTask: false,
-      dialogChatFinance: false,
-      dialogChatBudget: false,
-      dialogChatWarehouse: false,
-      dialogChatProduct: false,
-      dialogChatDesire: false,
-      currentTask: null,
-      currentFinance: null,
-      currentBudget: null,
-      currentWarehouse: null,
-      currentIntentFinance: null,
-      currentProduct: null,
-      currentDesire: null,
-      selected2: null,
-      texto: "", // texto confirmado y editable
-      textoTemporal: "", // texto dictado en vivo (solo para mostrar)
-      escuchando: false,
-      cargando: false,
-      recognition: null,
-      compatible: true,
-      snackbar: false,
-      imageUrl: "",
-      sb_type: "",
-      sb_message: "",
-      sb_timeout: 2000,
-      sb_title: "",
-      sb_icon: "",
-      isTyping: false,
-      expandedStates: {
-        salud: false,
-        mantenedores: false,
-      },
-      loading: false,
-      loading_task: true,
-      taskStatus: [
-        {
-          name: "Tareas",
-          count: 4,
-          color: "orange-lighten-3",
-          icon: "mdi-calendar-weekend-outline",
-          to: "task",
-        },
-        { name: "Sugerencias", count: 4, color: "blue-lighten-3", icon: "mdi-calendar" },
-        {
-          name: "Salud",
-          count: 2,
-          color: "purple-lighten-3",
-          icon: "mdi-calendar",
-          to: "",
-        },
-        {
-          name: "Finanzas",
-          count: 3,
-          color: "green-lighten-3",
-          icon: "mdi-calendar",
-          to: "finance",
-        },
-      ],
-
-      tasks: [],
-      chartData: {
-        labels: [
-          "Ene",
-          "Feb",
-          "Mar",
-          "Abril",
-          "May",
-          "Jun",
-          "Jul",
-          "Agost",
-          "Sep",
-          "Oct",
-          "Nov",
-          "Dic",
-        ],
-        datasets: [
-          {
-            label: "Salud",
-            backgroundColor: ["#03626C"],
-            data: [1200, 1500, 1000, 1800, 1300, 900, 1700, 5000, 3000, 1000, 300, 100], // Datos estáticos de ejemplo
-          },
-        ],
-      },
-      chartOptions: {
-        responsive: true,
-      },
-      user: "",
-      name: "",
-      user_id: "",
-      data: {},
-
-      //input: "",
-      messages: [
-        {
-          text: `Hola 👋 ${
-            this.name ? this.name + ", " : ""
-          }¿En qué te puedo ayudar hoy?`,
-          from: "ai",
-        },
-      ],
+  data: () => ({
+    selected: shallowRef([2]),
+    selected2: null,
+    step: 0,
+    dateMenu: false,
+      searchDate: '',
+      pickerDate: null,
+    time: null,
+    modal2: false,
+    timePickerDialog: false,
+    steps: [
+      { title: "Información Básica", subtitle: "Ingresa el título y descripción" },
+      { title: "Asignación", subtitle: "Selecciona responsables y participantes" },
+      { title: "Programación", subtitle: "Elige fecha y hora de la tarea" },
+    ],
+    itemsPerPage: 6,
+    currentPage: 1,
+    snackbar: false,
+    sb_type: "",
+    sb_message: "",
+    sb_timeout: 2000,
+    sb_title: "",
+    sb_icon: "",
+    valid: true,
+    loading: false,
+    showDetails: false,
+    dialog: false,
+    dialogAssignedPeople: false,
+    dialogDelete: false,
+    file: null,
+    imgMiniatura: "",
+    tasks: [],
+    categories: [],
+    status: [],
+    priorities: [],
+    people: [],
+    tittlePerson: -1,
+    selectedItems: {}, // Almacena las selecciones por rol
+    persons: [],
+    recurrences: [],
+    typetasks: [],
+    home_id: "",
+    roles: [],
+    data: {},
+    dialogAddPeople: false,
+    person_id: "",
+    role_id: "",
+    task_id: "",
+    timeSlots: [], // Inicialmente vacío
+    selectedPerson: null, // Persona seleccionada en el formulario
+    selectedRole: null, // Rol seleccionado en el formulario
+    headers: [
+      { title: "Título", value: "title", width: "20%" },
+      { title: "Fecha", value: "start_date", width: "5%" },
+      { title: "Descripción", value: "description", width: "30%" },
+      { title: "Personas", value: "people", width: "30%" },
+      { title: "Acciones", value: "actions", sortable: false, width: "20%" },
+    ],
+    headersPeople: [
+      { title: "Nombre", value: "name", width: "60%" },
+      { title: "Rol", value: "roleName", width: "20%" },
+      { title: "Acciones", value: "actions", sortable: false, width: "20%" },
+    ],
+    editedItem: {
+      id: "",
+      title: "",
+      description: "",
+      start_date: null,
+      end_date: null,
+      start_time: null,
+      end_time: null,
+      type: "Tarea",
+      module: "Tarea",
+      parent_id: "",
+      status_id: "",
+      category_id: "",
+      person_id: null,
       home_id: "",
-      status: [],
-      tools: [],
-      cards: [
-        // Primera fila: Logros | Deseos | Metas | Tareas
-        {
-          title: "Logros",
-          description: "Registro de logros personales",
-          icon: "mdi-trophy-outline",
-          //to: "/achievements", // Ruta no implementada
-          to: "",
-          name: "achievements",
-          color: "primary",
-        },
-        {
-          title: "Deseos",
-          description: "Listas de deseos y compras",
-          icon: "mdi-creation",
-          to: "/desire", // Ruta implementada
-          name: "desire",
-          color: "secondary",
-        },
-        {
-          title: "Metas",
-          description: "Objetivos y metas personales",
-          icon: "mdi-flag-checkered",
-          to: "/goals", // Ruta no implementada
-          name: "goals",
-          color: "purple",
-        },
-        {
-          title: "Tareas",
-          description: "Organiza actividades pendientes",
-          icon: "mdi-calendar-weekend-outline",
-          to: "/task", // Ruta implementada
-          name: "task",
-          color: "warning",
-        },
-
-        // Segunda fila: Finanzas | Salud | Nutrición | Mascotas
-        {
-          title: "Finanzas",
-          description: "Ingresos, gastos y presupuestos",
-          icon: "mdi-finance",
-          to: "/finance", // Ruta implementada
-          name: "finance",
-          color: "success",
-        },
-        {
-          title: "Salud",
-          description: "Registro médico y bienestar",
-          icon: "mdi-heart-pulse",
-          to: "/health", // Ruta implementada
-          name: "health",
-          color: "pink",
-        },
-        {
-          title: "Nutrición",
-          description: "Seguimiento alimenticio",
-          icon: "mdi-nutrition",
-          //to: "/nutrition", // Ruta no implementada
-          to: "",
-          name: "nutrition",
-          color: "deep-orange",
-        },
-        {
-          title: "Mascotas",
-          description: "Cuidado de mascotas",
-          icon: "mdi-paw",
-          to: "/pets", // Ruta no implementada
-          name: "pets",
-          color: "blue-grey",
-        },
-
-        // Tercera fila: Hogar | Almacenes | Archivos | Sugerencias
-        {
-          title: "Hogar",
-          description: "Gestión del hogar",
-          icon: "mdi-home",
-          to: "/homes", // Ruta implementada
-          name: "homes",
-          color: "brown",
-        },
-        {
-          title: "Almacenes",
-          description: "Gestiona inventarios",
-          icon: "mdi-store-outline",
-          to: "/personwarehouse", // Ruta implementada
-          name: "personwarehouse",
-          color: "error",
-        },
-        {
-          title: "Archivos",
-          description: "Documentos importantes",
-          icon: "mdi-folder-star-outline",
-          to: "/file", // Ruta implementada
-          name: "file",
-          color: "indigo",
-        },
-        {
-          title: "Sugerencias",
-          description: "Recomendaciones y propuestas",
-          icon: "mdi-lightbulb-on-outline",
-          to: "/suggestions", // Ruta implementada
-          name: "suggestions",
-          color: "amber",
-        },
-      ],
-      /*cards: [
-        {
-          title: "Deseos",
-          description: "Listas de deseos y compras",
-          icon: "mdi-creation",
-          to: "/desire",
-          color: "secondary",
-        },
-        {
-          title: "Finanzas",
-          description: "Ingresos, gastos y presupuestos",
-          icon: "mdi-finance",
-          to: "/finance",
-          color: "success",
-        },
-        {
-          title: "Tareas",
-          description: "Organiza actividades pendientes",
-          icon: "mdi-calendar-weekend-outline",
-          to: "/task",
-          color: "warning",
-        },
-        {
-          title: "Almacenes",
-          description: "Gestiona inventarios",
-          icon: "mdi-store-outline",
-          to: "/personwarehouse",
-          color: "error",
-        },
-        {
-          title: "Historia Clínica",
-          description: "Registro médico y bienestar",
-          icon: "mdi-heart-pulse",  // Icono de corazón/pulso (típico para salud)
-          to: "/health",            // Ruta sugerida
-          color: "pink",            // Color que asocia con salud
-          // Alternativa de color: "red" para algo más estándar
-        },
-        {
-          title: "Productos",
-          description: "Catálogo de productos",
-          icon: "mdi-package-variant",
-          to: "/product",
-          color: "purple",
-        },
-        {
-          title: "Archivos",
-          description: "Documentos importantes",
-          icon: "mdi-folder-star-outline",
-          to: "/file",
-          color: "indigo",
-        },
-        {
-          title: "Chat",
-          description: "Comunicación con contactos",
-          icon: "mdi-chat",
-          to: "/chat",
-          color: "teal",
-        },
-        {
-          title: "Hogar",
-          description: "Gestión del hogar",
-          icon: "mdi-home",
-          to: "/homes",
-          color: "brown",
-        },
-        {
-          title: "suggestions",
-          description: "Recomendaciones y propuestas",
-          icon: "mdi-lightbulb-on-outline",
-          to: "/suggestions",
-          color: "amber",
-        },
-      ]    {
-          title: 'Mantenedores',
-          icon: 'mdi-progress-wrench',
-          color: 'deep-orange',
-          menu: true,
-          to: '/mantenedoresMenu',
-          items: [
-            { title: 'Categorías', icon: 'mdi-text-box-outline', to: '/category' },
-            { title: 'Almacénes', icon: 'mdi-warehouse', to: '/warehouse' },
-            { title: 'Prioridades', icon: 'mdi-star-circle-outline', to: '/priority' },
-            { title: 'Roles', icon: 'mdi-account-cog-outline', to: '/role' },
-            { title: 'Estados', icon: 'mdi-check-circle-outline', to: '/status' },
-            { title: 'Tipos de Hogar', icon: 'mdi-home-group', to: '/hometype' },
-            { title: 'Tipos de Salud', icon: 'mdi-heart-pulse', to: '/type' }
-          ]
-        }*/
-      taskCount: "",
-      goalCount: "",
-      whishCount: "",
-      financeCount: "",
-      personWarehousesCount: "",
-      suggestionCount: "",
-      homeCount: "",
-      fileCount: "",
-      productCount: "",
-      dialog: false,
-      editedItem: {
-        id: "",
-        title: "",
-        description: "",
-        start_date: null,
-        end_date: null,
-        start_time: null,
-        end_time: null,
-        type: "Tarea",
-        parent_id: "",
-        status_id: "",
-        category_id: "",
-        person_id: null,
-        home_id: "",
-        recurrence: "",
-        estimated_time: 1,
-        attachments: null,
-        comments: "",
-        geo_location: "",
-        people: [],
-      },
-
-      defaultItem: {
-        id: "",
-        title: "",
-        description: "",
-        start_date: null,
-        end_date: null,
-        start_time: null,
-        end_time: null,
-        type: "",
-        parent_id: "",
-        status_id: "",
-        category_id: "",
-        person_id: null,
-        home_id: "",
-        recurrence: "",
-        estimated_time: 1,
-        attachments: null,
-        comments: "",
-        geo_location: "",
-        people: [],
-      },
-
-      originalItem: {
-        id: "",
-        title: "",
-        description: "",
-        start_date: null,
-        end_date: null,
-        start_time: null,
-        end_time: null,
-        type: "",
-        parent_id: "",
-        status_id: "",
-        category_id: "",
-        person_id: null,
-        home_id: "",
-        recurrence: "",
-        estimated_time: 1,
-        attachments: null,
-        comments: "",
-        geo_location: "",
-        people: [],
-      },
-      step: 0,
-      valid: true,
-      time: null,
-      modal2: false,
-      timePickerDialog: false,
-      steps: [
-        { title: "Información Básica", subtitle: "Ingresa el título y descripción" },
-        { title: "Asignación", subtitle: "Selecciona responsables y participantes" },
-        { title: "Programación", subtitle: "Elige fecha y hora de la tarea" },
-      ],
-      menu: false,
-      menu2: false,
-      input: null,
-      input2: null,
-      editedIndex: -1,
-      categories: [],
-
-      priorities: [],
+      recurrence: "",
+      estimated_time: 1,
+      attachments: null,
+      comments: "",
+      geo_location: "",
       people: [],
-      tittlePerson: -1,
-      selectedItems: {}, // Almacena las selecciones por rol
-      persons: [],
-      recurrences: [],
-      typetasks: [],
+    },
 
-      roles: [],
-      nameRules: [
-        (v) => !!v || "El campo es requerido",
-        (v) => (v && v.length <= 50) || "El campo debe tener menos de 51 caracteres",
-        (v) => (v && v.length >= 3) || "El campo debe tener al menos de 3 caracteres",
-      ],
-      selectRules: [(v) => !!v || "Seleccionar al menos un elemento"],
-    };
-  },
+    defaultItem: {
+      id: "",
+      title: "",
+      description: "",
+      start_date: null,
+      end_date: null,
+      start_time: null,
+      end_time: null,
+      type: "Tarea",
+      module: "Tarea",
+      parent_id: "",
+      status_id: "",
+      category_id: "",
+      person_id: null,
+      home_id: "",
+      recurrence: "",
+      estimated_time: 1,
+      attachments: null,
+      comments: "",
+      geo_location: "",
+      people: [],
+    },
+
+    originalItem: {
+      id: "",
+      title: "",
+      description: "",
+      start_date: null,
+      end_date: null,
+      start_time: null,
+      end_time: null,
+      type: "",
+      parent_id: "",
+      status_id: "",
+      category_id: "",
+      person_id: null,
+      home_id: "",
+      recurrence: "",
+      estimated_time: 1,
+      attachments: null,
+      comments: "",
+      geo_location: "",
+      people: [],
+    },
+
+    tab: "tab-1",
+    tabs: [
+      { text: "General", value: "general", icon: "mdi-file-document-outline" },
+      { text: "Personas", value: "personas", icon: "mdi-account-group-outline" },
+      { text: "Módulo", value: "modulo", icon: "mdi-view-dashboard-outline" },
+      //{ text: 'Estado', value: 'estado', icon: 'mdi-progress-check' },
+    ],
+
+    menu: false,
+    menu2: false,
+    input: null,
+    input2: null,
+    editedIndex: -1,
+    search: "",
+    nameRules: [
+      (v) => !!v || "El campo es requerido",
+      (v) => (v && v.length <= 50) || "El campo debe tener menos de 51 caracteres",
+      (v) => (v && v.length >= 3) || "El campo debe tener al menos de 3 caracteres",
+    ],
+    selectRules: [(v) => !!v || "Seleccionar al menos un elemento"],
+
+    sections: [
+      { label: "General", value: "general", icon: "mdi-file-document-outline" },
+      { label: "Personas", value: "personas", icon: "mdi-account-group-outline" },
+      { label: "Módulo", value: "modulo", icon: "mdi-view-dashboard-outline" },
+      { label: "Estado", value: "estado", icon: "mdi-progress-check" },
+    ],
+    dateRules: [
+      value => {
+        if (!value) return true;
+        
+        // Validación directa sin depender de this
+        if (!/^\d{2}-\d{2}-\d{4}$/.test(value)) return 'Formato debe ser DD-MM-YYYY';
+        
+        const [day, month, year] = value.split('-').map(Number);
+        
+        // Validaciones básicas
+        if (month < 1 || month > 12) return 'Mes inválido';
+        if (day < 1 || day > 31) return 'Día inválido';
+        
+        // Validación de días por mes
+        const monthLength = [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
+        
+        // Ajuste para años bisiestos
+        if (year % 400 === 0 || (year % 100 !== 0 && year % 4 === 0)) {
+          monthLength[1] = 29;
+        }
+        
+        return day <= monthLength[month - 1] || 'Fecha inválida para este mes';
+      }
+    ],
+    title: "",
+    description: "",
+    date: "",
+    module: "",
+  }),
   computed: {
     textoEditable() {
       // Muestra texto confirmado + texto dictado en vivo
@@ -1050,26 +802,21 @@ export default {
   },
   mounted() {
     const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-
     if (!SpeechRecognition) {
       this.compatible = false;
       return;
     }
-
     this.recognition = new SpeechRecognition();
     this.recognition.lang = "es-ES";
     this.recognition.continuous = true;
     this.recognition.interimResults = true;
-
     this.recognition.onstart = () => {
       this.escuchando = true;
       this.cargando = false;
     };
-
     this.recognition.onresult = (event) => {
       let interim = "";
       let final = "";
-
       for (let i = event.resultIndex; i < event.results.length; ++i) {
         const transcript = event.results[i][0].transcript;
         if (event.results[i].isFinal) {
@@ -1078,20 +825,16 @@ export default {
           interim += transcript;
         }
       }
-
       if (final) {
         this.texto += (this.texto.endsWith(" ") ? "" : " ") + final + " ";
       }
-
       this.textoTemporal = interim;
     };
-
     this.recognition.onerror = (event) => {
       console.error("Error de reconocimiento:", event.error);
       this.escuchando = false;
       this.cargando = false;
     };
-
     this.recognition.onend = () => {
       this.escuchando = false;
       this.textoTemporal = "";
@@ -1186,15 +929,12 @@ export default {
     },
     formatIntuitiveDate(dateString) {
       if (!dateString) return "Sin fecha";
-
       // 1. Parsear la fecha de entrada (formato YYYY-MM-DD)
       const [year, month, day] = dateString.split("-");
       const inputDate = new Date(year, month - 1, day); // Mes es 0-based
-
       // 2. Obtener fecha actual (sin horas/minutos/segundos)
       const today = new Date();
       today.setHours(0, 0, 0, 0);
-
       // 3. Normalizar ambas fechas a UTC para evitar problemas de zona horaria
       const inputUTC = Date.UTC(
         inputDate.getFullYear(),
@@ -1202,10 +942,8 @@ export default {
         inputDate.getDate()
       );
       const todayUTC = Date.UTC(today.getFullYear(), today.getMonth(), today.getDate());
-
       // 4. Calcular diferencia en días
       const diffDays = Math.floor((inputUTC - todayUTC) / (1000 * 60 * 60 * 24));
-
       // 5. Determinar el texto a mostrar
       switch (diffDays) {
         case 0:
@@ -1225,16 +963,13 @@ export default {
         .replace(/\./g, "");
       }
     },
-
     formatTime(timeString) {
       if (!timeString) return "";
-
       const [hours, minutes] = timeString.split(":");
       return `${hours}:${minutes}`;
     },
     toggleDictado() {
       if (!this.recognition) return;
-
       if (this.escuchando) {
         this.recognition.stop();
       } else {
@@ -1244,14 +979,12 @@ export default {
     },
     async sendMessage() {
       if (this.texto.trim() === "") return;
-
       // Guardar el texto temporal
       this.textoTemporal = this.texto;
       console.log("Texto temporal:", this.textoTemporal);
       // Abrir el diálogo con el chat
       const tempMessage = this.texto.trim();
       this.texto = "";
-
       // Agregar mensaje del usuario al chat
       this.messages.push({
         from: "user",
@@ -1284,11 +1017,9 @@ export default {
           product,
           desire,
         } = response.data;
-
         if (intentDetected && intent) {
           // Preparar datos comunes
           this.data = { home_id: this.home_id };
-
           // Si hay datos de tarea, guardarlos
           /*if (task) {
         this.taskParameters = {
@@ -1296,10 +1027,8 @@ export default {
           ...task,
         };
       }*/
-
           // Cargar datos requeridos si es necesario
           //await this.loadRequiredData();
-
           // Determinar qué chat mostrar según la intención
           switch (intent) {
             case "Tarea":
@@ -1309,13 +1038,11 @@ export default {
                   typeof response.data.task === "string"
                     ? JSON.parse(response.data.task)
                     : response.data.task;
-
                 this.currentTask = _.cloneDeep(taskData);
                 this.dialogChatTask = true;
                 this.scrollToBottom();
               });
               break;
-
             case "Meta":
               this.currentTask = null;
               this.$nextTick(() => {
@@ -1323,19 +1050,16 @@ export default {
                   typeof response.data.task === "string"
                     ? JSON.parse(response.data.task)
                     : response.data.task;
-
                 this.currentTask = _.cloneDeep(taskData);
                 this.dialogChatTask = true;
                 this.scrollToBottom();
               });
               break;
-
             case "Gasto":
               this.currentFinance = null;
               this.$nextTick(() => {
                 const financeData =
                   typeof finances === "string" ? JSON.parse(finances) : finances;
-
                 if (financeData.spent <= 0) {
                   this.messages.push({
                     from: "ai",
@@ -1352,13 +1076,11 @@ export default {
                 }
               });
               break;
-
             case "Ingreso":
               this.currentFinance = null;
               this.$nextTick(() => {
                 const financeData =
                   typeof finances === "string" ? JSON.parse(finances) : finances;
-
                 if (financeData.income <= 0) {
                   this.messages.push({
                     from: "ai",
@@ -1375,7 +1097,6 @@ export default {
                 }
               });
               break;
-
             case "Presupuesto":
               this.currentBudget = null;
               this.$nextTick(() => {
@@ -1396,19 +1117,16 @@ export default {
                 }
               });
               break;
-
             case "Warehouse":
               this.currentWarehouse = null;
               this.$nextTick(() => {
                 const warehouseData =
                   typeof warehouse === "string" ? JSON.parse(warehouse) : warehouse;
-
                 this.currentWarehouse = _.cloneDeep(warehouseData);
                 this.dialogChatWarehouse = true;
                 this.scrollToBottom();
               });
               break;
-
             case "Producto":
               this.currentProduct = null;
               this.$nextTick(() => {
@@ -1434,31 +1152,26 @@ export default {
                 }
               });
               break;
-
             case "Deseo":
               this.currentDesire = null;
               this.$nextTick(() => {
                 const desireData =
                   typeof desire === "string" ? JSON.parse(desire) : desire;
-
                 this.currentDesire = _.cloneDeep(desireData);
                 this.dialogChatDesire = true;
                 this.scrollToBottom();
               });
               break;
-
             case "salud":
               this.currentHealthData = _.cloneDeep(task || {});
               this.dialogChatHealth = true;
               this.scrollToBottom();
               break;
-
             case "compra":
               this.currentShoppingData = _.cloneDeep(task || {});
               this.dialogChatShopping = true;
               this.scrollToBottom();
               break;
-
             default:
               // Respuesta por defecto si no se reconoce la intención
               this.messages.push({
@@ -1561,7 +1274,6 @@ export default {
           }
           return obj;
         }, {});
-
       // Agregar campos adicionales si es necesario
       if (Object.keys(updatedFields).length > 0) {
         updatedFields.home_id = this.editedItem.home_id;
@@ -1575,11 +1287,9 @@ export default {
           ? this.editedItem.estimated_time
           : 0;
         updatedFields.type = this.editedItem.type ? this.editedItem.type : "Tarea";
-
         if (this.file) {
           updatedFields.attachments = this.editedItem.attachments;
         }
-
         // Crear el objeto FormData
         const formData = new FormData();
         for (let key in updatedFields) {
@@ -1594,14 +1304,12 @@ export default {
             formData.append(key, updatedFields[key]);
           }
         }
-
         try {
           const result = await handleRequest({
             endpoint: "task",
             method: "POST",
             data: formData,
           });
-
           // Manejo de la respuesta según el resultado
           if (result.success) {
             this.loading = false;
@@ -1644,7 +1352,6 @@ export default {
       if (toPath === "/suggestions") return this.suggestionCount;
       // Añade más casos según tus necesidades
       return "0";
-
       // O puedes llamar a una API o consultar Vuex/store
       // return this.$store.getters.getValueByPath(toPath)
     },
@@ -1662,7 +1369,6 @@ export default {
       } else {
         // Seleccionamos la nueva categoría
         this.selectedCategory = category.name;
-
         // Aquí puedes cargar los datos específicos para esta categoría
         this.loadCategoryContent(category.name);
       }
@@ -1676,7 +1382,6 @@ export default {
     };
     return colorMap[status] || 'grey';
     },
-
     getStatusIcon(status) {
       const iconMap = {
         'pending': 'mdi-clock-outline',
@@ -1686,7 +1391,6 @@ export default {
       };
       return iconMap[status] || 'mdi-help-circle';
     },
-
   getStatusText(status) {
     const textMap = {
       'pending': 'Pendiente',
@@ -1696,7 +1400,6 @@ export default {
     };
     return textMap[status] || 'Desconocido';
   },
-
   isCurrentStatus(task, statusValue) {
     return task.status === statusValue;
   },*/
@@ -1707,20 +1410,17 @@ export default {
         Meta: "purple",
         Logros: "primary",
         Deseos: "secondary",
-
         // Segunda fila
         Finanzas: "success",
         Salud: "pink",
         Nutrición: "deep-orange",
         Mascotas: "blue-grey",
-
         // Tercera fila
         Hogar: "brown",
         Almacenes: "error",
         Archivos: "indigo",
         Sugerencias: "amber",
       };
-
       return colorMap[type] || "grey-lighten-1"; // Color por defecto
     },
     getStatusById(statusId) {
@@ -1736,14 +1436,12 @@ export default {
       this.data = {};
       this.data.id = task.id;
       this.data.status_id = newStatusId;
-
       try {
         const result = await handleRequest({
           endpoint: "task-update",
           method: "POST",
           data: this.data,
         });
-
         // Manejo de la respuesta según el resultado
         if (result.success) {
           this.showAlert("success", result.message, 3000);
@@ -1778,7 +1476,6 @@ export default {
           method: "POST",
           data: this.data,
         });
-
         if (result.success) {
           // Si la solicitud es exitosa, asignamos las sucursales
           this.status = result.data?.status || [];
@@ -1813,7 +1510,6 @@ export default {
       const year = today.getFullYear();
       const month = String(today.getMonth() + 1).padStart(2, "0"); // Meses son 0-11
       const day = String(today.getDate()).padStart(2, "0");
-
       const formattedDate = `${year}-${month}-${day}`; // Formato "YYYY-MM-DD"
       this.data.start_date = formattedDate;
       try {
@@ -1823,14 +1519,16 @@ export default {
           method: "POST",
           data: this.data,
         });
-
         if (result.success) {
           // Si la solicitud es exitosa, asignamos las sucursales
           // Filtrar tareas que coincidan con el día actual
           this.tasks = (result.data?.tasks || []).filter((task) => task.type === "Tarea");
+          this.loading_task=false;
+          
         } else {
           // Si no hay datos, asignamos un array vacío
           this.tasks = [];
+             this.loading_task=false;
           //this.showAlert('success', result.message || 'No hay tareas disponibles.', 3000);
         }
       } catch (error) {
@@ -1847,17 +1545,14 @@ export default {
     },
     showAlert(sb_type, sb_message, sb_timeout) {
       this.sb_type = sb_type;
-
       if (sb_type == "success") {
         this.sb_title = "Éxito";
         this.sb_icon = "mdi-check-circle";
       }
-
       if (sb_type == "error") {
         this.sb_title = "Error";
         this.sb_icon = "mdi-check-circle";
       }
-
       if (sb_type == "warning") {
         this.sb_title = "Advertencia";
         this.sb_icon = "mdi-alert-circle";
@@ -1879,7 +1574,6 @@ export default {
     getRoleIcon(roleId) {
       const role = this.roles.find((r) => r.id === roleId);
       if (!role) return "mdi-account";
-
       switch (role.name.toLowerCase()) {
         case "responsable":
           return "mdi-star";
@@ -1889,15 +1583,12 @@ export default {
           return "mdi-account";
       }
     },
-
     updateSelection(role, selectedIds) {
       console.log("Selection changed:", { role, selectedIds });
-
       // Eliminar personas de este rol que ya no están seleccionadas
       this.editedItem.people = this.editedItem.people.filter(
         (p) => p.roleId !== role.id || selectedIds.includes(p.id)
       );
-
       // Agregar nuevas selecciones
       selectedIds.forEach((personId) => {
         if (
@@ -1915,7 +1606,6 @@ export default {
           }
         }
       });
-
       console.log("Updated people:", this.editedItem.people);
     },
     updateDate(val) {
@@ -1934,7 +1624,6 @@ export default {
         return !assignedPerson || assignedPerson.roleId === roleId;
       });
     },
-
     isPersonSelected(personId, roleId) {
       console.log("isPersonSelected", personId, roleId);
       return this.editedItem.people.some((p) => p.id === personId && p.roleId === roleId);
@@ -1943,23 +1632,19 @@ export default {
       const now = new Date();
       const currentHour = now.getHours();
       const currentMinute = now.getMinutes();
-
       // Redondear a los 5 minutos más cercanos
       const roundedMinute = Math.ceil(currentMinute / 5) * 5;
       const nearestTime = new Date();
       nearestTime.setMinutes(roundedMinute, 0, 0);
-
       // Si pasamos de 60 minutos, ajustar hora
       if (roundedMinute >= 60) {
         nearestTime.setHours(currentHour + 1);
         nearestTime.setMinutes(0);
       }
-
       const formattedNearestTime =
         String(nearestTime.getHours()).padStart(2, "0") +
         ":" +
         String(nearestTime.getMinutes()).padStart(2, "0");
-
       // Generar todos los slots
       const allSlots = [];
       for (let hour = 0; hour < 24; hour++) {
@@ -1969,69 +1654,17 @@ export default {
           allSlots.push(`${formattedHour}:${formattedMinute}`);
         }
       }
-
       // Ordenar los slots comenzando desde el más cercano
       const index = allSlots.indexOf(formattedNearestTime);
       const orderedSlots = [...allSlots.slice(index), ...allSlots.slice(0, index)];
-
       // Establecer el valor por defecto en editedItem
       this.editedItem.start_time = formattedNearestTime;
-
       return orderedSlots;
     },
   },
 };
 </script>
-
 <style scoped>
-.avatar-row {
-  display: flex;
-  flex-wrap: nowrap;
-  justify-content: start;
-}
-
-.avatar-col {
-  margin-right: -10px;
-  /* Reduce the space between avatars */
-}
-.avatar-item.hover-expand:hover {
-  transform: scale(1.5);
-  box-shadow: 0 0 0 rgba(0, 0, 0, 0.3);
-}
-.avatar-item {
-  margin-right: -5px;
-  /* Cambia el color del borde según desees */
-  border-radius: 50%;
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
-  /* Para que siga siendo redondo */
-  box-sizing: border-box;
-  /* Asegura que el borde no afecte el tamaño del avatar */
-  /* Optional: reduce the space even further between avatars */
-  /* Optional: reduce the space even further between avatars */
-}
-.custom-card {
-  width: 100%;
-  /* Responsivo */
-  max-width: 200px;
-  /* Tamaño máximo */
-}
-
-.scrollable-cards {
-  max-height: 400px;
-  overflow-y: auto;
-  /* Scroll vertical cuando el contenido exceda */
-}
-
-.ml-3 {
-  margin-left: 14px;
-}
-
-.subheading {
-  font-size: 0.7em;
-  color: #757575;
-  text-align: center;
-}
-
 .icono-concavo {
   width: 40px;
   height: 40px;
@@ -2047,8 +1680,8 @@ export default {
   overflow: hidden;
 }
 .icono-concavo-card-task {
-  width: 50px;
-  height: 50px;
+  width: 60px;
+  height: 60px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -2071,7 +1704,7 @@ export default {
   background: transparent;
 }
 .date-display {
-  font-size: 0.85rem; /* Equivale a text-caption */
+  font-size: 0.75rem; /* Equivale a text-caption */
   line-height: 1.1;
   font-weight: 500;
   text-align: center;
@@ -2080,7 +1713,7 @@ export default {
 }
 /* Estilos para la hora */
 .time-display {
-  font-size: 0.70rem;
+  font-size: 0.625rem;
   line-height: 1;
   margin-top: 2px;
 }
@@ -2107,6 +1740,7 @@ export default {
   height: 100%;
 }
 .menu-card:hover {
+  transform: translateY(-2px);
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
 }
 .v-card-title {

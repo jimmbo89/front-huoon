@@ -512,7 +512,7 @@
 import LocalStorageService from "@/LocalStorageService";
 import { handleRequest } from "@/utils/api"; // Ruta al archivo
 import _ from "lodash";
-import PhysicalExam from "./PhysicalExam.vue";
+import PhysicalExam from "./BloodPressure.vue";
 import Treatment from "./Treatment.vue";
 import BackGroungPerson from "./BackGroungPerson.vue";
 import BackGroundFamily from "./BackGroundFamily.vue";

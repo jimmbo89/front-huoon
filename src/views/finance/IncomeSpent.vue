@@ -1,6 +1,14 @@
 <template>
-  <v-snackbar class="mt-12" location="right top" :timeout="sb_timeout" :color="sb_type" elevation="24"
-    :multi-line="true" vertical v-model="snackbar">
+  <v-snackbar
+    class="mt-12"
+    location="right top"
+    :timeout="sb_timeout"
+    :color="sb_type"
+    elevation="24"
+    :multi-line="true"
+    vertical
+    v-model="snackbar"
+  >
     <v-row>
       <v-col md="2">
         <v-avatar :icon="sb_icon" color="sb_type" size="40"></v-avatar>
@@ -13,210 +21,315 @@
   </v-snackbar>
 
   <v-container class="pa-4">
-  <v-card elevation="4" rounded="lg">
+    <v-card elevation="2" rounded="lg" flat>
       <!-- Encabezado con foto y datos -->
       <v-card-text>
-      <v-col cols="12" sm="9" md="9" class="d-flex align-center">
-            <v-avatar size="48" class="me-3" color="grey-lighten-4" variant="tonal">
-              <v-icon color="green-darken-2">mdi-cash-multiple</v-icon>
-            </v-avatar>
-            <div>
-              <div class="text-body-2 font-weight-bold mb-1">
-                {{ $t("finances.sections.movements") }}
-              </div>
-              <div class="text-body-2 text-grey-darken-1">
-              
-              </div>
+        <v-col cols="12" sm="9" md="9" class="d-flex align-center">
+          <v-avatar size="48" class="me-3" color="grey-lighten-4" variant="tonal">
+            <v-icon color="green-darken-2">mdi-cash-multiple</v-icon>
+          </v-avatar>
+          <div>
+            <div class="text-body-2 font-weight-bold mb-1">
+              {{ $t("finances.sections.movements") }}
             </div>
-          </v-col>
+            <div class="text-body-2 text-grey-darken-1"></div>
+          </div>
+        </v-col>
 
+        <v-divider />
+        <v-card-actions class="pa-3 bg-grey-lighten-5 tools-bar">
+          <v-btn
+            v-for="tool in tools"
+            :key="tool.name"
+            @click="tool.action()"
+            size="small"
+            color="primary"
+            variant="text"
+            prepend-icon="mdi-plus"
+            class="text-capitalize"
+          >
+            {{ tool.name }}
+          </v-btn>
+        </v-card-actions>
 
-             <v-divider />
-          <v-card-actions class="pa-3 bg-grey-lighten-5 tools-bar">
-            <v-btn
-              v-for="tool in tools"
-              :key="tool.name"
-              @click="tool.action()"
-              size="small"
-              color="primary"
-              variant="text"
-              prepend-icon="mdi-plus"
-              class="text-capitalize"
+        <v-card-title class="d-flex flex-wrap align-center gap-4 pb-0">
+          <!-- Título -->
+
+          <!-- Spacer (solo visible en md+) -->
+          <v-spacer class="d-none d-md-block"></v-spacer>
+          <!-- Campo de búsqueda global -->
+          <div class="flex-grow-1" style="max-width: 300px">
+            <v-text-field
+              v-model="search"
+              density="compact"
+              :label="$t('dataTable.search')"
+              prepend-inner-icon="mdi-magnify"
+              variant="solo-filled"
+              hide-details
+              single-line
+              flat
+            ></v-text-field>
+          </div>
+        </v-card-title>
+        <v-data-table
+          :headers="headers"
+          :items="financialRecords"
+          :search="search"
+          :items-per-page-text="$t('dataTable.itemsPerPageText')"
+          :no-data-text="$t('dataTable.noDataText')"
+          :loading-text="$t('dataTable.loadingText')"
+          :loading="loading"
+          :hide-default-header="true"
+          style="
+            max-height: 68vh;
+            overflow-y: auto;
+            background: transparent;
+            border: none !important;
+            outline: none !important;
+            box-shadow: none !important;
+            padding: 0;
+          "
+        >
+          <template v-slot:top>
+            <v-card
+              :elevation="1"
+              :hover="false"
+              flat
+              class="mb-2 mx-1 rounded-lg"
+              style="
+                border: 1px solid #eceff1;
+                height: 40px;
+                min-height: 40px;
+                display: flex;
+                align-items: center;
+                transition: none !important;
+              "
             >
-              {{ tool.name }}
-            </v-btn>
-          </v-card-actions>
-          
-    <!-- Encabezado -->
-    <!--<v-row justify="space-between" align="center" class="mb-6">
-      <h2 class="text-body-2 font-weight-bold">{{ $t("finances.sections.movements") }}</h2>
-      <v-btn icon color="deep-purple-accent-4" variant="flat" class="elevation-3" @click="showAdd">
-        <v-icon>mdi-plus</v-icon>
-      </v-btn>
-    </v-row>-->
+              <v-card-text
+                class="d-flex pa-2"
+                style="
+                  width: 100%;
+                  min-width: 0;
+                  height: 100%;
+                  padding: 0 16px !important;
+                  display: flex;
+                  align-items: center;
+                "
+              >
+                <!-- Fecha / Periodo (10%) -->
+                <div style="width: 6%; min-width: 0" class="text-left">
+                  {{ $t("finances.fields.date") }}
+                </div>
 
-    <template v-if="financialRecords.length > 0">
-    <v-card class="mb-4 rounded-lg py-2 px-0" density="comfortable" elevation="1" color="grey-lighten-4">
-    <v-row no-gutters class="ma-0 mx-0">
-      <!-- Columna 1: Fecha -->
-      <v-col cols="1" class="d-flex align-center justify-center px-0">
-        <div class="text-caption font-weight-bold">
-          {{ $t('finances.fields.date') }}
-        </div>
-      </v-col>
+                <!-- Categoría / Descripción (40%) -->
+                <div style="width: 35%; min-width: 0" class="text-left">
+                  {{ $t("finances.fields.budget") }} /
+                  {{ $t("finances.fields.description") }}
+                </div>
 
-      <!-- Columna 2: Tipo -->
-      <v-col cols="1" class="d-flex align-center pe-4">
-        <div class="text-caption font-weight-bold">
-          {{ $t('finances.fields.type') }}
-        </div>
-      </v-col>
+                <!-- Monto (10%) -->
+                <div
+                  style="width: 10%; min-width: 0"
+                  class="text-center text-green-darken-1"
+                >
+                  {{ $t("finances.fields.income") }}
+                </div>
 
-      <!-- Columna 3: Categoría / Presupuesto -->
-      <v-col cols="2" class="d-flex align-center pe-4">
-        <div class="text-caption font-weight-bold">
-          {{ $t('finances.fields.category') }}
-        </div>
-      </v-col>
+                <!-- Usado (15%) -->
+                <div
+                  style="width: 10%; min-width: 0"
+                  class="text-center text-red-darken-1"
+                >
+                  {{ $t("finances.fields.spent") }}
+                </div>
 
-      <!-- Columna 4: Ingresos -->
-      <v-col cols="2" class="d-flex align-center pe-4">
-        <div class="text-caption font-weight-bold text-green-darken-1">
-          {{ $t('finances.fields.income') }}
-        </div>
-      </v-col>
+                <!-- Usado (15%) -->
+                <div style="width: 10%; min-width: 0" class="text-center">
+                  {{ $t("finances.fields.saldo") }}
+                </div>
 
-      <!-- Columna 5: Gastos -->
-      <v-col cols="2" class="d-flex align-center pe-4">
-        <div class="text-caption font-weight-bold text-red-darken-1">
-          {{ $t('finances.fields.spent') }}
-        </div>
-      </v-col>
+                <!-- Tipo (10%) -->
+                <div style="width: 10%; min-width: 0" class="text-center">
+                  {{ $t("finances.fields.type") }}
+                </div>
 
-      <!-- Columna 6: Descripción -->
-      <v-col cols="3" class="d-flex align-center pe-4">
-        <div class="text-caption font-weight-bold">
-          {{ $t('finances.fields.description') }}
-        </div>
-      </v-col>
+                <div style="width: 10%; min-width: 0" class="text-left">
+                  {{ $t("finances.fields.file") }}
+                </div>
 
-      <!-- Columna 7: Archivo y Acciones -->
-      <v-col cols="1" class="d-flex align-center pe-4 justify-end">
-        <div class="text-caption font-weight-bold">
-        </div>
-      </v-col>
-    </v-row>
-    </v-card>
-      <v-card v-for="(income, index) in financialRecords" :key="index" class="mb-4 rounded-lg py-2 px-0" density="comfortable" elevation="2">
-        <v-row no-gutters class="ma-0 px-0">
-          <!-- Columna 1: Fecha -->
-          <v-col cols="1" class="d-flex align-center justify-center px-0">
-            <div class="icono-concavo" :class="`bg-${getTypeColor(income.type)}`">
-              <div class="date-text">
-                {{ formatIntuitiveDate(income.date) }}
-              </div>
-            </div>
-          </v-col>
-
-          <!-- Columna 2: Tipo y Método -->
-          <v-col cols="1" class="d-flex align-center pe-4 gap-2">
-            <div class="text-body-2 font-weight-bold">
-              {{ income.type || $t("finances.notRecorded") }}
-            </div>
-          </v-col>
-           <v-col cols="2" class="d-flex align-center pe-4 gap-2">
-            <div v-if="income.income > 0" class="text-body-2 text-grey-darken-1">
-       
+                <!-- Acciones (10%) -->
+                <div style="width: 10%; min-width: 0" class="d-flex justify-end">
+                  {{ $t("settings.actions") }}
+                </div>
+              </v-card-text>
+            </v-card>
+          </template>
+          <template v-slot:item="slotProps">
+            <tr>
+              <td colspan="100%" style="padding: 0; border: none">
+                <v-card
+                  class="mb-2 mx-1 rounded-lg"
+                  elevation="1"
+                  density="comfortable"
+                  flat
+                >
+                  <v-card-text
+                    class="d-flex align-center pa-2"
+                    style="width: 100%; min-width: 0"
+                  >
+                    <div class="d-flex align-center" style="width: 6%; min-width: 0">
+                      <v-avatar
+                        class="mr-2 icono-concavo"
+                        :style="{
+                          'background-color': getTypeColor(slotProps.item.type),
+                          color: getTypeColor(slotProps.item.type),
+                          'min-height': '48px',
+                          'min-width': '48px',
+                          'border-radius': '8px',
+                          'font-size': '0.90em'
+                        }"
+                      >
+                        <div
+                          class="icono-concavo"
+                          :class="`bg-${getTypeColor(slotProps.item.type)}`"
+                        >
+                          <div class="date-text">
+                            {{ formatIntuitiveDate(slotProps.item.date) }}
+                          </div>
+                        </div>
+                      </v-avatar>
                     </div>
-            <div v-else class="text-body-2 text-grey-darken-1">
-                           <span>
-                        {{ income.categoryName }}
+
+                    <!-- Categoría + Descripción - 40% -->
+                    <div style="width: 35%; min-width: 0" class="d-flex flex-column">
+                      <div v-if="slotProps.item.income">
+                        <div class="text-body-2 text-truncate">
+                          {{ slotProps.item.description }}
+                        </div>
+                        <div class="text-caption text-grey-darken-1 text-truncate"></div>
+                      </div>
+                      <div else>
+                        <div class="text-body-2 text-truncate">
+                          {{ slotProps.item.categoryName }}
+                        </div>
+                        <div
+                          class="text-caption text-grey-darken-1 text-truncate"
+                          v-if="slotProps.item.spent"
+                        >
+                          {{ slotProps.item.description }}
+                        </div>
+                      </div>
+                    </div>
+
+                    <!-- Monto - 10% -->
+                    <div
+                      style="width: 10%; min-width: 0; text-align: center"
+                      class="text-body-2 text-green-darken-1 text-truncate"
+                    >
+                      {{ formatCurrency(slotProps.item.income) }}
+                    </div>
+
+                    <!-- Usado - 15% -->
+                    <div
+                      style="width: 10%; min-width: 0; text-align: center"
+                      class="text-body-2 text-red-darken-1 text-truncate"
+                    >
+                      {{ formatCurrency(slotProps.item.spent) }}
+                    </div>
+
+                    <div
+                      style="width: 10%; min-width: 0; text-align: center"
+                      class="text-body-2 text-truncate"
+                      :class="{
+                        'text-green-darken-1': parseFloat(slotProps.item.available) > 0,
+                        'text-red-darken-1': parseFloat(slotProps.item.available) < 0,
+                        'text-grey': parseFloat(slotProps.item.available) === 0,
+                      }"
+                    >
+                      {{ formatCurrency(slotProps.item.available) }}
+                    </div>
+
+                    <!-- Tipo (con ícono) - 10% -->
+                    <div style="width: 10%; min-width: 0; text-align: center">
+                      <v-icon
+                        :color="getTypeColor(slotProps.item.type)"
+                        style="font-size: 10px; margin-right: 4px"
+                        icon="mdi-circle"
+                      ></v-icon>
+                      <span class="text-grey-darken-1 text-body-2 text-truncate">
+                        {{ slotProps.item.type }}
                       </span>
-                      <v-tooltip activator="parent" location="bottom">
-                        <span>{{ $t('finances.fields.budget') }}: {{ income.categoryName }}</span>
-                      </v-tooltip>
-            </div>
-          </v-col>
+                    </div>
 
-          <!-- Columna 3: Ingresos -->
-          <v-col cols="2" class="d-flex align-center pe-4 gap-2">
-          <div class="text-body-2  text-green-darken-1">
-          <span>
-            {{ formatCurrency(income.income) }}
-          </span>
-          <v-tooltip activator="parent" location="bottom">
-            <span>
-              {{ $t('finances.fields.income') }}: 
-              {{ formatCurrency(income.income) }}
-            </span>
-          </v-tooltip>
-        </div>
-        </v-col>
+                    <!-- Moneda (con ícono) - 5% -->
+                    <div style="width: 10%; min-width: 0; text-align: center">
+                      <div
+                        v-if="
+                          slotProps.item.image &&
+                          slotProps.item.image !== 'finances/default.jpg'
+                        "
+                        class="mr-2"
+                      >
+                        <v-btn
+                          density="comfortable"
+                          icon="mdi-eye"
+                          color="green"
+                          @click="openModal(slotProps.item.image)"
+                          variant="tonal"
+                          size="small"
+                          title="Ver archivo adjunto"
+                        ></v-btn>
+                      </div>
+                    </div>
 
-        <v-col cols="2" class="d-flex align-center pe-4 gap-2">
-          <div class="text-body-2 text-red-darken-1">
-        <span>
-          {{ formatCurrency(income.spent) }}
-        </span>
-        <v-tooltip activator="parent" location="bottom">
-          <span>
-            {{ $t('finances.fields.spent') }}: 
-            {{ formatCurrency(income.spent) }}
-          </span>
-        </v-tooltip>
-      </div>
-        </v-col>
+                    <!-- Acciones - 10% -->
+                    <div
+                      class="d-flex gap-1"
+                      style="width: 10%; justify-content: flex-end; flex-wrap: nowrap"
+                    >
+                      <v-btn
+                        size="35"
+                        icon
+                        variant="text"
+                        color="green-darken-2"
+                        @click="editItem(slotProps.item)"
+                        class="flex-shrink-0 mr-1"
+                        title="Editar Presupuesto"
+                      >
+                        <v-icon size="20">mdi-pencil</v-icon>
+                      </v-btn>
 
-          <!-- Columna 4: Descripción -->
-          <v-col cols="3" class="d-flex align-center pe-4 gap-2">
-            <div class="text-body-2 text-grey-darken-1">
-              <span>
-                {{ income.description }}
-              </span>
-              <v-tooltip activator="parent" location="bottom">
-                <span>{{ $t('finances.fields.description') }}: {{ income.description }}</span>
-              </v-tooltip>
-            </div>
-          </v-col>
-
-          <!-- Columna 5: Archivo y Acciones -->
-          <v-col cols="1" class="d-flex align-center pe-4 gap-2 justify-end align-center">
-            <!-- Archivo -->
-            <div v-if="income.image && income.image !== 'finances/default.jpg'" class="mr-2">
-              <v-btn density="comfortable" icon="mdi-eye" color="green" @click="openModal(income.image)" variant="tonal"
-                size="small" title="Ver archivo adjunto"></v-btn>
-            </div>
-
-            <!-- Acciones -->
-            <div class="d-flex">
-              <v-btn icon variant="text" color="green-darken-2" size="small" @click="editItem(income)" class="mx-1">
-                <v-icon>mdi-pencil</v-icon>
-              </v-btn>
-              <v-btn icon variant="text" color="red-darken-2" size="small" @click="deleteItem(income)" class="mx-1">
-                <v-icon>mdi-delete</v-icon>
-              </v-btn>
-            </div>
-          </v-col>
-        </v-row>
-      </v-card>
-    </template>
-
-    <template v-else>
-      <v-col cols="12" class="text-center py-8 pa-0">
-        <v-icon size="64" color="grey-lighten-1">mdi-wallet-outline</v-icon>
-        <div class="text-h6 text-grey mt-4">
-          {{ $t("finances.noRecords") }}
-        </div>
-      </v-col>
-    </template>
-    </v-card-text>
+                      <v-btn
+                        size="35"
+                        icon
+                        variant="text"
+                        color="red-darken-2"
+                        @click="deleteItem(slotProps.item)"
+                        class="flex-shrink-0"
+                        title="Eliminar Presupuesto"
+                      >
+                        <v-icon size="20">mdi-delete</v-icon>
+                      </v-btn>
+                    </div>
+                  </v-card-text>
+                </v-card>
+              </td>
+            </tr>
+          </template>
+        </v-data-table>
+      </v-card-text>
     </v-card>
   </v-container>
 
   <!-- Diálogo para agregar/editar ingresos -->
-  <v-dialog v-model="dialog" fullscreen persistent transition="dialog-bottom-transition"
-    content-class="fullscreen-dialog">
-     <v-form ref="form" v-model="valid" class="h-100">
+  <v-dialog
+    v-model="dialog"
+    fullscreen
+    persistent
+    transition="dialog-bottom-transition"
+    content-class="fullscreen-dialog"
+  >
+    <v-form ref="form" v-model="valid" class="h-100">
       <v-card class="pa-10">
         <v-card-text class="pt-12">
           <h5 class="text-grey-darken-2 font-weight-medium">{{ formTitle }}</h5>
@@ -351,7 +464,7 @@
                     :class="{
                       'has-negative-hint': availableAmount < 0,
                       'has-positive-hint': availableAmount > 0,
-                      'has-neutral-hint': availableAmount === 0
+                      'has-neutral-hint': availableAmount === 0,
                     }"
                   />
                 </v-col>
@@ -372,9 +485,7 @@
                           <v-avatar size="24">
                             <template v-if="isImage(item.raw.icon)">
                               <img
-                                :src="`${this.$axios.defaults.baseURL}images/${
-                                  item.raw.icon
-                                }`"
+                                :src="`${this.$axios.defaults.baseURL}images/${item.raw.icon}`"
                                 alt="icon"
                               />
                             </template>
@@ -445,7 +556,7 @@
                 <v-col cols="12">
                   <v-menu
                     v-model="dateMenu"
-                    :close-on-content-click="true"
+                    :close-on-content-click="false"
                     transition="scale-transition"
                     offset-y
                     min-width="auto"
@@ -461,7 +572,7 @@
                     </template>
                     <v-date-picker
                       color="#03626C"
-                      :model-value="parseDateString(dateInput)"
+                      :model-value="dateInput"
                       @update:model-value="updateDate"
                       :max="maxDate"
                     ></v-date-picker>
@@ -504,9 +615,8 @@
     <v-card rounded-lg>
       <v-toolbar color="#DA7171">
         <span class="text-subtitle-2 ml-4">
-          {{
-          $t("deleteDialog.title", { item: $t(`deleteDialog.items.income`) })
-          }}</span>
+          {{ $t("deleteDialog.title", { item: $t(`deleteDialog.items.income`) }) }}</span
+        >
       </v-toolbar>
       <v-card-text class="mt-2 mb-2"> {{ $t("deleteDialog.message") }}</v-card-text>
       <v-divider></v-divider>
@@ -514,9 +624,15 @@
         <v-spacer></v-spacer>
         <v-btn color="grey" variant="flat" @click="closeDelete">{{
           $t("taskForm.buttons.cancel")
-          }}</v-btn>
-        <v-btn color="#03626C" variant="flat" :loading="loading" @click="deleteItemConfirm">
-          {{ $t("taskForm.buttons.confirmDelete") }}</v-btn>
+        }}</v-btn>
+        <v-btn
+          color="#03626C"
+          variant="flat"
+          :loading="loading"
+          @click="deleteItemConfirm"
+        >
+          {{ $t("taskForm.buttons.confirmDelete") }}</v-btn
+        >
       </v-card-actions>
     </v-card>
   </v-dialog>
@@ -534,8 +650,11 @@
       <v-card-text>
         <template v-if="loadingImage">
           <div class="d-flex justify-center align-center" style="min-height: 200px">
-            <v-progress-circular indeterminate color="#03626C"
-              style="width: 100px; height: 100px"></v-progress-circular>
+            <v-progress-circular
+              indeterminate
+              color="#03626C"
+              style="width: 100px; height: 100px"
+            ></v-progress-circular>
           </div>
         </template>
         <template v-else>
@@ -546,16 +665,16 @@
   </v-dialog>
 </template>
 
-
 <script>
 import { ref } from "vue";
 import LocalStorageService from "@/LocalStorageService";
 import { handleRequest } from "@/utils/api";
 import _ from "lodash";
 import { shallowRef } from "vue";
+import { ThemeSymbol } from "vuetify/lib/composables/theme";
 
 export default {
- data: () => ({
+  data: () => ({
     selected: shallowRef([2]),
     selected2: null,
     step: 0,
@@ -598,38 +717,52 @@ export default {
     dateInput: null,
     home_id: "",
     person_id: "",
+    headers: [
+      { title: "fecha", key: "date" },
+      { title: "Categoría", key: "categoryName" },
+      { title: "Ingreso", key: "income" },
+      { title: "Gasto", key: "spent" },
+      { title: "Tipo", key: "type" },
+      { title: "Description", key: "description" },
+      { title: "Balance", key: "available" },
+      { title: "Método", key: "metodh" },
+      { title: "Acciones", key: "actions" },
+    ],
     editedItem: {
-       id: "",
-        type: "",
-        method: "",
-        income: null,
-        spent: null,
-        description: "",
-        date: null,
-        image: null,
-        budget_id: "",
+      id: "",
+      type: "",
+      method: "",
+      income: null,
+      available: null,
+      spent: null,
+      description: "",
+      date: null,
+      image: null,
+      budget_id: "",
     },
     defaultItem: {
-       id: "",
-        type: "",
-        method: "",
-        income: null,
-        spent: null,
-        description: "",
-        date: null,
-        image: null,
-        budget_id: "",
+      id: "",
+      type: "",
+      method: "",
+      income: null,
+      available: null,
+      spent: null,
+      description: "",
+      date: null,
+      image: null,
+      budget_id: "",
     },
     originalItem: {
-       id: "",
-        type: "",
-        method: "",
-        income: null,
-        spent: null,
-        description: "",
-        date: null,
-        image: null,
-        budget_id: "",
+      id: "",
+      type: "",
+      method: "",
+      income: null,
+      available: null,
+      spent: null,
+      description: "",
+      date: null,
+      image: null,
+      budget_id: "",
     },
     editedIndex: -1,
     search: "",
@@ -640,54 +773,91 @@ export default {
   }),
 
   computed: {
-     maxDate() {
-    const today = new Date();
+    maxDate() {
+      const today = new Date();
       const year = today.getFullYear();
       const month = String(today.getMonth() + 1).padStart(2, "0");
       const day = String(today.getDate()).padStart(2, "0");
       return `${year}-${month}-${day}`;
-    // Esto asegura que sea el inicio del día (evita problemas de hora/minuto)
-  },
-     filteredIncomes() {
-      return this.financialRecords.filter(record => record.income && record.income > 0);
+      // Esto asegura que sea el inicio del día (evita problemas de hora/minuto)
+    },
+    filteredIncomes() {
+      return this.financialRecords.filter((record) => record.income && record.income > 0);
+    },
+
+    filteredFinances() {
+      if (!this.editedItem.type) return this.financialRecords; // Si no hay tipo seleccionado, mostrar todos
+
+      // Suponiendo que "types" tiene objetos con { id, name }, y editedItem.type es el ID
+      // Necesitamos obtener el "name" del tipo seleccionado para compararlo con budget_type
+      /*const selectedType = this.types.find(t => t.id === this.editedItem.type);
+    const typeName = selectedType ? selectedType.name : null;
+
+    if (!typeName) return [];*/
+
+      // Filtrar budgets cuyo budget_type coincida con el nombre del tipo seleccionado
+      return this.financialRecords.filter(
+        (finance) => finance.type === this.editedItem.type
+      );
     },
     typeRules() {
       return [
-        v => !!v || this.$t('finances.validationMessages.type.required'), // Validación de requerido
-        v => !v || v.length <= 50 || this.$t('finances.validationMessages.type.maxLength') // Validación de longitud máxima
+        (v) => !!v || this.$t("finances.validationMessages.type.required"), // Validación de requerido
+        (v) =>
+          !v || v.length <= 50 || this.$t("finances.validationMessages.type.maxLength"), // Validación de longitud máxima
       ];
-    }, 
-   methodRules() {
+    },
+    methodRules() {
       return [
-        v => !v || v.length <= 50 || this.$t('finances.validationMessages.method.maxLength')
+        (v) =>
+          !v || v.length <= 50 || this.$t("finances.validationMessages.method.maxLength"),
       ];
     },
     incomeRules() {
       return [
-        v => v === null || v === '' || !isNaN(v) || this.$t('finances.validationMessages.income.number'),
-        v => v === null || v === '' || /^-?\d+(\.\d{1,2})?$/.test(v) || this.$t('finances.validationMessages.income.precision')
+        (v) =>
+          v === null ||
+          v === "" ||
+          !isNaN(v) ||
+          this.$t("finances.validationMessages.income.number"),
+        (v) =>
+          v === null ||
+          v === "" ||
+          /^-?\d+(\.\d{1,2})?$/.test(v) ||
+          this.$t("finances.validationMessages.income.precision"),
       ];
     },
     spentRules() {
       return [
-        v => v === null || v === '' || !isNaN(v) || this.$t('finances.validationMessages.spent.number'),
-        v => v === null || v === '' || /^-?\d+(\.\d{1,2})?$/.test(v) || this.$t('finances.validationMessages.spent.precision')
+        (v) =>
+          v === null ||
+          v === "" ||
+          !isNaN(v) ||
+          this.$t("finances.validationMessages.spent.number"),
+        (v) =>
+          v === null ||
+          v === "" ||
+          /^-?\d+(\.\d{1,2})?$/.test(v) ||
+          this.$t("finances.validationMessages.spent.precision"),
       ];
     },
     descriptionRules() {
       return [
-        v => !v || v.length <= 255 || this.$t('finances.validationMessages.description.maxLength')
+        (v) =>
+          !v ||
+          v.length <= 255 ||
+          this.$t("finances.validationMessages.description.maxLength"),
       ];
     },
     dateRules() {
-      return [v => !!v || this.$t("finances.validationMessages.date.required")];
+      return [(v) => !!v || this.$t("finances.validationMessages.date.required")];
     },
     formTitle() {
-  const action = this.editedIndex === -1 ? 'new' : 'edit';
-  const type = this.isIncome ? 'income' : 'expense';
+      const action = this.editedIndex === -1 ? "new" : "edit";
+      const type = this.isIncome ? "income" : "expense";
 
-  return this.$t(`finances.titles.${action}.${type}`);
-},
+      return this.$t(`finances.titles.${action}.${type}`);
+    },
     dateFormatted() {
       const date = this.dateInput ? new Date(this.dateInput) : new Date();
       const day = date.getDate().toString().padStart(2, "0");
@@ -702,29 +872,29 @@ export default {
       return this.imgMiniatura;
     },
     filteredBudgets() {
-    if (!this.editedItem.type) return this.budgets; // Si no hay tipo seleccionado, mostrar todos
+      if (!this.editedItem.type) return this.budgets; // Si no hay tipo seleccionado, mostrar todos
 
-    // Suponiendo que "types" tiene objetos con { id, name }, y editedItem.type es el ID
-    // Necesitamos obtener el "name" del tipo seleccionado para compararlo con budget_type
-    /*const selectedType = this.types.find(t => t.id === this.editedItem.type);
+      // Suponiendo que "types" tiene objetos con { id, name }, y editedItem.type es el ID
+      // Necesitamos obtener el "name" del tipo seleccionado para compararlo con budget_type
+      /*const selectedType = this.types.find(t => t.id === this.editedItem.type);
     const typeName = selectedType ? selectedType.name : null;
 
     if (!typeName) return [];*/
 
-    // Filtrar budgets cuyo budget_type coincida con el nombre del tipo seleccionado
-    return this.budgets.filter(budget => budget.budget_type === this.editedItem.type);
-  },
+      // Filtrar budgets cuyo budget_type coincida con el nombre del tipo seleccionado
+      return this.budgets.filter((budget) => budget.budget_type === this.editedItem.type);
+    },
     availableAmount() {
-    if (!this.editedItem.type || !this.balance) return 0;
-    return this.editedItem.type === 'Personal'
-      ? this.balance.personal.available
-      : this.balance.home?.available || 0;
-  },
-   spentHint() {
-    const amount = this.availableAmount;
-    const formatted = this.formatCurrency(amount);
-    return `Disponible: ${formatted}`;
-  }
+      if (!this.editedItem.type || !this.balance) return 0;
+      return this.editedItem.type === "Personal"
+        ? this.balance.personal.available
+        : this.balance.home?.available || 0;
+    },
+    spentHint() {
+      const amount = this.availableAmount;
+      const formatted = this.formatCurrency(amount);
+      return `Disponible: ${formatted}`;
+    },
   },
 
   mounted() {
@@ -732,48 +902,58 @@ export default {
     this.person_id = JSON.parse(LocalStorageService.getItem("person_id"));
     this.initialize();
   },
-   created() {
+  created() {
     this.tools = [
       {
         name: this.$t("finances.titles.new.finance"),
-        action: () => this.showAdd()
-      }
-    ]
-   },
-  methods: {
-     validateSpent(value) {
-    if (value === null || value === undefined || value === '') {
-      return 'Este campo es requerido.';
-    }
-
-    const numValue = parseFloat(value);
-    if (isNaN(numValue)) {
-      return 'Debe ser un número válido.';
-    }
-
-    if (numValue < 0) {
-      return 'El gasto no puede ser negativo.';
-    }
-
-    // Validar contra el disponible según el tipo
-    if (!this.editedItem.type) {
-      return 'Selecciona un tipo primero.';
-    }
-
-    if (!this.balance) {
-      return 'Cargando balance...';
-    }
-
-    const available = this.editedItem.type === 'Personal'
-      ? this.balance.personal.available
-      : this.balance.home?.available || 0;
-
-    if (numValue > available) {
-      return `No puedes gastar más de lo disponible (${this.formatCurrency(available)}).`;
-    }
-
-    return true; // ✅ válido
+        action: () => this.showAdd(),
+      },
+    ];
   },
+  methods: {
+    obtenerFechaLocal() {
+      const hoy = new Date();
+      const year = hoy.getFullYear();
+      const month = String(hoy.getMonth() + 1).padStart(2, "0");
+      const day = String(hoy.getDate()).padStart(2, "0");
+      return `${year}-${month}-${day}`;
+    },
+    validateSpent(value) {
+      if (value === null || value === undefined || value === "") {
+        return "Este campo es requerido.";
+      }
+
+      const numValue = parseFloat(value);
+      if (isNaN(numValue)) {
+        return "Debe ser un número válido.";
+      }
+
+      if (numValue < 0) {
+        return "El gasto no puede ser negativo.";
+      }
+
+      // Validar contra el disponible según el tipo
+      if (!this.editedItem.type) {
+        return "Selecciona un tipo primero.";
+      }
+
+      if (!this.balance) {
+        return "Cargando balance...";
+      }
+
+      const available =
+        this.editedItem.type === "Personal"
+          ? this.balance.personal.available
+          : this.balance.home?.available || 0;
+
+      if (numValue > available) {
+        return `No puedes gastar más de lo disponible (${this.formatCurrency(
+          available
+        )}).`;
+      }
+
+      return true; // ✅ válido
+    },
     isImage(icon) {
       // Validar si el valor es una URL válida (puedes personalizar esta lógica)
       return (
@@ -830,51 +1010,58 @@ export default {
               weekday: "short",
               day: "numeric",
               month: "short",
+              year: "numeric"
             })
             .replace(/\./g, "");
       }
     },
-    
+
     getTypeColor(type) {
+      console.log("type");
+      console.log(type);
+      if (!type) return "#607D8B";
       const colorMap = {
-        Gasto: "red-lighten-1",
-        Ingreso: "green-lighten-1",
+        Personal: "#4CAF50", // Azul intenso claro
+        Hogar: "#FB8C00", // Naranja intenso
         // Agrega más tipos si es necesario
       };
-      return colorMap[type] || "grey-lighten-1"; // Color por defecto
+      return colorMap[type] || "#607D8B"; // Color por defecto
     },
     updateDate(value) {
-    // value viene como objeto Date desde el date-picker
-    // Convertimos a formato YYYY-MM-DD
-    const year = value.getFullYear();
-    const month = String(value.getMonth() + 1).padStart(2, '0');
-    const day = String(value.getDate()).padStart(2, '0');
-    this.dateInput = `${year}-${month}-${day}`;
-    this.editedItem.date = this.dateInput;
-    this.dateMenu = false;
-  },
-  
-  // Método para convertir string a Date (solo cuando sea necesario)
-  parseDateString(dateString) {
-  if (!dateString) {
-    const today = new Date();
-    // Aseguramos que sea el inicio del día (evita problemas de zona horaria)
-    return new Date(today.getFullYear(), today.getMonth(), today.getDate());
-  }
-  const [year, month, day] = dateString.split('-');
-  return new Date(parseInt(year), parseInt(month) - 1, parseInt(day));
-},
-    formatCurrency(value) {
-  if (value === null || value === undefined || value === '') return "";
-  
-  const number = parseFloat(value);
-  if (isNaN(number)) return "";
+      // value viene como objeto Date desde el date-picker
+      // Convertimos a formato YYYY-MM-DD
+      const year = value.getFullYear();
+      const month = String(value.getMonth() + 1).padStart(2, "0");
+      const day = String(value.getDate()).padStart(2, "0");
+      this.dateInput = `${year}-${month}-${day}`;
+      this.editedItem.date = this.dateInput;
+      this.dateMenu = false;
+    },
 
-  return '$' + number.toLocaleString('es-CL', {
-    minimumFractionDigits: 0,
-    maximumFractionDigits: 0
-  });
-},
+    // Método para convertir string a Date (solo cuando sea necesario)
+    parseDateString(dateString) {
+      if (!dateString) {
+        const today = new Date();
+        // Aseguramos que sea el inicio del día (evita problemas de zona horaria)
+        return new Date(today.getFullYear(), today.getMonth(), today.getDate());
+      }
+      const [year, month, day] = dateString.split("-");
+      return new Date(parseInt(year), parseInt(month) - 1, parseInt(day));
+    },
+    formatCurrency(value) {
+      if (value === null || value === undefined || value === "") return "";
+
+      const number = parseFloat(value);
+      if (isNaN(number)) return "";
+
+      return (
+        "$" +
+        number.toLocaleString("es-CL", {
+          minimumFractionDigits: 0,
+          maximumFractionDigits: 0,
+        })
+      );
+    },
     openModal(imageUrl) {
       this.dialogPhoto = true;
       this.loadingImage = true;
@@ -910,19 +1097,21 @@ export default {
       this.editedIndex = -1;
       this.editedItem = Object.assign({}, this.defaultItem);
       this.originalItem = Object.assign({}, this.defaultItem);
+      this.dateInput = this.obtenerFechaLocal();
+      this.editedItem.date = this.dateInput;
       this.file = null;
       this.data = {};
       this.data.home_id = this.home_id;
       this.imgMiniatura = "";
       try {
         const result = await handleRequest({
-          endpoint: 'get-finances-data',
-          method: 'POST',
+          endpoint: "get-finances-data",
+          method: "POST",
           data: this.data,
         });
 
         if (result.success) {
-           this.types = result.data?.types || [];
+          this.types = result.data?.types || [];
           this.budgets = result.data?.budgets || [];
           this.balance = result.data?.balance || {};
 
@@ -935,7 +1124,11 @@ export default {
           this.balance = {};
         }
       } catch (error) {
-        this.showAlert('error', 'Ocurrió un error inesperado al cargar los tipos de consulta.', 3000);
+        this.showAlert(
+          "error",
+          "Ocurrió un error inesperado al cargar los tipos de consulta.",
+          3000
+        );
       } finally {
         this.dialog = true;
       }
@@ -955,14 +1148,14 @@ export default {
 
     async initialize() {
       this.data = {};
-        this.data.home_id = this.home_id;
-        this.data.type = 'Todas';
+      this.data.home_id = this.home_id;
+      this.data.type = "Todas";
       try {
         this.loading = true;
         const result = await handleRequest({
           endpoint: "get-type-finance-range",
           method: "POST",
-          data: this.data
+          data: this.data,
         });
 
         if (result.success) {
@@ -972,7 +1165,11 @@ export default {
         }
       } catch (error) {
         this.loading = false;
-        this.showAlert("error", "Ocurrió un error al cargar los registros financieros.", 3000);
+        this.showAlert(
+          "error",
+          "Ocurrió un error al cargar los registros financieros.",
+          3000
+        );
       } finally {
         this.loading = false;
       }
@@ -992,10 +1189,32 @@ export default {
       this.loading = true;
       if (this.editedIndex === -1) {
         this.valid = false;
-        const fieldsToUpdate = ['home_id', 'spent', 'income', 'image', 'date', 'description', 'image', 'type', 'method', 'budget_id'];
+        const fieldsToUpdate = [
+          "home_id",
+          "spent",
+          "income",
+          "image",
+          "date",
+          "description",
+          "image",
+          "type",
+          "method",
+          "budget_id",
+          "available",
+        ];
+        const updatedBalance = this.calculateNewAvailable(
+          this.balance,
+          this.editedItem,
+          "create"
+        );
 
+        this.editedItem.available = updatedBalance;
         let updatedFields = Object.keys(this.editedItem)
-          .filter((key) => fieldsToUpdate.includes(key) && this.editedItem[key] !== this.originalItem[key])
+          .filter(
+            (key) =>
+              fieldsToUpdate.includes(key) &&
+              this.editedItem[key] !== this.originalItem[key]
+          )
           .reduce((obj, key) => {
             obj[key] = this.editedItem[key];
             return obj;
@@ -1013,9 +1232,9 @@ export default {
 
           try {
             const result = await handleRequest({
-              endpoint: 'finance',
-              method: 'POST',
-              data: formData
+              endpoint: "finance",
+              method: "POST",
+              data: formData,
             });
 
             // Manejo de la respuesta según el resultado
@@ -1030,7 +1249,11 @@ export default {
           } catch (error) {
             this.loading = false;
             // Este bloque captura errores inesperados fuera del manejo estándar
-            this.showAlert("error", "Ocurrió un error inesperado al procesar la solicitud.", 3000);
+            this.showAlert(
+              "error",
+              "Ocurrió un error inesperado al procesar la solicitud.",
+              3000
+            );
           }
         } else {
           this.loading = false;
@@ -1038,9 +1261,32 @@ export default {
         }
       } else {
         this.valid = false;
-        const fieldsToUpdate = ['home_id', 'spent', 'income', 'image', 'date', 'description', 'image', 'type', 'method', 'budget_id'];
+        const fieldsToUpdate = [
+          "home_id",
+          "spent",
+          "income",
+          "image",
+          "date",
+          "description",
+          "image",
+          "type",
+          "method",
+          "budget_id",
+          "available",
+        ];
+        const newAvailable = this.calculateNewAvailable(
+          this.balance,
+          this.editedItem,
+          "update",
+          this.originalItem
+        );
+        this.editedItem.available = newAvailable;
         let updatedFields = Object.keys(this.editedItem)
-          .filter((key) => fieldsToUpdate.includes(key) && this.editedItem[key] !== this.originalItem[key])
+          .filter(
+            (key) =>
+              fieldsToUpdate.includes(key) &&
+              this.editedItem[key] !== this.originalItem[key]
+          )
           .reduce((obj, key) => {
             obj[key] = this.editedItem[key];
             return obj;
@@ -1056,9 +1302,9 @@ export default {
           }
           try {
             const result = await handleRequest({
-              endpoint: 'finance-update',
-              method: 'POST',
-              data: formData
+              endpoint: "finance-update",
+              method: "POST",
+              data: formData,
             });
 
             // Manejo de la respuesta según el resultado
@@ -1073,7 +1319,11 @@ export default {
           } catch (error) {
             this.loading = false;
             // Este bloque captura errores inesperados fuera del manejo estándar
-            this.showAlert("error", "Ocurrió un error inesperado al procesar la solicitud.", 3000);
+            this.showAlert(
+              "error",
+              "Ocurrió un error inesperado al procesar la solicitud.",
+              3000
+            );
           }
         } else {
           this.loading = false;
@@ -1083,6 +1333,38 @@ export default {
       this.close();
     },
 
+    calculateNewAvailable(currentBalance, editedItem, mode, originalItem = {}) {
+      // Determinar la clave según el texto del type
+      const typeKey = editedItem.type === "Hogar" ? "home" : "personal";
+
+      // Obtener la categoría actual
+      const category = currentBalance[typeKey];
+      if (!category) return 0;
+
+      // Clonamos los valores actuales para trabajar con ellos
+      let { income, spent, available } = { ...category };
+
+      // Si es edición, revertimos el efecto del registro original
+      if (mode === "update") {
+        const origIncome = parseFloat(originalItem.income) || 0;
+        const origSpent = parseFloat(originalItem.spent) || 0;
+
+        income -= origIncome;
+        spent -= origSpent;
+        available = income - spent; // Recalculamos para evitar errores de redondeo
+      }
+
+      // Aplicamos los nuevos valores
+      const newIncome = parseFloat(editedItem.income) || 0;
+      const newSpent = parseFloat(editedItem.spent) || 0;
+
+      income += newIncome;
+      spent += newSpent;
+      available = income - spent;
+
+      return available; // 👈 Solo devolvemos el número, ej: 287000
+    },
+
     async editItem(item) {
       this.showImage = false;
       this.icono = "mdi-file";
@@ -1090,10 +1372,10 @@ export default {
       this.originalItem = Object.assign({}, item);
       this.editedItem = Object.assign({}, item);
       this.dateInput = item.date || null;
-      console.log('this.dateInput');
+      console.log("this.dateInput");
       console.log(this.dateInput);
       this.file = null;
-      item.income > 0 ? this.isIncome = true : this.isIncome = false;
+      item.income > 0 ? (this.isIncome = true) : (this.isIncome = false);
       const imageExtensions = ["jpg", "jpeg", "png", "gif"];
       const extension = item.image?.split(".").pop().toLowerCase();
 
@@ -1109,12 +1391,12 @@ export default {
       }
       try {
         const result = await handleRequest({
-          endpoint: 'get-finances-data',
-          method: 'POST',
+          endpoint: "get-finances-data",
+          method: "POST",
         });
 
         if (result.success) {
-           this.types = result.data?.types || [];
+          this.types = result.data?.types || [];
           this.budgets = result.data?.budgets || [];
           this.balance = result.data?.balance || {};
         } else {
@@ -1123,7 +1405,11 @@ export default {
           this.balance = {};
         }
       } catch (error) {
-        this.showAlert('error', 'Ocurrió un error inesperado al cargar los tipos de consulta.', 3000);
+        this.showAlert(
+          "error",
+          "Ocurrió un error inesperado al cargar los tipos de consulta.",
+          3000
+        );
       } finally {
         this.dialog = true;
       }
@@ -1159,7 +1445,11 @@ export default {
           this.showAlert("warning", result.message, 3000);
         }
       } catch (error) {
-        this.showAlert("error", "Ocurrió un error al eliminar el registro financiero.", 3000);
+        this.showAlert(
+          "error",
+          "Ocurrió un error al eliminar el registro financiero.",
+          3000
+        );
       } finally {
         this.loading = false;
         this.closeDelete();
@@ -1227,7 +1517,7 @@ export default {
       this.imgMiniatura = "";
       let file = event.target.files[0];
       const maxSize = 500 * 1024; // 500 KB en bytes
-      
+
       if (file && file.size > maxSize) {
         this.valid = false;
         this.showAlert("warning", "El archivo de imagen debe ser de máximo 500 KB", 3000);
@@ -1238,8 +1528,10 @@ export default {
       const extension = file.name.split(".").pop().toLowerCase();
       const imageExtensions = ["jpg", "jpeg", "png", "gif"];
 
-      if ((mimeType.startsWith("image/") || imageExtensions.includes(extension)) && 
-          imageExtensions.includes(extension)) {
+      if (
+        (mimeType.startsWith("image/") || imageExtensions.includes(extension)) &&
+        imageExtensions.includes(extension)
+      ) {
         this.cargarImage(file);
         this.showImage = true;
       } else {
@@ -1327,12 +1619,6 @@ export default {
   padding: 0 !important;
 }
 
-.text-truncate {
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
 .v-chip {
   margin-right: 4px;
   margin-bottom: 4px;
@@ -1348,11 +1634,29 @@ export default {
   margin-bottom: 12px;
 }
 
-.v-btn--icon {
-  transition: all 0.2s ease;
+.text-truncate {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
-
-.v-btn--icon:hover {
-  transform: scale(1.1);
+/* OCULTAR HEADER DE v-data-table - Vuetify 3.4.7 */
+/* Máxima especificidad para ocultar el thead */
+.v-data-table > .v-data-table__wrapper > table > thead,
+.v-data-table > .v-data-table__wrapper > .v-table > table > thead,
+.v-data-table__content > table > thead,
+.v-data-table__content > thead,
+table.v-table > thead,
+.v-table > .v-table__wrapper > table > thead {
+  display: none !important;
+  visibility: hidden !important;
+  height: 0 !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  border: none !important;
+  border-spacing: 0 !important;
+  border-collapse: collapse !important;
+}
+.hidden-header .v-data-table__content > table > thead {
+  display: none !important;
 }
 </style>

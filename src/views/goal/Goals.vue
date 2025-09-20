@@ -11,20 +11,386 @@
       </v-col>
     </v-row>
   </v-snackbar>
-  <v-container class="pa-4">
-  <v-card class="pa-4" elevation="4" rounded="lg">
+  <v-container class="pa-4"> 
+  <v-card elevation="2" rounded="lg" flat>
       <!-- Encabezado con foto y datos -->
       <v-card-text>
-    <!-- Encabezado -->
-    <v-row justify="space-between" align="center" class="mb-6">
-        <v-col cols="12" class="d-flex justify-space-between align-center">
-      <h2 class="text-body-2 font-weight-bold">{{ $t("viewTitles.goals") }}</h2>
-      <v-btn icon color="deep-purple-accent-4" variant="flat" class="elevation-3" @click="showAdd">
-        <v-icon>mdi-plus</v-icon>
-      </v-btn>
-      </v-col>
-    </v-row>
-   <div class="d-flex flex-wrap align-center gap-2">
+        <v-col cols="12" sm="9" md="9" class="d-flex align-center">
+          <v-avatar size="48" class="me-3" color="grey-lighten-4" variant="tonal">
+            <v-icon color="purple">mdi-flag-checkered</v-icon>
+          </v-avatar>
+          <div>
+            <div class="text-body-2 font-weight-bold mb-1">
+              {{ $t("viewTitles.goals") }}
+            </div>
+            <div class="text-body-2 text-grey-darken-1"></div>
+          </div>
+        </v-col>
+
+        <v-divider />
+        <v-card-actions class="pa-3 bg-grey-lighten-5 tools-bar">
+          <v-btn
+            v-for="tool in tools"
+            :key="tool.name"
+            @click="tool.action()"
+            size="small"
+            color="primary"
+            variant="text"
+            prepend-icon="mdi-plus"
+            class="text-capitalize"
+          >
+            {{ tool.name }}
+          </v-btn>
+        </v-card-actions>
+    <!-- Título y búsqueda -->
+    <v-card-title class="d-flex flex-wrap align-center gap-4 pb-0">
+      <!-- Spacer (solo visible en md+) -->
+      <v-spacer class="d-none d-md-block"></v-spacer>
+      <!-- Campo de búsqueda global -->
+      <div class="flex-grow-1" style="max-width: 300px">
+        <v-text-field
+          v-model="search"
+          density="compact"
+          :label="$t('dataTable.search')"
+          prepend-inner-icon="mdi-magnify"
+          variant="solo-filled"
+          hide-details
+          single-line
+          flat
+        >
+        <template v-slot:append-inner>
+        <v-locale-provider>
+      <v-menu
+        v-model="dateMenu"
+        :close-on-content-click="false"
+        transition="scale-transition"
+        offset-y
+        min-width="auto"
+      >
+        <template v-slot:activator="{ props }">
+          <v-icon
+            v-bind="props"
+            color="#03626C"
+            style="cursor: pointer"
+            @click.stop="dateMenu = true"
+          >
+            mdi-calendar
+          </v-icon>
+        </template>
+        <v-date-picker
+          color="#03626C"
+          v-model="pickerDate"
+          @update:model-value="updateSearchDate"
+        ></v-date-picker>
+      </v-menu>
+      </v-locale-provider>
+    </template>
+        </v-text-field>
+      </div>
+    </v-card-title>
+
+    <!-- Tabla de datos -->
+    <v-data-table
+      :headers="headers"
+      :items="filteredTasks"
+      :search="search"
+      :items-per-page-text="$t('dataTable.itemsPerPageText')"
+      :no-data-text="$t('dataTable.noDataText')"
+      :loading-text="$t('dataTable.loadingText')"
+      :loading="loading"
+      :hide-default-header="true"
+      class="mt-1"
+      style="
+        max-height: 68vh;
+        overflow-y: auto;
+        background: transparent;
+        border: none !important;
+        outline: none !important;
+        box-shadow: none !important;
+        padding: 0;
+      "
+    >
+      <!-- Header personalizado (simulado) -->
+      <template v-slot:top>
+        <v-card
+          :elevation="1"
+          :hover="false"
+          flat
+          class="mb-2 mx-1 rounded-lg"
+          style="
+            border: 1px solid #eceff1;
+            height: 40px;
+            min-height: 40px;
+            display: flex;
+            align-items: center;
+            transition: none !important;
+          "
+        >
+          <v-card-text
+            class="d-flex pa-2"
+            style="
+              width: 100%;
+              min-width: 0;
+              height: 100%;
+              padding: 0 16px !important;
+              display: flex;
+              align-items: center;
+            "
+          >
+            <!-- Fecha (7%) -->
+            <div style="width: 7%; min-width: 0" class="text-left">
+              {{ $t("taskForm.fields.date") }}
+            </div>
+
+            <!-- Nombre y descripción (40%) -->
+            <div style="width: 40%; min-width: 0" class="text-left">
+              {{ $t("taskForm.fields.title") }} / {{ $t("taskForm.fields.description") }}
+            </div>
+
+            <!-- Ubicación (15%) -->
+            <div style="width: 15%; min-width: 0" class="text-left">
+              {{ $t("taskForm.fields.participants") }}
+            </div>
+
+            <!-- Tipo (10%) -->
+            <div style="width: 10%; min-width: 0" class="text-center">
+              {{ $t("taskForm.fields.recurrence") }}
+            </div>
+
+            <!-- Prioridad (10%) -->
+            <div style="width: 10%; min-width: 0" class="text-center">
+              {{ $t("taskForm.fields.priority") }}
+            </div>
+
+            <!-- Estado (13%) -->
+            <div style="width: 13%; min-width: 0" class="text-center">
+              {{ $t("taskForm.fields.status") }}
+            </div>
+
+            <!-- Acciones (5%) -->
+            <div style="width: 5%; min-width: 0" class="d-flex justify-end">
+              {{ $t("settings.actions") }}
+            </div>
+          </v-card-text>
+        </v-card>
+      </template>
+
+      <!-- Fila personalizada -->
+      <template v-slot:item="slotProps">
+        <tr>
+          <td colspan="100%" style="padding: 0; border: none">
+            <v-card
+              class="mb-2 mx-1 rounded-lg"
+              elevation="1"
+              density="comfortable"
+              flat
+            >
+              <v-card-text
+                class="d-flex align-center pa-2"
+                style="width: 100%; min-width: 0"
+              >
+                <!-- Fecha con barra lateral de color - 7% -->
+                <div style="width: 7%; min-width: 0" class="d-flex align-center">
+                  <div
+                    class="icono-concavo d-flex flex-column justify-center justify-start mr-2"
+                    :class="`bg-${getTypeColor(slotProps.item.type)}`"
+                    style="min-height: 48px; min-width: 48px; border-radius: 8px;"
+                  >
+                    <div class="date-display text-center" style="font-size: 0.95em">
+                      {{ formatIntuitiveDate(slotProps.item.start_date) }}
+                    </div>
+                    <div
+                      v-if="slotProps.item.start_time"
+                      class="time-display text-center"
+                      style="font-size: 0.80em; margin-top: 2px"
+                    >
+                      {{ formatTime(slotProps.item.start_time) }}
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Nombre + Descripción - 40% -->
+                <div style="width: 40%; min-width: 0" class="d-flex flex-column">
+                  <div class="font-weight-bold text-body-2 text-truncate">
+                    {{ slotProps.item.title }}
+                  </div>
+                  <div class="text-caption text-grey-darken-1 text-truncate">
+                    {{ slotProps.item.description }}
+                  </div>
+                  <v-tooltip activator="parent" location="bottom" max-width="350px">
+                    <span style="white-space: normal; word-break: break-word">
+                      {{ slotProps.item.description }}
+                    </span>
+                  </v-tooltip>
+                </div>
+
+                <!-- Ubicación - 15% -->
+                <div style="width: 15%; min-width: 0" class="text-body-2 text-truncate">
+                <v-tooltip v-for="person in slotProps.item.people" :key="person.id" bottom :open-delay="300"
+                  :close-delay="100">
+                  <template v-slot:activator="{ props }">
+                    <v-avatar class="avatar-item hover-expand" size="32" v-bind="props">
+                      <v-img :src="`${this.$axios.defaults.baseURL}images/${
+                          person.image
+                        }`" alt="avatar" />
+                    </v-avatar>
+                  </template>
+                  <span>{{ person.name }}<br />{{ person.roleName }}</span>
+                </v-tooltip>
+              </div>
+
+                <!-- Tipo - 10% -->
+                <div style="width: 10%; min-width: 0; text-align: center">
+                  <!--<v-icon
+                    :color="getTypeColor(slotProps.item.type)"
+                    style="font-size: 10px; margin-right: 4px"
+                    icon="mdi-circle"
+                  ></v-icon>-->
+                  <span class="text-body-2 text-truncate">
+                    {{ slotProps.item.recurrence }}
+                  </span>
+                </div>
+
+                <!-- Prioridad - 10% -->
+                <div style="width: 10%; min-width: 0; text-align: center">
+                  <span class="text-body-2 text-truncate">
+                    {{ slotProps.item.namePriority }}
+                  </span>
+                </div>
+
+                <!-- Estado - 13% -->
+                <div style="width: 13%; min-width: 0; text-align: center">
+                  <v-dialog v-model="slotProps.item.statusDialog" width="400">
+                    <template v-slot:activator="{ props }">
+                      <v-btn
+                        v-bind="props"
+                        :color="'#' + (getStatusById(slotProps.item.status_id)?.colorStatus || 'grey')"
+                        variant="text"
+                        size="small"
+                        :prepend-icon="getStatusById(slotProps.item.status_id)?.iconStatus || 'mdi-help-circle'"
+                        class="text-body-2"
+                      >
+                        {{ getStatusById(slotProps.item.status_id)?.nameStatus || "Desconocido" }}
+                      </v-btn>
+                    </template>
+                    <v-card>
+                      <v-card-title class="pa-4 text-center">
+                        {{ $t("taskForm.updateStatus") }}
+                      </v-card-title>
+                      <v-divider></v-divider>
+                      <v-card-text class="pa-0">
+                        <v-row class="px-2 pb-1" dense>
+                          <v-col
+                            cols="12"
+                            v-for="(statusOption, i) in status"
+                            :key="i"
+                            class="py-1"
+                          >
+                            <v-card
+                              @click="changeTaskStatus(slotProps.item, statusOption.id)"
+                              :class="[
+                                'status-option mx-1',
+                                { 'current-status': slotProps.item.status_id === statusOption.id },
+                              ]"
+                              :style="
+                                slotProps.item.status_id === statusOption.id
+                                  ? {
+                                      'background-color': `#${statusOption.colorStatus}`,
+                                      'border-color': `#${statusOption.colorStatus}`,
+                                      color: 'white',
+                                    }
+                                  : {}
+                              "
+                              variant="outlined"
+                              :elevation="slotProps.item.status_id === statusOption.id ? 2 : 0"
+                              style="border-radius: 12px; cursor: pointer"
+                            >
+                              <v-card-item class="pa-2">
+                                <div class="d-flex align-center">
+                                  <v-icon
+                                    :color="
+                                      slotProps.item.status_id === statusOption.id
+                                        ? 'white'
+                                        : '#' + statusOption.colorStatus
+                                    "
+                                    :icon="statusOption.iconStatus"
+                                    size="large"
+                                    class="mr-3"
+                                  ></v-icon>
+                                  <v-card-title
+                                    :style="{
+                                      color:
+                                        slotProps.item.status_id === statusOption.id
+                                          ? 'white'
+                                          : 'inherit',
+                                      'font-size': '1rem',
+                                    }"
+                                  >
+                                    {{ statusOption.nameStatus }}
+                                  </v-card-title>
+                                  <v-spacer></v-spacer>
+                                  <v-icon
+                                    v-if="slotProps.item.status_id === statusOption.id"
+                                    color="white"
+                                    icon="mdi-check-circle"
+                                  ></v-icon>
+                                </div>
+                              </v-card-item>
+                            </v-card>
+                          </v-col>
+                        </v-row>
+                      </v-card-text>
+                      <v-divider></v-divider>
+                      <v-card-actions>
+                        <v-spacer></v-spacer>
+                        <v-btn
+                          variant="flat"
+                          color="#03626C"
+                          @click="slotProps.item.statusDialog = false"
+                        >
+                          {{ $t("buttons.cancel") }}
+                        </v-btn>
+                      </v-card-actions>
+                    </v-card>
+                  </v-dialog>
+                </div>
+
+                <!-- Acciones - 5% -->
+                <div
+                  class="d-flex gap-1"
+                  style="width: 5%; justify-content: flex-end; flex-wrap: nowrap"
+                >
+                  <v-btn
+                    size="35"
+                    icon
+                    variant="text"
+                    color="green-darken-2"
+                    @click="editItem(slotProps.item)"
+                    class="flex-shrink-0 mr-1"
+                    :title="$t('buttons.edit')"
+                  >
+                    <v-icon size="20">mdi-pencil</v-icon>
+                  </v-btn>
+
+                  <v-btn
+                    size="35"
+                    icon
+                    variant="text"
+                    color="red-darken-2"
+                    @click="deleteItem(slotProps.item)"
+                    class="flex-shrink-0"
+                    :title="$t('buttons.delete')"
+                  >
+                    <v-icon size="20">mdi-delete</v-icon>
+                  </v-btn>
+                </div>
+              </v-card-text>
+            </v-card>
+          </td>
+        </tr>
+      </template>
+    </v-data-table>
+   <!--<div class="d-flex flex-wrap align-center gap-2">
   <v-spacer></v-spacer>
   <v-text-field
     v-model="searchDate"
@@ -67,11 +433,9 @@
     <v-row class="no-gutters">
       <v-col cols="12" style="max-height: 60vh; min-height: 40vh; overflow-y: auto">
     <template v-if="filteredTasks.length > 0">
-      <!-- Tarjetas de reuniones -->
       <v-card v-for="(meeting, index) in filteredTasks" :key="index" class="mb-4 rounded-lg pa-2" density="comfortable" elevation="2"
         :class="{ 'smooth-hover': true }">
         <v-row class="align-center">
-          <!-- Barra lateral de color e info -->
           <v-col cols="1" class="d-flex justify-start">
            <div class="icono-concavo d-flex flex-column justify-center justify-start pa-0"
               :class="`bg-${getTypeColor(meeting.type)}`">
@@ -84,7 +448,6 @@
           </div>
           </v-col>
 
-          <!-- Contenido principal -->
           <v-col cols="6" class="d-flex align-center justify-start pa-0">
               <v-row align="center" class="gap-3">
                 <div>
@@ -99,7 +462,6 @@
             </v-row>
           </v-col>
           <v-col cols="1" class="d-flex align-center justify-start pa-0">
-            <!-- Info usuario -->
             <v-row align="center" class="gap-3">
               <div class="avatar-row d-flex flex-wrap justify-end gap-1">
                 <v-tooltip v-for="person in meeting.people" :key="person.id" bottom :open-delay="300"
@@ -131,7 +493,6 @@
           </v-col>
           <v-col cols="1" class="d-flex align-center justify-start pa-0">
             <v-row>
-              <!-- Fecha y estado -->
               <div class="text-end">
                 <v-dialog v-model="meeting.statusDialog" width="400">
                   <template v-slot:activator="{ props }">
@@ -202,7 +563,6 @@
             </v-row>
           </v-col>
 
-          <!-- Acciones -->
           <v-col cols="1" class="d-flex align-center ml-auto pe-4" style="margin-left: auto !important">
             <v-btn icon variant="text" color="green-darken-2" size="small" @click="editItem(meeting)">
               <v-icon>mdi-pencil</v-icon>
@@ -221,7 +581,7 @@
       </v-col>
     </template>
   </v-col>
-  </v-row>
+  </v-row>-->
   </v-card-text>
   </v-card>
   </v-container>
@@ -387,7 +747,7 @@
                 </v-col>
                 <v-col cols="12" md="6" v-if="editedIndex !== -1">
                   <v-autocomplete v-model="editedItem.status_id" :items="status" :label="$t('taskForm.fields.status')"
-                    item-title="nameStatus" item-value="id" variant="underlined" density="compact" :rules="selectRules">
+                    item-title="nameStatus" item-value="id" variant="underlined" :rules="selectRules">
                     <!-- Slot para el item seleccionado (en el input) -->
                     <template v-slot:selection="{ item }">
                       <div class="d-flex align-center">
@@ -655,13 +1015,18 @@ export default {
     timeSlots: [], // Inicialmente vacío
     selectedPerson: null, // Persona seleccionada en el formulario
     selectedRole: null, // Rol seleccionado en el formulario
-    headers: [
-      { title: "Título", value: "title", width: "20%" },
-      { title: "Fecha", value: "start_date", width: "5%" },
-      { title: "Descripción", value: "description", width: "30%" },
-      { title: "Personas", value: "people", width: "30%" },
-      { title: "Acciones", value: "actions", sortable: false, width: "20%" },
-    ],
+   search: "",
+       headers: [
+        { title: "Fecha", key: "start_date", sortable: false },
+        { title: "Título", key: "title", sortable: false },
+        { title: "Descripción", key: "description", sortable: false },
+        { title: "Ubicación", key: "geo_location", sortable: false },
+        { title: "Tipo", key: "typeName", sortable: false },
+        { title: "Recurrencia", key: "recurrence", sortable: false },
+        { title: "Prioridad", key: "namePriority", sortable: false },
+        { title: "Estado", key: "status_id", sortable: false },
+        { title: "Acciones", key: "actions", sortable: false },
+      ],
     headersPeople: [
       { title: "Nombre", value: "name", width: "60%" },
       { title: "Rol", value: "roleName", width: "20%" },
@@ -744,7 +1109,6 @@ export default {
     input: null,
     input2: null,
     editedIndex: -1,
-    search: "",
     nameRules: [
       (v) => !!v || "El campo es requerido",
       (v) => (v && v.length <= 50) || "El campo debe tener menos de 51 caracteres",
@@ -885,6 +1249,14 @@ export default {
   });
 },
   },
+  created() {
+    this.tools = [
+      {
+        name: this.$t("taskForm.titles.newGoal"),
+        action: () => this.showAdd(),
+      },
+    ];
+  },
   mounted() {
     this.home_id = JSON.parse(LocalStorageService.getItem("home_id"));
     this.person_id = JSON.parse(LocalStorageService.getItem("person_id"));
@@ -989,9 +1361,9 @@ export default {
       const day = String(value.getDate()).padStart(2, '0');
       const month = String(value.getMonth() + 1).padStart(2, '0');
       const year = value.getFullYear();
-      this.searchDate = `${day}-${month}-${year}`;
+      this.search = `${year}-${month}-${day}`;
     } else {
-      this.searchDate = '';
+      this.search = '';
     }
     this.dateMenu = false;
   },
@@ -1634,7 +2006,7 @@ export default {
                 this.suggestedTasks = result.data.suggestedTasks;
                 this.dialogSuggested = true;
               }
-              //this.initialize();
+              this.initialize();
             } else {
               this.loading = false;
               this.showAlert("warning", result.message, 3000);
@@ -1943,73 +2315,12 @@ export default {
   line-height: 1;
   margin-top: 2px;
 }
-.smooth-hover {
-  transition: all 0.5s ease;
-}
-.smooth-hover:hover {
-  transform: translateY(-1px);
-  box-shadow: 0 3px 6px rgba(0, 0, 0, 0.12) !important;
-}
 .fullscreen-dialog {
   height: 100vh !important;
   max-height: 100vh !important;
   min-width: 100vh;
   margin: 0 !important;
   padding: 0 !important;
-}
-.avatar-border {
-  border: 2px solid #000;
-  /* Aquí se define el borde */
-}
-.avatar-row {
-  display: flex;
-  flex-wrap: nowrap;
-  justify-content: start;
-}
-.avatar-col {
-  margin-right: -10px;
-  /* Reduce the space between avatars */
-}
-.avatar-item {
-  margin-right: -5px;
-  /* Cambia el color del borde según desees */
-  border-radius: 50%;
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
-  /* Para que siga siendo redondo */
-  box-sizing: border-box;
-  /* Asegura que el borde no afecte el tamaño del avatar */
-  /* Optional: reduce the space even further between avatars */
-  /* Optional: reduce the space even further between avatars */
-}
-.text-secondary {
-  color: #6c757d;
-  /* Color gris claro */
-  font-size: 0.85rem;
-  /* Tamaño de texto más pequeño */
-}
-.custom-tooltip {
-  background-color: #f5f5f5 !important;
-  /* Fondo claro */
-  color: #e5e5e5 !important;
-  /* Texto oscuro */
-  border-radius: 8px;
-  /* Bordes redondeados */
-  padding: 8px;
-  /* Espaciado interno */
-  box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
-  /* Sombra suave */
-}
-.avatar-item.hover-expand:hover {
-  transform: scale(1.5);
-  box-shadow: 0 0 0 rgba(0, 0, 0, 0.3);
-}
-.selected-tab {
-  background-color: #03626c;
-  /* Fondo del tab seleccionado */
-  color: white;
-  /* Texto blanco */
-  border-radius: 4px;
-  /* Esquinas redondeadas, opcional */
 }
 .people-scroll-container {
   width: 100%;
@@ -2068,49 +2379,26 @@ export default {
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  display: block;
 }
-/* Mejor contraste para los subtítulos */
-.v-card-subtitle {
-  color: rgba(0, 0, 0, 0.7) !important;
+/* OCULTAR HEADER DE v-data-table - Vuetify 3.4.7 */
+/* Máxima especificidad para ocultar el thead */
+.v-data-table > .v-data-table__wrapper > table > thead,
+.v-data-table > .v-data-table__wrapper > .v-table > table > thead,
+.v-data-table__content > table > thead,
+.v-data-table__content > thead,
+table.v-table > thead,
+.v-table > .v-table__wrapper > table > thead {
+  display: none !important;
+  visibility: hidden !important;
+  height: 0 !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  border: none !important;
+  border-spacing: 0 !important;
+  border-collapse: collapse !important;
 }
-.v-select input {
-  color: #7e57c2;
-  /* purple text input */
-}
-/* Estilo base para la tarjeta */
-.v-card {
-  transition: all 0.2s ease;
-  position: relative;
-  overflow: hidden;
-}
-/* Efecto hover más pronunciado */
-.v-card:hover {
-  transform: translateY(-3px);
-  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.1) !important;
-}
-/* Estilo para el tiempo de la reunión */
-.meeting-time {
-  min-width: 60px;
-  padding-top: 2px; /* Alineación vertical */
-}
-/* Estilo para la sección de próximas tareas */
-.next-meetings {
-  background-color: rgba(245, 245, 245, 0.7);
-  border-radius: 8px;
-  padding: 8px;
-  transition: background-color 0.3s ease;
-}
-.next-meetings:hover {
-  background-color: rgba(245, 245, 245, 1);
-}
-/* Estilo para los avatares de participantes */
-.v-avatar {
-  transition: transform 0.2s ease;
-}
-.v-avatar:hover {
-  transform: scale(1.1);
-  z-index: 2;
+.hidden-header .v-data-table__content > table > thead {
+  display: none !important;
 }
 .date-text {
   width: 100%;

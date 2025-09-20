@@ -19,142 +19,263 @@
       </v-col>
     </v-row>
   </v-snackbar>
-   <v-container class="pa-4">
-  <v-card class="pa-4" elevation="4" rounded="lg">
-        <v-card-text>
-        <v-row justify="space-between" align="center" class="mb-6">
-        <v-col cols="12" class="d-flex justify-space-between align-center">
-           <h2 class="text-body-2 font-weight-bold">{{ $t("vet_visits.listing.title") }}</h2>
-          <v-btn icon color="deep-purple-accent-4" variant="flat" class="elevation-3" @click="showAdd" :title=" this.$t('vet_visits.listing.addButton')">
-            <v-icon>mdi-plus</v-icon>
-          </v-btn>
-          </v-col>
-        </v-row>
-      <template v-if="visits.length > 0">
-  <v-card
-    v-for="(visit, index) in visits"
-    :key="index"
-    class="mb-4 rounded-lg pa-2"
-    density="comfortable"
-    elevation="2"
+   <v-card
+    class="pa-0 mt-2"
+    elevation="1"
+    rounded="lg"
+    style="position: relative; overflow: visible; z-index: auto"
   >
-    <v-row>
-      <!-- Barra lateral de color e info (fecha actual) -->
-      <v-col cols="1" class="d-flex justify-start">
-        <div
-          class="icono-concavo d-flex flex-column justify-center justify-start"
-          :class="`bg-${getTypeColor('vet_name')}`"
+      <!-- Encabezado con foto y datos -->
+      <v-card-text>
+        <v-card-actions class="pa-3 bg-grey-lighten-5 tools-bar">
+          <v-btn
+            v-for="tool in tools"
+            :key="tool.name"
+            @click="tool.action()"
+            size="small"
+            color="primary"
+            variant="text"
+            prepend-icon="mdi-plus"
+            class="text-capitalize"
+          >
+            {{ tool.name }}
+          </v-btn>
+        </v-card-actions>
+        <v-card-title class="d-flex flex-wrap align-center gap-4 pb-0">
+      <!-- Spacer (solo visible en md+) -->
+      <v-spacer class="d-none d-md-block"></v-spacer>
+      <!-- Campo de búsqueda global -->
+      <div class="flex-grow-1" style="max-width: 300px">
+        <v-text-field
+          v-model="search"
+          density="compact"
+          :label="$t('dataTable.search')"
+          prepend-inner-icon="mdi-magnify"
+          variant="solo-filled"
+          hide-details
+          single-line
+          flat
+          clearable
+        ></v-text-field>
+      </div>
+    </v-card-title>
+     <v-data-table
+    :headers="headers"
+    :items="visits"
+    :search="search"
+    :items-per-page-text="$t('dataTable.itemsPerPageText')"
+    :no-data-text="$t('dataTable.noDataText')"
+    :loading-text="$t('dataTable.loadingText')"
+    :loading="loading"
+    :hide-default-header="true"
+    class="mt-1"
+    style="
+      max-height: 68vh;
+      overflow-y: auto;
+      background: transparent;
+      border: none !important;
+      outline: none !important;
+      box-shadow: none !important;
+      padding: 0;
+    "
+  >
+    <!-- Header personalizado (simulado) -->
+    <template v-slot:top>
+      <v-card
+        :elevation="1"
+        :hover="false"
+        flat
+        class="mb-2 mx-1 rounded-lg"
+        style="
+          border: 1px solid #eceff1;
+          height: 40px;
+          min-height: 40px;
+          display: flex;
+          align-items: center;
+          transition: none !important;
+        "
+      >
+        <v-card-text
+          class="d-flex pa-2"
+          style="
+            width: 100%;
+            min-width: 0;
+            height: 100%;
+            padding: 0 16px !important;
+            display: flex;
+            align-items: center;
+          "
         >
-          <div class="date-display">
-            {{ formatIntuitiveDate(visit.date) }}
+          <div style="width: 7%; min-width: 0" class="text-left">
+            {{ $t("vet_visits.fields.date") }}
           </div>
-        </div>
-      </v-col>
+          <div style="width: 25%; min-width: 0" class="text-left">
+            {{ $t("vet_visits.fields.reason") }}
+          </div>
+          <div style="width: 10%; min-width: 0" class="text-left">
+            {{ $t("vet_visits.fields.vet_name") }}
+          </div>
+          <div style="width: 15%; min-width: 0" class="text-left">
+            {{ $t("vet_visits.fields.clinic") }}
+          </div>
+           <div style="width: 15%; min-width: 0" class="text-left">
+            {{ $t("vet_visits.fields.recommendations") }}
+          </div>
+          <div style="width: 13%; min-width: 0" class="text-left">
+            {{ $t("vet_visits.fields.next_visit") }}
+          </div>
+          <div style="width: 7%; min-width: 0" class="text-left">
+            {{ $t("vet_visits.fields.image") }}
+          </div>
+          <div style="width: 7%; min-width: 0" class="d-flex justify-end">
+            {{ $t("settings.actions") }}
+          </div>
+        </v-card-text>
+      </v-card>
+    </template>
 
-      <v-col cols="3" class="d-flex align-center justify-start">
-        <v-row align="center" class="gap-3">
-          <div>
-            <div class="font-weight-bold text-body-2">
-              <span>{{ visit.reason }}</span>
-              <v-tooltip activator="parent" location="bottom" max-width="350px">
-            <span style="white-space: normal; word-break: break-word">
-              {{ $t("vet_visits.fields.reason") }}: {{ visit.reason }}
-            </span>
-          </v-tooltip>
-            </div>
-            <div class="text-caption text-grey">
-              <span>{{ visit.diagnosis }}</span>
-              <v-tooltip activator="parent" location="bottom" max-width="350px">
-            <span style="white-space: normal; word-break: break-word">
-              {{ $t("vet_visits.fields.diagnosis") }}: {{ visit.diagnosis }}
-            </span>
-          </v-tooltip>
+    <!-- Fila personalizada -->
+    <template v-slot:item="{ item }">
+      <v-card
+        class="mb-2 mx-1 rounded-lg"
+        elevation="1"
+        density="comfortable"
+        flat
+      >
+        <v-card-text
+          class="d-flex align-center pa-2"
+          style="width: 100%; min-width: 0"
+        >
+          <!-- Columna 1: Fecha con ícono cóncavo (5%) -->
+          <div style="width: 7%; min-width: 0" class="d-flex align-center justify-left">
+            <div
+              class="icono-concavo d-flex flex-column justify-center align-left"
+              :class="`bg-${getTypeColor(item.type)}`"
+             style="min-height: 48px; min-width: 48px; border-radius: 8px;">
+              <div class="date-display text-center" style="font-size: 0.85rem; line-height: 1.2;">
+                {{ formatIntuitiveDate(item.date) }}
+              </div>
             </div>
           </div>
-        </v-row>
-      </v-col>
-      <v-col cols="1" class="d-flex align-center justify-start text-truncate">
-        <div>
-          <span class="text-body-2">{{ truncate(visit.vet_name, 15) }}</span>
-          <v-tooltip activator="parent" location="bottom" max-width="350px">
-            <span style="white-space: normal; word-break: break-word">
-              {{ $t("vet_visits.fields.vet_name") }}: {{ visit.vet_name }}
-            </span>
-          </v-tooltip>
-        </div>
-      </v-col>
 
-      <!-- Diagnóstico (mantiene posición) -->
-      <v-col cols="1" class="d-flex align-center justify-start text-truncate">
-        <div>
-          <span class="text-body-2">{{ visit.clinic }}</span>
-          <v-tooltip activator="parent" location="bottom" max-width="350px">
-            <span style="white-space: normal; word-break: break-word">
-              {{ $t("vet_visits.fields.clinic") }}: {{ visit.clinic }}
-            </span>
-          </v-tooltip>
-        </div>
-      </v-col>
+          <!-- Columna 2: Nombre del tratamiento (20%) -->
+         <div style="width: 25%; min-width: 0" class="d-flex flex-column">
+                  <div class="font-weight-bold text-body-2 text-truncate">
+                    {{ item.reason }}
+                  </div>
+                  <div class="text-caption text-grey-darken-1 text-truncate">
+                    {{ item.diagnosis }}
+                  </div>
+                  <v-tooltip activator="parent" location="bottom" max-width="350px">
+                    <span style="white-space: normal; word-break: break-word">
+                      {{ $t("vet_visits.fields.diagnosis") }}: {{ item.diagnosis }}
+                    </span>
+                  </v-tooltip>
+                </div>
 
-      <!-- Recomendaciones (mantiene posición) -->
-      <v-col cols="2" class="d-flex align-center justify-start">
-        <div class="text-truncate" style="max-width: 100%">
-          <span class="text-body-2 text-truncate d-inline-block" style="max-width: 100%">
-            {{ visit.recommendations || '—' }}
-          </span>
-          <v-tooltip activator="parent" location="bottom" max-width="350px">
-            <span style="white-space: normal; word-break: break-word">
-              {{ $t("vet_visits.fields.recommendations") }}: {{ visit.recommendations || 'Ninguna' }}
-            </span>
-          </v-tooltip>
-        </div>
-      </v-col>
+          <div style="width: 10%; min-width: 0" class="d-flex flex-column">
+            <div class="text-body-2 text-truncate">
+              {{ item.vet_name}}
+            </div>            
+               <v-tooltip activator="parent" location="bottom" max-width="350px">
+                    <span style="white-space: normal; word-break: break-word">
+                      {{ item.vet_name }}
+                    </span>
+                  </v-tooltip>
+          </div>
 
-      <!-- Próxima cita (mantiene posición) -->
-      <v-col cols="2" class="d-flex align-center justify-start text-truncate">
-        <div>
-          <span class="text-body-2">
-            {{ visit.next_visit ? formatIntuitiveDate(visit.next_visit) : '—' }}
-          </span>
-          <v-tooltip activator="parent" location="bottom" max-width="350px">
-            <span style="white-space: normal; word-break: break-word">
-              {{ $t("vet_visits.fields.next_visit") }}: {{ visit.next_visit || 'No programada' }}
-            </span>
-          </v-tooltip>
-        </div>
-      </v-col>
-      <v-col cols="1" class="d-flex align-center justify-start text-truncate">
-                    <v-btn
+          <!-- Columna 3: Notas (45%) -->
+          <div style="width: 15%; min-width: 0" class="d-flex flex-column">
+            <div
+              class="text-body-2 text-grey-darken-1 text-truncate"
+              style="max-width: 100%;"
+            >
+              {{ item.clinic }}
+              <v-tooltip
+                activator="parent"
+                location="bottom"
+                max-width="350px"
+              >
+                <span style="white-space: normal; word-break: break-word">
+                  {{ item.clinic }}
+                </span>
+              </v-tooltip>
+            </div>
+          </div>
+          <div style="width: 15%; min-width: 0" class="d-flex flex-column">
+            <div
+              class="text-body-2 text-grey-darken-1 text-truncate"
+              style="max-width: 100%;"
+            >
+              {{ item.recommendations }}
+              <v-tooltip
+                activator="parent"
+                location="bottom"
+                max-width="350px"
+              >
+                <span style="white-space: normal; word-break: break-word">
+                  {{ item.recommendations }}
+                </span>
+              </v-tooltip>
+            </div>
+          </div>
+          <!-- Columna 4: Próxima fecha (23%) -->
+          <div style="width: 13%; min-width: 0" class="d-flex flex-column">
+            <div class="text-body-2 text-truncate">
+              {{ formatIntuitiveDate(item.next_visit) }}
+            </div>
+          </div>
+
+          <div style="width: 7%; min-width: 0" class="d-flex flex-column">
+            <div class="text-body-2 text-truncate">
+              <v-btn
                       density="comfortable"
-                      :icon="getFileIcon(visit)"
-                      :color="getFileColor(visit)"
-                      :title="getTooltip(visit)"
+                      :icon="getFileIcon(item)"
+                      :color="getFileColor(item)"
+                      :title="getTooltip(item)"
                       variant="tonal"
                       elevation="1"
                       class="mr-1 mt-1 mb-1"
-                      @click="handleFileClick(visit)"
+                      @click="handleFileClick(item)"
                     ></v-btn>
-                  </v-col>
-      <!-- Botones de acción -->
-      <v-col cols="1" class="d-flex align-center ml-auto pe-4" style="margin-left: auto !important">
-        <v-btn icon variant="text" color="green-darken-2" size="small" @click="editItem(visit)">
-          <v-icon>mdi-pencil</v-icon>
-        </v-btn>
-        <v-btn icon variant="text" color="red-darken-2" size="small" @click="deleteItem(visit)">
-          <v-icon>mdi-delete</v-icon>
-        </v-btn>
-      </v-col>
-    </v-row>
-  </v-card>
-</template>
-            <template v-else>
-              <v-col cols="12" class="text-center py-8">
-                {{ $t("vet_visits.listing.noData") }}
-              </v-col>
-            </template>
+            </div>
+          </div>
+
+          <!-- Columna 5: Acciones (Editar + Eliminar) (7%) -->
+          <div
+            class="d-flex gap-1"
+            style="width: 7%; justify-content: flex-end; flex-wrap: nowrap"
+          >
+            <v-btn
+              size="35"
+              icon
+              variant="text"
+              color="green-darken-2"
+              @click="editItem(item)"
+              class="flex-shrink-0 mr-1"
+              :title="$t('buttons.edit')"
+            >
+              <v-icon size="20">mdi-pencil</v-icon>
+            </v-btn>
+
+            <v-btn
+              size="35"
+              icon
+              variant="text"
+              color="red-darken-2"
+              @click="deleteItem(item)"
+              class="flex-shrink-0"
+              :title="$t('buttons.delete')"
+            >
+              <v-icon size="20">mdi-delete</v-icon>
+            </v-btn>
+          </div>
+        </v-card-text>
+      </v-card>
+    </template>
+  </v-data-table>
      </v-card-text>
     </v-card>
- </v-container>
   <v-dialog v-model="dialog" fullscreen persistent transition="dialog-bottom-transition" content-class="fullscreen-dialog">
   <v-form ref="form" v-model="valid" class="h-100">
     <v-card class="pa-10">
@@ -487,8 +608,8 @@ import LocalStorageService from "@/LocalStorageService";
 import { handleRequest } from "@/utils/api"; // Ruta al archivo
 import { format } from "date-fns";
 export default {
-     props: {
-    pet: {
+      props: {
+    selectedPet: {
       type: Object,
       required: true
     },
@@ -562,6 +683,18 @@ export default {
       home_id: ""
     },
     editedIndex: -1,
+    headers: [
+      //{ title: 'Sucursal', value: 'branchName', width: '20%' },
+      { title: "Fecha", value: "date", width: "20%" },
+      { title: "Motivo", value: "reason", width: "10%" },
+      { title: "Diagnóstico", value: "diagnosis", width: "10%" },
+      { title: "veterinario", value: "vet_name", width: "10%" },
+      { title: "Clínica", value: "clinic", width: "10%" },
+      { title: "Tratamiento", value: "treatment_given", width: "10%" },
+      { title: "Recomendaciones", value: "recommendations", width: "10%" },
+      { title: "Proxima cita", value: "next_date", width: "10%" },
+      { title: "files.fields.actions", value: "actions", sortable: false, width: "15%" },
+    ],
     search: "",
     menu: false,
     input: null,
@@ -628,6 +761,14 @@ export default {
   const type = this.getFileType(imagePath);
   return type ? imageTypes.includes(type) : false;
 },*/
+  },
+   created() {
+    this.tools = [
+      {
+        name: this.$t("vet_visits.listing.addButton"),
+        action: () => this.showAdd(),
+      },
+    ];
   },
   mounted() {
     this.person_id = JSON.parse(LocalStorageService.getItem("person_id"));
@@ -748,7 +889,7 @@ export default {
     async initialize() {
       try {
         this.data = {};
-        this.data.pet_id = this.pet.id;
+        this.data.pet_id = this.selectedPet.id;
         this.loading = true;
         const result = await handleRequest({
           endpoint: "get-vet-visits",
@@ -806,7 +947,7 @@ export default {
           }, {});
         if (Object.keys(updatedFields).length > 0) {
           updatedFields.home_id = this.home_id;
-          updatedFields.pet_id = this.pet.id;
+          updatedFields.pet_id = this.selectedPet.id;
           if (this.file) {
             updatedFields.image = this.editedItem.image;
           }
@@ -1364,5 +1505,31 @@ export default {
 .modal-imagen {
   background: transparent !important;
   box-shadow: none !important;
+}
+
+.text-truncate {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+/* OCULTAR HEADER DE v-data-table - Vuetify 3.4.7 */
+/* Máxima especificidad para ocultar el thead */
+.v-data-table > .v-data-table__wrapper > table > thead,
+.v-data-table > .v-data-table__wrapper > .v-table > table > thead,
+.v-data-table__content > table > thead,
+.v-data-table__content > thead,
+table.v-table > thead,
+.v-table > .v-table__wrapper > table > thead {
+  display: none !important;
+  visibility: hidden !important;
+  height: 0 !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  border: none !important;
+  border-spacing: 0 !important;
+  border-collapse: collapse !important;
+}
+.hidden-header .v-data-table__content > table > thead {
+  display: none !important;
 }
 </style>

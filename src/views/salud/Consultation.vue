@@ -12,7 +12,7 @@
     </v-row>
   </v-snackbar>
   <!--<v-container fluid fill-height>-->
-  <v-card elevation="6" class="mx-2">
+  <!--<v-card elevation="6" class="mx-2">
     <v-toolbar color="#03626C">
       <v-row align="center">
         <v-col cols="12" md="8" class="grow ml-4">
@@ -25,9 +25,31 @@
           </v-btn>
         </v-col>
       </v-row>
-    </v-toolbar>
+    </v-toolbar>-->
 
-    <v-card-text>
+    
+  <v-card class="pa-0" elevation="1" rounded="lg" style="
+    position: relative;
+    overflow: visible;
+    z-index: auto;
+  ">
+      <!-- Encabezado con foto y datos -->
+      <v-card-text>
+          <v-card-actions class="bg-grey-lighten-5 tools-bar">
+            <v-btn
+              v-for="tool in tools"
+              :key="tool.name"
+              @click="tool.action()"
+              size="small"
+              color="primary"
+              variant="text"
+              prepend-icon="mdi-plus"
+              class="text-capitalize"
+            >
+              {{ tool.name }}
+            </v-btn>
+          </v-card-actions>
+
       <v-text-field class="mt-1 mb-1" v-model="search" append-icon="mdi-magnify" label="Buscar" single-line
         hide-details>
       </v-text-field>
@@ -372,6 +394,14 @@ export default {
     ],
     selectRules: [(v) => !!v || "Seleccionar al menos un elemento"],
   }),
+    created() {
+    this.tools = [
+      {
+        name: this.$t("consultations.titles.new"),
+        action: () => this.showAdd()
+      }
+    ]
+  },
   computed: {
     formTitle() {
       return this.editedIndex === -1 ? 'Agregar Consulta' : 'Editar Consulta';

@@ -17,51 +17,6 @@
     overflow: visible;
     z-index: auto;
   ">
-    <!--<v-menu
-    offset-y
-    location="bottom end"
-    transition="scale-transition"
-    :close-on-content-click="true"
-  >
-    <template #activator="{ props }">
-      <v-btn
-        v-bind="props"
-        icon
-        size="x-large"
-        color="purple"
-        elevation="6"
-        class="ma-0"
-        style="
-          position: absolute;
-          top: -14px;
-          right: -14px;
-          z-index: 10;
-          border-radius: 50%;
-          transform: scale(1);
-          transition: transform 0.2s ease, box-shadow 0.2s ease;
-        "
-        @mouseenter="props.activate?.()"
-        @focus="props.activate?.()"
-      >
-        <v-icon size="30">mdi-plus</v-icon>
-      </v-btn>
-    </template>
-
-    <v-list rounded="lg" elevation="6" min-width="200">
-      <v-list-item @click="showAddFinance()">
-        <v-list-item-title class="text-green">
-          <v-icon start color="green">mdi-plus</v-icon>
-          {{ $t("finances.titles.new.finance") }}
-        </v-list-item-title>
-      </v-list-item>
-      <v-list-item @click="showAddBuget()">
-        <v-list-item-title class="text-red">
-          <v-icon start color="red">mdi-minus</v-icon>
-          Agregar Presupuesto
-        </v-list-item-title>
-      </v-list-item>
-    </v-list>
-  </v-menu>-->
       <!-- Encabezado con foto y datos -->
       <v-card-text>
         <v-row class="mb-4" align="center" no-gutters>
@@ -83,25 +38,18 @@
           <!-- Columna de la tarjeta de sugerencia -->
           <v-col cols="12" sm="2" md="2">
             <div class="d-flex align-right justify-end pa-2">
-              <v-switch
-            v-model="switchValue"
-            :true-value=1 
-            :false-value=0
-            :color="switchColor"
-            hide-details
-            inset
-            class="custom-switch"
-          >
-            <template v-slot:label>
-              <span class="text-body-1" :style="{ color: switchColor }">
-                {{ getCurrentName }}
-              </span>
-            </template>
-          </v-switch>
+              <v-switch v-model="budget_type" true-value="Personal" false-value="Hogar" :base-color="switchColor"
+                :color="switchColor" hide-details inset class="mb-4 font-weight-bold">
+                <template v-slot:label>
+                  <span class="text-body-1" :style="{ color: switchColor }">
+                    {{ getCurrentName }}
+                  </span>
+                </template>
+              </v-switch>
             </div>
           </v-col>
         </v-row>
-        
+
         <v-divider />
         <v-card elevation="0" class="pa-2 bg-grey-lighten-5 tools-bar">
           <v-btn v-for="tool in tools" :key="tool.name" @click="tool.action" color="#03626C" variant="text"
@@ -179,10 +127,11 @@
                   </div>
                 </v-sheet>
 
-                <v-alert v-if="budgetAlerts && budgetAlerts.length > 0" color="warning" icon="mdi-alert-circle" variant="outlined" theme="dark" border
-                  density="compact" class="py-1 px-4" @click="showAddBuget()"  style="cursor: pointer;">
+                <v-alert v-if="budgetAlerts && budgetAlerts.length > 0" color="warning" icon="mdi-alert-circle"
+                  variant="outlined" theme="dark" border density="compact" class="py-1 px-4" @click="showAddBuget()"
+                  style="cursor: pointer;">
                   <div class="text-body2 text-black">
-                     {{ budgetAlerts[0].message }}
+                    {{ budgetAlerts[0].message }}
                   </div>
                 </v-alert>
               </v-card-text>
@@ -277,10 +226,10 @@
               :year="new Date().getFullYear()" />
           </v-col>
           <v-col cols="12" class="d-flex">
-            <v-alert v-if="spentAlerts" color="warning" icon="mdi-alert-circle" variant="outlined" theme="dark" border density="compact"
-              class="py-1 px-4 mt-1" @click="showAddIncomeSpent()"  style="cursor: pointer;">
+            <v-alert v-if="spentAlerts" color="warning" icon="mdi-alert-circle" variant="outlined" theme="dark" border
+              density="compact" class="py-1 px-4 mt-1" @click="showAddIncomeSpent()" style="cursor: pointer;">
               <div class="text-body2 text-black">
-                 {{ spentAlerts.message }}
+                {{ spentAlerts.message }}
               </div>
             </v-alert>
           </v-col>
@@ -289,8 +238,7 @@
         <div class="h-0">
           <svg height="0" version="1.1" width="0" xmlns="http://www.w3.org/2000/svg">
             <defs>
-              <pattern id="pattern-0" height="20" patternTransform="rotate(145) scale(.2)" patternUnits="userSpaceOnUse"
-                width="20">
+              <pattern id="pattern-0" height="20" patternUnits="userSpaceOnUse" width="20">
                 <path d="M0 10h20zm0 20h20zm0 20h20zm0 20h20z" fill="none" stroke="rgb(var(--v-theme-surface))"
                   stroke-width="3" />
               </pattern>
@@ -406,7 +354,8 @@
 
                 <v-col cols="12" sm="6">
                   <v-autocomplete v-model="editedItem.type" :items="types" :label="$t('finances.fields.type')"
-                    item-title="name" item-value="id" variant="underlined" :rules="typeRules" :disabled="editedIndex === -1">
+                    item-title="name" item-value="id" variant="underlined" :rules="typeRules"
+                    :disabled="editedIndex === -1">
                     <template v-slot:item="{ props, item }">
                       <v-list-item v-bind="props">
                         <v-list-item-subtitle class="d-flex flex-column">
@@ -432,10 +381,8 @@
                   <v-text-field v-if="isIncome" v-model="editedItem.income" :label="$t('finances.fields.income')"
                     variant="underlined" type="number" :rules="incomeRules" required />
                   <v-text-field v-else v-model="editedItem.spent" :label="$t('finances.fields.spent')"
-                    variant="underlined" type="number" :rules="[validateSpent]"
-                    :hint="spentHint"
-                    persistent-hint required
-                    :class="{
+                    variant="underlined" type="number" :rules="[validateSpent]" :hint="spentHint" persistent-hint
+                    required :class="{
                       'has-negative-hint': availableAmount < 0,
                       'has-positive-hint': availableAmount > 0,
                       'has-neutral-hint': availableAmount === 0
@@ -443,8 +390,9 @@
                 </v-col>
 
                 <v-col cols="12" sm="12" v-if="!isIncome">
-                  <v-autocomplete v-model="editedItem.budget_id" :items="filteredBudgets" :label="$t('budget.fields.category')"
-                    item-title="categoryName" item-value="id" variant="underlined" :rules="selectRules">
+                  <v-autocomplete v-model="editedItem.budget_id" :items="filteredBudgets"
+                    :label="$t('budget.fields.category')" item-title="categoryName" item-value="id" variant="underlined"
+                    :rules="selectRules">
                     <template v-slot:item="{ props, item }">
                       <v-list-item v-bind="props">
                         <template v-slot:prepend>
@@ -669,7 +617,7 @@
       <v-divider></v-divider>
       <v-card-actions>
         <v-spacer></v-spacer>
-        <v-btn @click="closeDialogBugets">Cerrar</v-btn>
+        <v-btn variant="flat" @click="closeDialogBugets">Cerrar</v-btn>
       </v-card-actions>
     </v-card>
   </v-dialog>
@@ -1394,9 +1342,9 @@ export default {
     this.initialize();
   },
    watch: {
-    switchValue(newVal) {
+    budget_type(newVal) {
       // Actualiza budget_type según el valor del switch
-      this.budget_type = newVal ? 'Hogar' : 'Personal';
+      //this.budget_type = newVal === 'Hogar' ? 'Hogar' : 'Personal';
 
       // Llama al método de inicialización
       this.initialize();
@@ -2282,7 +2230,6 @@ export default {
   margin-right: -5px;
   /* Cambia el color del borde según desees */
   border-radius: 50%;
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
   /* Para que siga siendo redondo */
   box-sizing: border-box;
   /* Asegura que el borde no afecte el tamaño del avatar */

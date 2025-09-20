@@ -19,288 +19,244 @@
       </v-col>
     </v-row>
   </v-snackbar>
-  <v-container>
-    <v-card class="pa-4" elevation="4" rounded="lg">
-        <v-card-text>
-        <v-row justify="space-between" align="center" class="mb-6">
-        <v-col cols="12" class="d-flex justify-space-between align-center">
-           <h2 class="text-body-2 font-weight-bold">{{ $t("wishes.listing.title") }}</h2>
-          <v-btn icon color="deep-purple-accent-4" variant="flat" class="elevation-3" @click="showAdd" :title=" this.$t('wishes.listing.addButton')">
-            <v-icon>mdi-plus</v-icon>
-          </v-btn>
-          </v-col>
-        </v-row>
-      <v-row justify="space-between" align="center" class="mb-6">
-      <v-col cols="12" class="ma-0 pt-6" style="max-height: 60vh; min-height: 40vh; overflow-y: auto">
-      <template v-if="wishes.length > 0">
-              <v-card v-for="(wish, index) in wishes" :key="index" class="mb-4 rounded-lg pa-2"
-                density="comfortable" elevation="2">
-                <v-row>
-                  <!-- Barra lateral de color e info -->
-                  <v-col cols="1" class="d-flex justify-start">
-                    <div class="icono-concavo d-flex flex-column justify-center justify-start"
-                      :class="`bg-${getTypeColor(wish.type)}`">
-                      <div class="date-display">
-                        {{ formatIntuitiveDate(wish.date) }}
-                      </div>
-                    </div>
-                  </v-col>
-                  <v-col cols="5" class="d-flex align-center justify-start">
-                    <v-row align="center" class="gap-3">
-                      <div>
-                        <div class="font-weight-bold text-body-2">
-                          {{ wish.name }}
-                        </div>
-                        <div class="text-body-2 d-flex align-center text-grey-darken-1">
-                          {{ wish.description }}
-                          <v-tooltip activator="parent" location="bottom" max-width="350px">
-                            <span style="white-space: normal; word-break: break-word">
-                              {{ $t("wishes.fields.description") }}: {{ wish.description }}
-                            </span>
-                          </v-tooltip>
-                        </div>
-                        <div class="text-body-2 d-flex align-center text-grey-darken-1">
-                          {{ wish.location }}
-                          <v-tooltip activator="parent" location="bottom" max-width="350px">
-                            <span style="white-space: normal; word-break: break-word">
-                              {{ $t("wishes.fields.location") }}: {{ wish.location }}
-                            </span>
-                          </v-tooltip>
-                        </div>
-                      </div>
-                    </v-row>
-                  </v-col>
-                  <v-col cols="1" class="d-flex align-center justify-start text-truncate">
-                    <div>
-                      <span class="text-body-2">
-                        {{ wish.type }}</span>
-                      <v-tooltip activator="parent" location="bottom" max-width="350px">
-                        <span style="white-space: normal; word-break: break-word">
-                          {{ $t("wishes.fields.type") }}: {{ wish.type }}
-                        </span>
-                      </v-tooltip>
-                    </div>
-                  </v-col>
-                  <v-col cols="1" class="d-flex align-center justify-start text-truncate">
-                    <div>
-                      <span class="text-body-2">
-                        {{ wish.namePriority }}</span>
-                      <v-tooltip activator="parent" location="bottom" max-width="350px">
-                        <span style="white-space: normal; word-break: break-word">
-                          {{ $t("wishes.fields.priority") }}: {{ wish.namePriority }}
-                        </span>
-                      </v-tooltip>
-                    </div>
-                  </v-col>
-                  <v-col cols="1" class="d-flex align-center justify-start text-truncate">
-                    <div>
-                      <span class="text-body-2">
-                        {{ wish.nameStatus }}</span>
-                      <v-tooltip activator="parent" location="bottom" max-width="350px">
-                        <span style="white-space: normal; word-break: break-word">
-                          {{ $t("wishes.fields.status") }}: {{ wish.nameStatus }}
-                        </span>
-                      </v-tooltip>
-                    </div>
-                  </v-col>
-                  <v-col cols="1" class="d-flex align-center ml-auto pe-4" style="margin-left: auto !important">
-                    <v-btn icon variant="text" color="green-darken-2" size="small" @click="editItem(wish)">
-                      <v-icon>mdi-pencil</v-icon>
-                    </v-btn>
-                    <v-btn icon variant="text" color="red-darken-2" size="small" @click="deleteItem(wish)">
-                      <v-icon>mdi-delete</v-icon>
-                    </v-btn>
-                  </v-col>
-                </v-row>
-              </v-card>
-             </template>
-            <template v-else>
-              <v-col cols="12" class="text-center py-8">
-                {{ $t("wishes.listing.noData") }}
-              </v-col>
-            </template>
-      </v-col>      
-      </v-row>
-        <!--<v-tabs v-model="tab" vertical>
-          <v-tab value="personal" :class="tab === 'personal' ? 'selected-tab' : ''">{{
-            $t("wishes.listing.types.personal")
-          }}</v-tab>
-          <v-tab value="hogar" :class="tab === 'hogar' ? 'selected-tab' : ''">{{
-            $t("wishes.listing.types.home")
-          }}</v-tab>
-          <v-tab
-            value="profesional"
-            :class="tab === 'profesional' ? 'selected-tab' : ''"
-            >{{ $t("wishes.listing.types.professional") }}</v-tab
-          >
-          <v-tab value="todas" :class="tab === 'todas' ? 'selected-tab' : ''">{{
-            $t("wishes.listing.types.all")
-          }}</v-tab>
-        </v-tabs>
+  <v-container class="pa-4">
+   <v-card elevation="2" rounded="lg" flat>
+      <!-- Encabezado con foto y datos -->
+      <v-card-text>
+        <v-col cols="12" sm="9" md="9" class="d-flex align-center">
+          <v-avatar size="48" class="me-3" color="grey-lighten-4" variant="tonal">
+            <v-icon color="secondary">mdi-creation</v-icon>
+          </v-avatar>
+          <div>
+            <div class="text-body-2 font-weight-bold mb-1">
+              {{ $t("wishes.listing.title") }}
+            </div>
+            <div class="text-body-2 text-grey-darken-1"></div>
+          </div>
+        </v-col>
 
-        <v-window v-model="tab" min-height="50vh" class="mt-2">
-          <v-window-item value="personal">
-            <v-text-field
-              class="mt-1 mb-1"
-              v-model="search"
-              append-icon="mdi-magnify"
-              :label="$t('wishes.listing.search')"
-              single-line
-              hide-details
+        <v-divider />
+        <v-card-actions class="pa-3 bg-grey-lighten-5 tools-bar">
+          <v-btn
+            v-for="tool in tools"
+            :key="tool.name"
+            @click="tool.action()"
+            size="small"
+            color="primary"
+            variant="text"
+            prepend-icon="mdi-plus"
+            class="text-capitalize"
+          >
+            {{ tool.name }}
+          </v-btn>
+        </v-card-actions>
+        <v-card-title class="d-flex flex-wrap align-center gap-4 pb-0">
+    <!-- Título -->
+    <!-- Spacer (solo visible en md+) -->
+    <v-spacer class="d-none d-md-block"></v-spacer>
+    <!-- Campo de búsqueda global -->
+    <div class="flex-grow-1" style="max-width: 300px">
+      <v-text-field
+        v-model="search"
+        density="compact"
+        :label="$t('dataTable.search')"
+        prepend-inner-icon="mdi-magnify"
+        variant="solo-filled"
+        hide-details
+        single-line
+        flat
+      ></v-text-field>
+    </div>
+  </v-card-title>
+  <v-data-table
+    :headers="headers"
+    :items="wishes"
+    :search="search"
+    :items-per-page-text="$t('dataTable.itemsPerPageText')"
+    :no-data-text="$t('dataTable.noDataText')"
+    :loading-text="$t('dataTable.loadingText')"
+    :loading="loading"
+    :hide-default-header="true"
+    style="
+      max-height: 68vh;
+      overflow-y: auto;
+      background: transparent;
+      border: none !important;
+      outline: none !important;
+      box-shadow: none !important;
+      padding: 0;
+      margin-top: 5px;
+    "
+  >
+    <template v-slot:top>
+      <v-card
+              :elevation="1"
+              :hover="false"
+              flat
+              class="mb-2 mx-1 rounded-lg"
+              style="
+                border: 1px solid #eceff1;
+                height: 40px;
+                min-height: 40px;
+                display: flex;
+                align-items: center;
+                transition: none !important;
+              "
             >
-            </v-text-field>
-            <v-data-table
-              :headers="translatedHeaders"
-              :search="search"
-              :items="filteredPersonalWishes"
-              class="elevation-1"
-              style="max-height: 68vh; overflow-y: auto"
-              :loading="loading"
+              <v-card-text
+                class="d-flex pa-2"
+                style="
+                  width: 100%;
+                  min-width: 0;
+                  height: 100%;
+                  padding: 0 16px !important;
+                  display: flex;
+                  align-items: center;
+                "
+              >
+          <!-- Fecha (10%) -->
+          <div style="width: 7%; min-width: 0" class="text-left">
+            {{ $t("wishes.fields.date") }}
+          </div>
+
+          <!-- Nombre y descripción (40%) -->
+          <div style="width: 40%; min-width: 0" class="text-left">
+            {{ $t("wishes.fields.name") }} / {{ $t("wishes.fields.description") }}
+          </div>
+
+          <!-- Ubicación (15%) -->
+          <div style="width: 15%; min-width: 0" class="text-left">
+            {{ $t("wishes.fields.location") }}
+          </div>
+
+          <!-- Tipo (10%) -->
+          <div style="width: 10%; min-width: 0" class="text-center">
+            {{ $t("wishes.fields.type") }}
+          </div>
+
+          <!-- Prioridad (10%) -->
+          <div style="width: 10%; min-width: 0" class="text-center">
+            {{ $t("wishes.fields.priority") }}
+          </div>
+
+          <!-- Estado (10%) -->
+          <div style="width: 13%; min-width: 0" class="text-center">
+            {{ $t("wishes.fields.status") }}
+          </div>
+
+          <!-- Acciones (5%) -->
+          <div style="width: 5%; min-width: 0" class="d-flex justify-end">
+            {{ $t("settings.actions") }}
+          </div>
+        </v-card-text>
+      </v-card>
+    </template>
+    <template v-slot:item="slotProps">
+      <tr>
+        <td colspan="100%" style="padding: 0; border: none">
+          <v-card
+            class="mb-2 mx-1 rounded-lg"
+            elevation="1"
+            density="comfortable"
+            flat
+          >
+            <v-card-text
+              class="d-flex align-center pa-2"
+              style="width: 100%; min-width: 0"
             >
-              <template v-slot:item.actions="{ item }">
+              <!-- Fecha con barra lateral de color - 10% -->
+              <div style="width: 7%; min-width: 0" class="d-flex align-center">
+                <div class="icono-concavo d-flex flex-column justify-center justify-start mr-2"
+                  :class="`bg-${getTypeColor(slotProps.item.type)}`"
+                  style="min-height: 48px; min-width: 48px; border-radius: 8px;">
+                  <div class="date-display text-center" style="font-size: 0.90em">
+                    {{ formatIntuitiveDate(slotProps.item.date) }}
+                  </div>
+                </div>
+              </div>
+
+              <!-- Nombre + Descripción - 40% -->
+              <div style="width: 40%; min-width: 0" class="d-flex flex-column">
+                <div class="font-weight-bold text-body-2 text-truncate">
+                  {{ slotProps.item.name }}
+                </div>
+                <div class="text-caption text-grey-darken-1 text-truncate">
+                  {{ slotProps.item.description }}
+                </div>
+                <v-tooltip activator="parent" location="bottom" max-width="350px">
+                    <span style="white-space: normal; word-break: break-word">
+                      {{ slotProps.item.description }}
+                    </span>
+                  </v-tooltip>
+              </div>
+
+              <!-- Ubicación - 15% -->
+              <div style="width: 15%; min-width: 0" class="text-body-2 text-truncate">
+                {{ slotProps.item.location }}
+              </div>
+
+              <!-- Tipo - 10% -->
+              <div style="width: 10%; min-width: 0; text-align: center">
+                <v-icon
+                        :color="getTypeColor(slotProps.item.type)"
+                        style="font-size: 10px; margin-right: 4px"
+                        icon="mdi-circle"
+                      ></v-icon>
+                      <span class="text-grey-darken-1 text-body-2 text-truncate">
+                        {{ slotProps.item.type }}
+                      </span>
+              </div>
+
+              <!-- Prioridad - 10% -->
+              <div style="width: 10%; min-width: 0; text-align: center">
+                <span class="text-body-2 text-truncate">
+                  {{ slotProps.item.namePriority }}
+                </span>
+              </div>
+
+              <!-- Estado - 10% -->
+              <div style="width: 13%; min-width: 0; text-align: center">
+                <span class="text-body-2 text-truncate">
+                  {{ slotProps.item.nameStatus }}
+                </span>
+              </div>
+
+              <!-- Acciones - 5% -->
+              <div
+                class="d-flex gap-1"
+                style="width: 5%; justify-content: flex-end; flex-wrap: nowrap"
+              >
                 <v-btn
-                  density="comfortable"
-                  icon="mdi-pencil"
-                  @click="editItem(item)"
-                  color="#1976D2"
-                  variant="tonal"
-                  elevation="1"
+                  size="35"
+                  icon
+                  variant="text"
+                  color="green-darken-2"
+                  @click="editItem(slotProps.item)"
+                  class="flex-shrink-0 mr-1"
                   title="Editar Deseo"
-                ></v-btn>
+                >
+                  <v-icon size="20">mdi-pencil</v-icon>
+                </v-btn>
+
                 <v-btn
-                  density="comfortable"
-                  icon="mdi-delete"
-                  @click="deleteItem(item)"
-                  color="#DA7171"
-                  variant="tonal"
-                  elevation="1"
+                  size="35"
+                  icon
+                  variant="text"
+                  color="red-darken-2"
+                  @click="deleteItem(slotProps.item)"
+                  class="flex-shrink-0"
                   title="Eliminar Deseo"
-                ></v-btn>
-              </template>
-            </v-data-table>
-          </v-window-item>
-          <v-window-item value="hogar" class="mt-4">
-            <v-text-field
-              class="mt-1 mb-1"
-              v-model="search"
-              append-icon="mdi-magnify"
-              :label="$t('wishes.listing.search')"
-              single-line
-              hide-details
-            >
-            </v-text-field>
-            <v-data-table
-              :headers="translatedHeaders"
-              :search="search"
-              :items="filteredHomeWishes"
-              class="elevation-1"
-              style="max-height: 68vh; overflow-y: auto"
-              :loading="loading"
-            >
-              <template v-slot:item.actions="{ item }">
-                <v-btn
-                  density="comfortable"
-                  icon="mdi-pencil"
-                  @click="editItem(item)"
-                  color="#1976D2"
-                  variant="tonal"
-                  elevation="1"
-                  title="Editar Deseo"
-                ></v-btn>
-                <v-btn
-                  density="comfortable"
-                  icon="mdi-delete"
-                  @click="deleteItem(item)"
-                  color="#DA7171"
-                  variant="tonal"
-                  elevation="1"
-                  title="Eliminar Deseo"
-                ></v-btn>
-              </template>
-            </v-data-table>
-          </v-window-item>
-          <v-window-item value="profesional" class="mt-4">
-            <v-text-field
-              class="mt-1 mb-1"
-              v-model="search"
-              append-icon="mdi-magnify"
-              :label="$t('wishes.listing.search')"
-              single-line
-              hide-details
-            >
-            </v-text-field>
-            <v-data-table
-              :headers="translatedHeaders"
-              :search="search"
-              :items="filteredProfessionalWishes"
-              class="elevation-1"
-              style="max-height: 68vh; overflow-y: auto"
-              :loading="loading"
-            >
-              <template v-slot:item.actions="{ item }">
-                <v-btn
-                  density="comfortable"
-                  icon="mdi-pencil"
-                  @click="editItem(item)"
-                  color="#1976D2"
-                  variant="tonal"
-                  elevation="1"
-                  title="Editar Deseo"
-                ></v-btn>
-                <v-btn
-                  density="comfortable"
-                  icon="mdi-delete"
-                  @click="deleteItem(item)"
-                  color="#DA7171"
-                  variant="tonal"
-                  elevation="1"
-                  title="Eliminar Deseo"
-                ></v-btn>
-              </template>
-            </v-data-table>
-          </v-window-item>
-          <v-window-item value="todas">
-            <v-text-field
-              class="mt-1 mb-1"
-              v-model="search"
-              append-icon="mdi-magnify"
-              :label="$t('wishes.listing.search')"
-              single-line
-              hide-details
-            >
-            </v-text-field>
-            <v-data-table
-              :headers="translatedHeaders"
-              :search="search"
-              :items="wishes"
-              class="elevation-1"
-              style="max-height: 68vh; overflow-y: auto"
-              :loading="loading"
-            >
-              <template v-slot:item.actions="{ item }">
-                <v-btn
-                  density="comfortable"
-                  icon="mdi-pencil"
-                  @click="editItem(item)"
-                  color="#1976D2"
-                  variant="tonal"
-                  elevation="1"
-                  title="Editar Deseo"
-                ></v-btn>
-                <v-btn
-                  density="comfortable"
-                  icon="mdi-delete"
-                  @click="deleteItem(item)"
-                  color="#DA7171"
-                  variant="tonal"
-                  elevation="1"
-                  title="Eliminar Deseo"
-                ></v-btn>
-              </template>
-            </v-data-table>
-          </v-window-item>
-        </v-window>-->
-      </v-card-text>
+                >
+                  <v-icon size="20">mdi-delete</v-icon>
+                </v-btn>
+              </div>
+            </v-card-text>
+          </v-card>
+        </td>
+      </tr>
+    </template>
+  </v-data-table>
+       </v-card-text>
     </v-card>
   </v-container>
   <v-dialog
@@ -720,6 +676,14 @@ export default {
       }));
     },
   },
+  created() {
+    this.tools = [
+      {
+        name: this.$t("wishes.listing.addButton"),
+        action: () => this.showAdd(),
+      },
+    ];
+  },
   mounted() {
     this.person_id = JSON.parse(LocalStorageService.getItem("person_id"));
     this.home_id = JSON.parse(LocalStorageService.getItem("home_id"));
@@ -730,7 +694,7 @@ export default {
       const colorMap = {
         Personal: "deep-purple",      // Color morado para asuntos personales
         Profesional: "indigo",       // Color índigo para temas profesionales
-        Hogar: "teal",               // Color verde azulado para el hogar
+        Hogar: "deep-orange",               // Color verde azulado para el hogar
         // Puedes agregar más tipos si es necesario
         Regalo: "pink",              // Ejemplo adicional
         Otro: "blue-grey"            // Color neutral para otros tipos
@@ -775,6 +739,7 @@ export default {
               weekday: "short",
               day: "numeric",
               month: "short",
+              year: "numeric"
             })
             .replace(/\./g, "");
       }
@@ -1200,14 +1165,6 @@ export default {
 </script>
 
 <style scoped>
-.selected-tab {
-  background-color: #03626c;
-  /* Fondo del tab seleccionado */
-  color: white;
-  /* Texto blanco */
-  border-radius: 4px;
-  /* Esquinas redondeadas, opcional */
-}
 .icono-concavo {
   width: 50px;
   height: 50px;
@@ -1243,5 +1200,31 @@ export default {
 .modal-imagen {
   background: transparent !important;
   box-shadow: none !important;
+}
+
+.text-truncate {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+/* OCULTAR HEADER DE v-data-table - Vuetify 3.4.7 */
+/* Máxima especificidad para ocultar el thead */
+.v-data-table > .v-data-table__wrapper > table > thead,
+.v-data-table > .v-data-table__wrapper > .v-table > table > thead,
+.v-data-table__content > table > thead,
+.v-data-table__content > thead,
+table.v-table > thead,
+.v-table > .v-table__wrapper > table > thead {
+  display: none !important;
+  visibility: hidden !important;
+  height: 0 !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  border: none !important;
+  border-spacing: 0 !important;
+  border-collapse: collapse !important;
+}
+.hidden-header .v-data-table__content > table > thead {
+  display: none !important;
 }
 </style>

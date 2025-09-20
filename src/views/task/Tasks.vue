@@ -11,20 +11,384 @@
       </v-col>
     </v-row>
   </v-snackbar>
-  <v-container class="pa-4">
-  <v-card class="pa-4" elevation="4" rounded="lg">
+  <v-container class="pa-4"> <v-card elevation="2" rounded="lg" flat>
       <!-- Encabezado con foto y datos -->
       <v-card-text>
-    <!-- Encabezado -->
-    <v-row justify="space-between" align="center" class="mb-6">
-        <v-col cols="12" class="d-flex justify-space-between align-center">
-      <h2 class="text-body-2 font-weight-bold">{{ $t("viewTitles.tasks") }}</h2>
-      <v-btn icon color="deep-purple-accent-4" variant="flat" class="elevation-3" @click="showAdd">
-        <v-icon>mdi-plus</v-icon>
-      </v-btn>
-      </v-col>
-    </v-row>
-   <div class="d-flex flex-wrap align-center gap-2">
+        <v-col cols="12" sm="9" md="9" class="d-flex align-center">
+          <v-avatar size="48" class="me-3" color="grey-lighten-4" variant="tonal">
+            <v-icon color="warning">mdi-calendar-weekend-outline</v-icon>
+          </v-avatar>
+          <div>
+            <div class="text-body-2 font-weight-bold mb-1">
+              {{ $t("viewTitles.tasks") }}
+            </div>
+            <div class="text-body-2 text-grey-darken-1"></div>
+          </div>
+        </v-col>
+
+        <v-divider />
+        <v-card-actions class="pa-3 bg-grey-lighten-5 tools-bar">
+          <v-btn
+            v-for="tool in tools"
+            :key="tool.name"
+            @click="tool.action()"
+            size="small"
+            color="primary"
+            variant="text"
+            prepend-icon="mdi-plus"
+            class="text-capitalize"
+          >
+            {{ tool.name }}
+          </v-btn>
+        </v-card-actions>
+    <!-- Título y búsqueda -->
+    <v-card-title class="d-flex flex-wrap align-center gap-4 pb-0">
+      <!-- Spacer (solo visible en md+) -->
+      <v-spacer class="d-none d-md-block"></v-spacer>
+      <!-- Campo de búsqueda global -->
+      <div class="flex-grow-1" style="max-width: 300px">
+        <v-text-field
+          v-model="search"
+          density="compact"
+          :label="$t('dataTable.search')"
+          prepend-inner-icon="mdi-magnify"
+          variant="solo-filled"
+          hide-details
+          single-line
+          flat
+        >
+        <template v-slot:append-inner>
+        <v-locale-provider>
+      <v-menu
+        v-model="dateMenu"
+        :close-on-content-click="false"
+        transition="scale-transition"
+        offset-y
+        min-width="auto"
+      >
+        <template v-slot:activator="{ props }">
+          <v-icon
+            v-bind="props"
+            color="#03626C"
+            style="cursor: pointer"
+            @click.stop="dateMenu = true"
+          >
+            mdi-calendar
+          </v-icon>
+        </template>
+        <v-date-picker
+          color="#03626C"
+          v-model="pickerDate"
+          @update:model-value="updateSearchDate"
+        ></v-date-picker>
+      </v-menu>
+      </v-locale-provider>
+    </template>
+        </v-text-field>
+      </div>
+    </v-card-title>
+
+    <!-- Tabla de datos -->
+    <v-data-table
+      :headers="headers"
+      :items="filteredTasks"
+      :search="search"
+      :items-per-page-text="$t('dataTable.itemsPerPageText')"
+      :no-data-text="$t('dataTable.noDataText')"
+      :loading-text="$t('dataTable.loadingText')"
+      :loading="loading"
+      :hide-default-header="true"
+      class="mt-1"
+      style="
+        max-height: 68vh;
+        overflow-y: auto;
+        background: transparent;
+        border: none !important;
+        outline: none !important;
+        box-shadow: none !important;
+      "
+    >
+      <!-- Header personalizado (simulado) -->
+      <template v-slot:top>
+        <v-card
+          :elevation="1"
+          :hover="false"
+          flat
+          class="mb-2 mx-1 rounded-lg"
+          style="
+            border: 1px solid #eceff1;
+            height: 40px;
+            min-height: 40px;
+            display: flex;
+            align-items: center;
+            transition: none !important;
+          "
+        >
+          <v-card-text
+            class="d-flex pa-2"
+            style="
+              width: 100%;
+              min-width: 0;
+              height: 100%;
+              padding: 0 16px !important;
+              display: flex;
+              align-items: center;
+            "
+          >
+            <!-- Fecha (7%) -->
+            <div style="width: 7%; min-width: 0" class="text-left">
+              {{ $t("taskForm.fields.date") }}
+            </div>
+
+            <!-- Nombre y descripción (40%) -->
+            <div style="width: 40%; min-width: 0" class="text-left">
+              {{ $t("taskForm.fields.title") }} / {{ $t("taskForm.fields.description") }}
+            </div>
+
+            <!-- Ubicación (15%) -->
+            <div style="width: 15%; min-width: 0" class="text-left">
+              {{ $t("taskForm.fields.participants") }}
+            </div>
+
+            <!-- Tipo (10%) -->
+            <div style="width: 10%; min-width: 0" class="text-center">
+              {{ $t("taskForm.fields.recurrence") }}
+            </div>
+
+            <!-- Prioridad (10%) -->
+            <div style="width: 10%; min-width: 0" class="text-center">
+              {{ $t("taskForm.fields.priority") }}
+            </div>
+
+            <!-- Estado (13%) -->
+            <div style="width: 13%; min-width: 0" class="text-center">
+              {{ $t("taskForm.fields.status") }}
+            </div>
+
+            <!-- Acciones (5%) -->
+            <div style="width: 5%; min-width: 0" class="d-flex justify-end">
+              {{ $t("settings.actions") }}
+            </div>
+          </v-card-text>
+        </v-card>
+      </template>
+
+      <!-- Fila personalizada -->
+      <template v-slot:item="slotProps">
+        <tr>
+          <td colspan="100%" style="padding: 0; border: none">
+            <v-card
+              class="mb-2 mx-1 rounded-lg"
+              elevation="1"
+              density="comfortable"
+              flat
+            >
+              <v-card-text
+                class="d-flex align-center pa-2"
+                style="width: 100%; min-width: 0"
+              >
+                <!-- Fecha con barra lateral de color - 7% -->
+                <div style="width: 7%; min-width: 0" class="d-flex align-center">
+                  <div
+                    class="icono-concavo d-flex flex-column justify-center justify-start mr-2"
+                    :class="`bg-${getTypeColor(slotProps.item.type)}`"
+                    style="min-height: 48px; min-width: 48px; border-radius: 8px;"
+                  >
+                    <div class="date-display text-center" style="font-size: 0.95em">
+                      {{ formatIntuitiveDate(slotProps.item.start_date) }}
+                    </div>
+                    <div
+                      v-if="slotProps.item.start_time"
+                      class="time-display text-center"
+                      style="font-size: 0.80em; margin-top: 2px"
+                    >
+                      {{ formatTime(slotProps.item.start_time) }}
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Nombre + Descripción - 40% -->
+                <div style="width: 40%; min-width: 0" class="d-flex flex-column">
+                  <div class="font-weight-bold text-body-2 text-truncate">
+                    {{ slotProps.item.title }}
+                  </div>
+                  <div class="text-caption text-grey-darken-1 text-truncate">
+                    {{ slotProps.item.description }}
+                  </div>
+                  <v-tooltip activator="parent" location="bottom" max-width="350px">
+                    <span style="white-space: normal; word-break: break-word">
+                      {{ slotProps.item.description }}
+                    </span>
+                  </v-tooltip>
+                </div>
+
+                <!-- Ubicación - 15% -->
+                <div style="width: 15%; min-width: 0" class="text-body-2 text-truncate">
+                <v-tooltip v-for="person in slotProps.item.people" :key="person.id" bottom :open-delay="300"
+                  :close-delay="100">
+                  <template v-slot:activator="{ props }">
+                    <v-avatar class="avatar-item hover-expand" size="32" v-bind="props">
+                      <v-img :src="`${$axios.defaults.baseURL}images/${
+                          person.image
+                        }`" alt="avatar" />
+                    </v-avatar>
+                  </template>
+                  <span>{{ person.name }}<br />{{ person.roleName }}</span>
+                </v-tooltip>
+              </div>
+
+                <!-- Tipo - 10% -->
+                <div style="width: 10%; min-width: 0; text-align: center">
+                  <!--<v-icon
+                    :color="getTypeColor(slotProps.item.type)"
+                    style="font-size: 10px; margin-right: 4px"
+                    icon="mdi-circle"
+                  ></v-icon>-->
+                  <span class="text-body-2 text-truncate">
+                    {{ slotProps.item.recurrence }}
+                  </span>
+                </div>
+
+                <!-- Prioridad - 10% -->
+                <div style="width: 10%; min-width: 0; text-align: center">
+                  <span class="text-body-2 text-truncate">
+                    {{ slotProps.item.namePriority }}
+                  </span>
+                </div>
+
+                <!-- Estado - 13% -->
+                <div style="width: 13%; min-width: 0; text-align: center">
+                  <v-dialog v-model="slotProps.item.statusDialog" width="400">
+                    <template v-slot:activator="{ props }">
+                      <v-btn
+                        v-bind="props"
+                        :color="'#' + (getStatusById(slotProps.item.status_id)?.colorStatus || 'grey')"
+                        variant="text"
+                        size="small"
+                        :prepend-icon="getStatusById(slotProps.item.status_id)?.iconStatus || 'mdi-help-circle'"
+                        class="text-body-2"
+                      >
+                        {{ getStatusById(slotProps.item.status_id)?.nameStatus || "Desconocido" }}
+                      </v-btn>
+                    </template>
+                    <v-card>
+                      <v-card-title class="pa-4 text-center">
+                        {{ $t("taskForm.updateStatus") }}
+                      </v-card-title>
+                      <v-divider></v-divider>
+                      <v-card-text class="pa-0">
+                        <v-row class="px-2 pb-1" dense>
+                          <v-col
+                            cols="12"
+                            v-for="(statusOption, i) in status"
+                            :key="i"
+                            class="py-1"
+                          >
+                            <v-card
+                              @click="changeTaskStatus(slotProps.item, statusOption.id)"
+                              :class="[
+                                'status-option mx-1',
+                                { 'current-status': slotProps.item.status_id === statusOption.id },
+                              ]"
+                              :style="
+                                slotProps.item.status_id === statusOption.id
+                                  ? {
+                                      'background-color': `#${statusOption.colorStatus}`,
+                                      'border-color': `#${statusOption.colorStatus}`,
+                                      color: 'white',
+                                    }
+                                  : {}
+                              "
+                              variant="outlined"
+                              :elevation="slotProps.item.status_id === statusOption.id ? 2 : 0"
+                              style="border-radius: 12px; cursor: pointer"
+                            >
+                              <v-card-item class="pa-2">
+                                <div class="d-flex align-center">
+                                  <v-icon
+                                    :color="
+                                      slotProps.item.status_id === statusOption.id
+                                        ? 'white'
+                                        : '#' + statusOption.colorStatus
+                                    "
+                                    :icon="statusOption.iconStatus"
+                                    size="large"
+                                    class="mr-3"
+                                  ></v-icon>
+                                  <v-card-title
+                                    :style="{
+                                      color:
+                                        slotProps.item.status_id === statusOption.id
+                                          ? 'white'
+                                          : 'inherit',
+                                      'font-size': '1rem',
+                                    }"
+                                  >
+                                    {{ statusOption.nameStatus }}
+                                  </v-card-title>
+                                  <v-spacer></v-spacer>
+                                  <v-icon
+                                    v-if="slotProps.item.status_id === statusOption.id"
+                                    color="white"
+                                    icon="mdi-check-circle"
+                                  ></v-icon>
+                                </div>
+                              </v-card-item>
+                            </v-card>
+                          </v-col>
+                        </v-row>
+                      </v-card-text>
+                      <v-divider></v-divider>
+                      <v-card-actions>
+                        <v-spacer></v-spacer>
+                        <v-btn
+                          variant="flat"
+                          color="#03626C"
+                          @click="slotProps.item.statusDialog = false"
+                        >
+                          {{ $t("buttons.cancel") }}
+                        </v-btn>
+                      </v-card-actions>
+                    </v-card>
+                  </v-dialog>
+                </div>
+
+                <!-- Acciones - 5% -->
+                <div
+                  class="d-flex gap-1"
+                  style="width: 5%; justify-content: flex-end; flex-wrap: nowrap"
+                >
+                  <v-btn
+                    size="35"
+                    icon
+                    variant="text"
+                    color="green-darken-2"
+                    @click="editItem(slotProps.item)"
+                    class="flex-shrink-0 mr-1"
+                    :title="$t('buttons.edit')"
+                  >
+                    <v-icon size="20">mdi-pencil</v-icon>
+                  </v-btn>
+
+                  <v-btn
+                    size="35"
+                    icon
+                    variant="text"
+                    color="red-darken-2"
+                    @click="deleteItem(slotProps.item)"
+                    class="flex-shrink-0"
+                    :title="$t('buttons.delete')"
+                  >
+                    <v-icon size="20">mdi-delete</v-icon>
+                  </v-btn>
+                </div>
+              </v-card-text>
+            </v-card>
+          </td>
+        </tr>
+      </template>
+    </v-data-table>
+   <!--<div class="d-flex flex-wrap align-center gap-2">
   <v-spacer></v-spacer>
   <v-text-field
     v-model="searchDate"
@@ -67,11 +431,9 @@
     <v-row class="no-gutters">
       <v-col cols="12" style="max-height: 60vh; min-height: 40vh; overflow-y: auto">
     <template v-if="filteredTasks.length > 0">
-      <!-- Tarjetas de reuniones -->
       <v-card v-for="(meeting, index) in filteredTasks" :key="index" class="mb-4 rounded-lg pa-2" density="comfortable" elevation="2"
         :class="{ 'smooth-hover': true }">
         <v-row class="align-center">
-          <!-- Barra lateral de color e info -->
           <v-col cols="1" class="d-flex justify-start">
            <div class="icono-concavo d-flex flex-column justify-center justify-start pa-0"
               :class="`bg-${getTypeColor(meeting.type)}`">
@@ -84,7 +446,6 @@
           </div>
           </v-col>
 
-          <!-- Contenido principal -->
           <v-col cols="6" class="d-flex align-center justify-start pa-0">
               <v-row align="center" class="gap-3">
                 <div>
@@ -92,11 +453,13 @@
                   <div class="text-caption d-flex align-center text-grey-darken-1">
                     {{ meeting.description }}
                   </div>
+                  <div class="text-caption d-flex align-center text-grey-darken-1">
+                    {{ meeting.geo_location }}
+                  </div>
                 </div>
             </v-row>
           </v-col>
-          <v-col cols="1" class="d-flex align-center justify-start">
-            <!-- Info usuario -->
+          <v-col cols="1" class="d-flex align-center justify-start pa-0">
             <v-row align="center" class="gap-3">
               <div class="avatar-row d-flex flex-wrap justify-end gap-1">
                 <v-tooltip v-for="person in meeting.people" :key="person.id" bottom :open-delay="300"
@@ -113,7 +476,7 @@
               </div>
             </v-row>
           </v-col>
-          <v-col cols="1" class="d-flex align-center justify-start pa-0">
+          <v-col cols="1" class="d-flex align-center">
             <div>
               <v-icon :color="getTypeColor(meeting.type)"
                 style="font-size: 10px; filter: drop-shadow(0 0 2px currentColor)" icon="mdi-circle"
@@ -128,7 +491,6 @@
           </v-col>
           <v-col cols="1" class="d-flex align-center justify-start pa-0">
             <v-row>
-              <!-- Fecha y estado -->
               <div class="text-end">
                 <v-dialog v-model="meeting.statusDialog" width="400">
                   <template v-slot:activator="{ props }">
@@ -199,7 +561,6 @@
             </v-row>
           </v-col>
 
-          <!-- Acciones -->
           <v-col cols="1" class="d-flex align-center ml-auto pe-4" style="margin-left: auto !important">
             <v-btn icon variant="text" color="green-darken-2" size="small" @click="editItem(meeting)">
               <v-icon>mdi-pencil</v-icon>
@@ -218,7 +579,7 @@
       </v-col>
     </template>
   </v-col>
-  </v-row>
+  </v-row>-->
   </v-card-text>
   </v-card>
   </v-container>
@@ -300,11 +661,11 @@
                       <v-list-subheader>{{ role.nameRol }}</v-list-subheader>
                       <v-list-item v-for="person in filteredPeople(role.id)" :key="`${role.id}-${person.id}`"
                         :value="person.id" active-class="text-green"
-                        :prepend-avatar="`${$axios.defaults.baseURL}images/${person.imagePerson}`" class="py-3">
+                        :prepend-avatar="`${this.$axios.defaults.baseURL}images/${person.imagePerson}`" class="py-3">
                         <!-- Contenido del ítem - Nueva estructura Vuetify 3 -->
                         <template v-slot:prepend>
                           <v-avatar>
-                            <v-img :src="`${$axios.defaults.baseURL}images/${person.imagePerson}`" />
+                            <v-img :src="`${this.$axios.defaults.baseURL}images/${person.imagePerson}`" />
                           </v-avatar>
                         </template>
 
@@ -348,7 +709,7 @@
                 <v-col cols="12" md="6">
                     <v-locale-provider>
                   <v-menu v-model="menu" :close-on-content-click="false" :nudge-right="40" transition="scale-transition"
-                    offset-y min-width="290px">
+                    offset-y min-width="290px" location="end">
                     <template v-slot:activator="{ props }">
                       <v-text-field v-bind="props" :modelValue="this.editedItem.start_date" variant="underlined"
                         :label="$t('taskForm.today')"></v-text-field>
@@ -377,18 +738,14 @@
                     :rules="[(v) => v > 0 || 'Debe ser un número válido']"></v-text-field>
                 </v-col>
                 <v-col cols="12" md="6">
-                  <v-text-field v-model="editedItem.geo_location" :label="$t('taskForm.fields.location')"
-                    variant="underlined"></v-text-field>
-                </v-col>
-                <v-col cols="12" md="6">
                   <v-select v-model="editedItem.recurrence" :items="recurrences" item-title="name" item-value="id"
-                    :label="$t('taskForm.fields.recurrence')" variant="underlined" density="compact"
+                    :label="$t('taskForm.fields.recurrence')" variant="underlined"
                     :rules="selectRules">
                   </v-select>
                 </v-col>
                 <v-col cols="12" md="6" v-if="editedIndex !== -1">
                   <v-autocomplete v-model="editedItem.status_id" :items="status" :label="$t('taskForm.fields.status')"
-                    item-title="nameStatus" item-value="id" variant="underlined" density="compact" :rules="selectRules">
+                    item-title="nameStatus" item-value="id" variant="underlined" :rules="selectRules">
                     <!-- Slot para el item seleccionado (en el input) -->
                     <template v-slot:selection="{ item }">
                       <div class="d-flex align-center">
@@ -419,26 +776,10 @@
                     </template>
                   </v-autocomplete>
                 </v-col>
-                <v-row v-if="editedItem.type === 'Evento'">
-                  <v-col cols="12" md="6">
-                   <v-locale-provider>
-                    <v-menu v-model="menu2" :close-on-content-click="false" offset-y min-width="auto">
-                      <template v-slot:activator="{ props }">
-                        <v-text-field v-bind="props" :model-value="this.editedItem.end_date"
-                          :label="$t('taskForm.fields.endDate')" variant="underlined" readonly></v-text-field>
-                      </template>
-                      <v-date-picker :modelValue="parseDateString(this.editedItem.end_date)" @update:model-value="updateDate1"
-                        format="yyyy-MM-dd" color="#03626C"
-                        :min="editedItem.start_date"></v-date-picker>
-                    </v-menu>
-                    </v-locale-provider>
-                  </v-col>
-
-                  <v-col cols="12" md="6">
-                    <v-select v-model="editedItem.end_time" :items="timeSlots" :label="$t('taskForm.fields.endTime')"
-                      variant="underlined"></v-select>
-                  </v-col>
-                </v-row>
+                <v-col cols="12" md="12">
+                  <v-text-field v-model="editedItem.geo_location" :label="$t('taskForm.fields.location')"
+                    variant="underlined"></v-text-field>
+                </v-col>
               </v-row>
 
               <div class="d-flex justify-space-between mt-8">
@@ -565,6 +906,27 @@
       </v-card>
     </v-form>
   </v-dialog>
+   <v-dialog
+    v-model="dialogSuggested"
+    max-width="900"
+    persistent
+    scrollable
+  >
+
+    <v-card>
+      <v-card-text class="pa-0">
+        <SuggestedTasksList
+          :suggestedTasks="suggestedTasks"
+          :priorities="this.priorities"
+          :baseUrl="this.$axios.defaults.baseURL"
+          :allPeople="this.people"
+          :allRoles="this.roles"
+          @confirm-suggested="handleTaskSelection($event)"
+          @cancel="handleSkip"
+        />
+      </v-card-text>
+    </v-card>
+  </v-dialog>
 </template>
 
 <script>
@@ -573,13 +935,17 @@ import LocalStorageService from "@/LocalStorageService";
 import { handleRequest } from "@/utils/api"; // Ruta al archivo
 import _ from "lodash";
 import { shallowRef } from "vue";
-
+import SuggestedTasksList from "@/components/suggested/SuggestedTasksList.vue";
+import { defineAsyncComponent, markRaw } from "vue";
 export default {
   components: {
+    SuggestedTasksList: markRaw(SuggestedTasksList),
   },
   data: () => ({
     selected: shallowRef([2]),
     selected2: null,
+    dialogSuggested: false,
+    suggestedTasks: null,
     step: 0,
     dateMenu: false,
       searchDate: '',
@@ -628,13 +994,18 @@ export default {
     timeSlots: [], // Inicialmente vacío
     selectedPerson: null, // Persona seleccionada en el formulario
     selectedRole: null, // Rol seleccionado en el formulario
-    headers: [
-      { title: "Título", value: "title", width: "20%" },
-      { title: "Fecha", value: "start_date", width: "5%" },
-      { title: "Descripción", value: "description", width: "30%" },
-      { title: "Personas", value: "people", width: "30%" },
-      { title: "Acciones", value: "actions", sortable: false, width: "20%" },
-    ],
+   search: "",
+       headers: [
+        { title: "Fecha", key: "start_date", sortable: false },
+        { title: "Título", key: "title", sortable: false },
+        { title: "Descripción", key: "description", sortable: false },
+        { title: "Ubicación", key: "geo_location", sortable: false },
+        { title: "Tipo", key: "typeName", sortable: false },
+        { title: "Recurrencia", key: "recurrence", sortable: false },
+        { title: "Prioridad", key: "namePriority", sortable: false },
+        { title: "Estado", key: "status_id", sortable: false },
+        { title: "Acciones", key: "actions", sortable: false },
+      ],
     headersPeople: [
       { title: "Nombre", value: "name", width: "60%" },
       { title: "Rol", value: "roleName", width: "20%" },
@@ -662,7 +1033,6 @@ export default {
       geo_location: "",
       people: [],
     },
-
     defaultItem: {
       id: "",
       title: "",
@@ -671,8 +1041,8 @@ export default {
       end_date: null,
       start_time: null,
       end_time: null,
-      type: "Tarea",
       module: "Tarea",
+      type: "Tarea",
       parent_id: "",
       status_id: "",
       category_id: "",
@@ -685,7 +1055,6 @@ export default {
       geo_location: "",
       people: [],
     },
-
     originalItem: {
       id: "",
       title: "",
@@ -707,7 +1076,6 @@ export default {
       geo_location: "",
       people: [],
     },
-
     tab: "tab-1",
     tabs: [
       { text: "General", value: "general", icon: "mdi-file-document-outline" },
@@ -715,20 +1083,17 @@ export default {
       { text: "Módulo", value: "modulo", icon: "mdi-view-dashboard-outline" },
       //{ text: 'Estado', value: 'estado', icon: 'mdi-progress-check' },
     ],
-
     menu: false,
     menu2: false,
     input: null,
     input2: null,
     editedIndex: -1,
-    search: "",
     nameRules: [
       (v) => !!v || "El campo es requerido",
       (v) => (v && v.length <= 50) || "El campo debe tener menos de 51 caracteres",
       (v) => (v && v.length >= 3) || "El campo debe tener al menos de 3 caracteres",
     ],
     selectRules: [(v) => !!v || "Seleccionar al menos un elemento"],
-
     sections: [
       { label: "General", value: "general", icon: "mdi-file-document-outline" },
       { label: "Personas", value: "personas", icon: "mdi-account-group-outline" },
@@ -765,10 +1130,6 @@ export default {
     module: "",
   }),
   computed: {
-    textoEditable() {
-      // Muestra texto confirmado + texto dictado en vivo
-      return this.texto + this.textoTemporal;
-    },
     formTitle() {
       return this.editedIndex === -1
         ? this.$t("taskForm.titles.new")
@@ -779,155 +1140,214 @@ export default {
         ? "Asignar Personas a la Tarea"
         : "Editar rol de la persona";
     },
+    imgedit() {
+      return this.imgMiniatura;
+    },
     dateFormatted() {
-      const date = this.input ? new Date(this.input) : new Date();
-      const day = date.getDate().toString().padStart(2, "0");
-      const month = (date.getMonth() + 1).toString().padStart(2, "0");
-      const year = date.getFullYear();
-      return `${year}-${month}-${day}`;
-    },
-    dateFormatted2() {
-      const date = this.input2 ? new Date(this.input2) : new Date();
-      const day = date.getDate().toString().padStart(2, "0");
-      const month = (date.getMonth() + 1).toString().padStart(2, "0");
-      const year = date.getFullYear();
-      return `${year}-${month}-${day}`;
-    },
+    const date = this.getLocalDate(this.editedItem.start_date || this.input);
+    const day = date.getDate().toString().padStart(2, "0");
+    const month = (date.getMonth() + 1).toString().padStart(2, "0");
+    const year = date.getFullYear();
+    return `${year}-${month}-${day}`;
+  },
+  dateFormatted2() {
+    const date = this.getLocalDate(this.editedItem.end_date || this.input2);
+    const day = date.getDate().toString().padStart(2, "0");
+    const month = (date.getMonth() + 1).toString().padStart(2, "0");
+    const year = date.getFullYear();
+    return `${year}-${month}-${day}`;
+  },
     getDate() {
       return this.input ? new Date(this.input) : new Date();
     },
     getDate2() {
       return this.input2 ? new Date(this.input2) : new Date();
     },
-  },
-  mounted() {
-    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-    if (!SpeechRecognition) {
-      this.compatible = false;
-      return;
+    paginatedTasks() {
+      if (!Array.isArray(this.tasks)) return []; // Verifica que tasks sea un array
+      const start = (this.currentPage - 1) * this.itemsPerPage;
+      const end = start + this.itemsPerPage;
+      return this.tasks.slice(start, end);
+    },
+    pageCount() {
+      return this.tasks?.length ? Math.ceil(this.tasks.length / this.itemsPerPage) : 0;
+    },
+    translatedSteps() {
+      // Fallback en caso de que la traducción no esté disponible
+      const defaultSteps = [
+        { title: "Información Básica", subtitle: "Ingresa el título y descripción" },
+        { title: "Asignación", subtitle: "Selecciona responsables y participantes" },
+        { title: "Programación", subtitle: "Elige fecha y hora de la tarea" },
+      ];
+      return this.$t("steps") || defaultSteps;
+    },
+    filteredTasks() {
+  return this.tasks.filter((task) => {
+    // Si no hay búsqueda, mostrar todo
+    if (!this.searchDate || this.searchDate.trim() === '') {
+      return true;
     }
-    this.recognition = new SpeechRecognition();
-    this.recognition.lang = "es-ES";
-    this.recognition.continuous = true;
-    this.recognition.interimResults = true;
-    this.recognition.onstart = () => {
-      this.escuchando = true;
-      this.cargando = false;
-    };
-    this.recognition.onresult = (event) => {
-      let interim = "";
-      let final = "";
-      for (let i = event.resultIndex; i < event.results.length; ++i) {
-        const transcript = event.results[i][0].transcript;
-        if (event.results[i].isFinal) {
-          final += transcript;
+    const search = this.searchDate.trim();
+    // Intentar interpretar como búsqueda de fecha parcial
+    if (this.isValidDatePartial(search)) {
+      // Formato esperado en task.start_date: 'YYYY-MM-DD'
+      const taskDate = task.start_date; // ej: '2025-04-15'
+      // Convertir búsqueda dd[-mm[-yyyy]] a patrón comparable con YYYY-MM-DD
+      const parts = search.split('-');
+      let pattern = '';
+      if (parts.length === 1) {
+        // Solo día: '15' → buscar cualquier fecha que termine en '-15' o '-15'
+        const day = parts[0].padStart(2, '0');
+        pattern = `-${day}`; // Coincide con cualquier mes que termine en -15
+      } else if (parts.length === 2) {
+        // Día y mes: '15-04' → convertir a '-04-15'
+        const day = parts[0].padStart(2, '0');
+        const month = parts[1].padStart(2, '0');
+        pattern = `-${month}-${day}`;
+      } else if (parts.length === 3) {
+        // Completo: '15-04-2025' → convertir a '2025-04-15'
+        const day = parts[0].padStart(2, '0');
+        const month = parts[1].padStart(2, '0');
+        const year = parts[2];
+        if (year.length === 4) {
+          pattern = `${year}-${month}-${day}`;
         } else {
-          interim += transcript;
+          pattern = search; // fallback
         }
       }
-      if (final) {
-        this.texto += (this.texto.endsWith(" ") ? "" : " ") + final + " ";
+      // Verificar si la fecha de la tarea incluye el patrón
+      if (pattern && taskDate.includes(pattern)) {
+        return true;
       }
-      this.textoTemporal = interim;
-    };
-    this.recognition.onerror = (event) => {
-      console.error("Error de reconocimiento:", event.error);
-      this.escuchando = false;
-      this.cargando = false;
-    };
-    this.recognition.onend = () => {
-      this.escuchando = false;
-      this.textoTemporal = "";
-    };
-    this.name = JSON.parse(LocalStorageService.getItem("name"));
-    this.user = JSON.parse(LocalStorageService.getItem("user"));
-    this.user_id = JSON.parse(LocalStorageService.getItem("user_id"));
-    this.home_id = JSON.parse(LocalStorageService.getItem("home_id"));
-    this.imageUrl = LocalStorageService.getItem("image").replace(/['"]+/g, "");
-    this.messages = [
-      {
-        text: `Hola 👋 ${this.name}, ¿En qué te puedo ayudar hoy?`,
-        from: "ai",
-      },
-    ];
-    this.showStatuses();
+    }
+    // Búsqueda de texto general en otros campos (opcional)
+    const matchesText = Object.values(task).some(val =>
+      String(val).toLowerCase().includes(search.toLowerCase())
+    );
+    return matchesText;
+  });
+},
+  },
+  created() {
     this.tools = [
       {
-        name: "Crear tarea",
-        action: () =>
-          this.messages.push({
-            text: "📝 ¿Cuál es la tarea que deseas crear?",
-            from: "bot",
-          }),
-      },
-      {
-        name: "Agregar recordatorio",
-        action: () =>
-          this.messages.push({
-            text: "⏰ ¿Qué quieres que te recuerde y cuándo?",
-            from: "bot",
-          }),
-      },
-      {
-        name: "Consultar clima",
-        action: () =>
-          this.messages.push({
-            text: "🌦️ Por favor indícame tu ciudad para consultar el clima.",
-            from: "bot",
-          }),
-      },
-      {
-        name: "Resumen del día",
-        action: () =>
-          this.messages.push({
-            text: "📋 Hoy tienes 3 tareas pendientes y 1 recordatorio programado.",
-            from: "bot",
-          }),
+        name: this.$t("taskForm.titles.new"),
+        action: () => this.showAdd(),
       },
     ];
   },
+  mounted() {
+    this.home_id = JSON.parse(LocalStorageService.getItem("home_id"));
+    this.person_id = JSON.parse(LocalStorageService.getItem("person_id"));
+    this.initialize();
+    this.timeSlots = this.generateTimeSlots(); // Genera los horarios al montar el componente
+  },
   methods: {
-    closeAllDialogs(sourceComponent) {
-      console.log(`Cerrando todo desde: ${sourceComponent}`);
-      if (sourceComponent === "ChatTarea") {
-        this.$router.push("/task");
-      }
-      if (sourceComponent === "ChatMeta") {
-        this.$router.push("/goals");
-      }
-      this.dialogChatTask = false;
-      this.dialogChatFinance = false;
-      this.dialogChatBudget = false;
-      this.dialogChatWarehouse = false;
-      this.dialogChatProduct = false;
-      this.dialogChatDesire = false;
-      this.texto = "";
-      this.textoTemporal = "";
-      this.currentTask = null;
-      this.currentFinance = null;
-      this.currentBudget = null;
-      this.currentWarehouse = null;
-      this.currentProduct = null;
-      this.currentDesire = null;
+    async handleSkip(){
+      this.dialogSuggested = false;
     },
-    closeDialgChat() {
-      this.dialogChatTask = false;
-      this.dialogChatFinance = false;
-      this.dialogChatBudget = false;
-      this.dialogChatWarehouse = false;
-      this.dialogChatProduct = false;
-      this.dialogChatDesire = false;
-      this.texto = "";
-      this.textoTemporal = "";
-      this.currentTask = null;
-      this.currentFinance = null;
-      this.currentBudget = null;
-      this.currentWarehouse = null;
-      this.currentProduct = null;
-      this.currentDesire = null;
-      this.initialize();
+    async handleTaskSelection(selectedTasks){
+      try {
+        // Preparar datos para enviar al API
+        const tasksToCreate = selectedTasks.map((task) => {
+          const { selected, ...cleanTask } = task;
+          return {
+            ...cleanTask,
+            home_id: Number(this.home_id),
+            people: task.people.map((person) => ({
+              home_id: Number(this.home_id),
+              person_id: Number(person.person_id),
+              role_id: Number(person.role_id),
+            })),
+          };
+        });
+        // Enviar al endpoint de creación múltiple
+        const result = await handleRequest({
+          endpoint: "task-bulk",
+          method: "POST",
+          data: { tasks: tasksToCreate },
+        });
+        if (result.success) {
+          this.showAlert("success", result.message, 3000);
+          this.initialize();
+        } else {
+          this.showAlert("warning", result.message, 3000);
+        }
+      } catch (error) {
+        this.showAlert(
+              "error",
+              "Ocurrió un error inesperado al procesar la solicitud.",
+              3000
+            );
+      } finally {
+        this.dialogSuggested = false;
+      }
     },
+     getLocalDate(dateValue) {
+    if (!dateValue) return new Date();
+    
+    // Si es string en formato YYYY-MM-DD
+    if (typeof dateValue === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(dateValue)) {
+      const [year, month, day] = dateValue.split('-');
+      return new Date(year, month - 1, day);
+    }
+    
+    // Si ya es un objeto Date
+    if (dateValue instanceof Date) return dateValue;
+    
+    // Para otros casos (ISO strings, timestamps, etc.)
+    const date = new Date(dateValue);
+    return new Date(date.getFullYear(), date.getMonth(), date.getDate());
+  },
+    isValidDatePartial(dateStr) {
+  const parts = dateStr.split('-');
+  if (parts.length > 3) return false;
+  const day = parts[0];
+  const month = parts[1];
+  const year = parts[2];
+  // Validar día (1-31)
+  if (!/^\d{1,2}$/.test(day) || parseInt(day) < 1 || parseInt(day) > 31) {
+    return false;
+  }
+  // Si hay mes, validar (1-12)
+  if (month && (!/^\d{1,2}$/.test(month) || parseInt(month) < 1 || parseInt(month) > 12)) {
+    return false;
+  }
+  // Si hay año, validar longitud (4 dígitos)
+  if (year && !/^\d{4}$/.test(year)) {
+    return false;
+  }
+  return true;
+},
+   isValidDate(dateStr) {
+    const rule = this.dateRules[0]; // Usamos la misma regla de validación
+    const result = rule(dateStr);
+    return result === true;
+  },
+  
+  // Resto de tus métodos...
+  handleManualDateInput(value) {
+    if (value && this.isValidDate(value)) {
+      const [day, month, year] = value.split('-');
+      this.pickerDate = new Date(year, month - 1, day);
+    } else {
+      this.pickerDate = null;
+    }
+  },
+  
+  updateSearchDate(value) {
+    if (value) {
+      const day = String(value.getDate()).padStart(2, '0');
+      const month = String(value.getMonth() + 1).padStart(2, '0');
+      const year = value.getFullYear();
+      this.search = `${year}-${month}-${day}`;
+    } else {
+      this.search = '';
+    }
+    this.dateMenu = false;
+  },
     formatIntuitiveDate(dateString) {
+      console.log("formatIntuitiveDate", dateString);
       if (!dateString) return "Sin fecha";
       // 1. Parsear la fecha de entrada (formato YYYY-MM-DD)
       const [year, month, day] = dateString.split("-");
@@ -955,473 +1375,29 @@ export default {
         default:
           return inputDate
             .toLocaleDateString("es-ES", {
-          weekday: "short",
-          day: "numeric",
-          month: "short",
-          year: "numeric", // <-- Añadido: muestra el año
-        })
-        .replace(/\./g, "");
+              weekday: "short",
+              day: "numeric",
+              month: "short",
+            })
+            .replace(/\./g, "");
       }
+    },
+    getTypeColor(type) {
+      const colorMap = {
+        Tarea: "warning",
+        Meta: "purple",
+        // Agrega más tipos si es necesario
+      };
+      return colorMap[type] || "grey-lighten-1"; // Color por defecto
     },
     formatTime(timeString) {
       if (!timeString) return "";
       const [hours, minutes] = timeString.split(":");
       return `${hours}:${minutes}`;
     },
-    toggleDictado() {
-      if (!this.recognition) return;
-      if (this.escuchando) {
-        this.recognition.stop();
-      } else {
-        this.cargando = true;
-        this.recognition.start();
-      }
-    },
-    async sendMessage() {
-      if (this.texto.trim() === "") return;
-      // Guardar el texto temporal
-      this.textoTemporal = this.texto;
-      console.log("Texto temporal:", this.textoTemporal);
-      // Abrir el diálogo con el chat
-      const tempMessage = this.texto.trim();
-      this.texto = "";
-      // Agregar mensaje del usuario al chat
-      this.messages.push({
-        from: "user",
-        text: tempMessage,
-        timestamp: new Date().toLocaleTimeString(),
-      });
-      //this.dialogChatTask = true;
-      this.isTyping = true;
-      try {
-        // Llamar a la IA
-        const response = await handleRequest({
-          endpoint: "ask-ai-task",
-          method: "POST",
-          data: {
-            question: tempMessage,
-            issue:
-              "Eres un asistente para gestión del hogar: tareas, metas, finanzas, salud, compras y presupuestos.",
-            home_id: this.home_id,
-          },
-        });
-        this.isTyping = false;
-        const {
-          intentDetected,
-          intent,
-          task,
-          answer,
-          finances,
-          budget,
-          warehouse,
-          product,
-          desire,
-        } = response.data;
-        if (intentDetected && intent) {
-          // Preparar datos comunes
-          this.data = { home_id: this.home_id };
-          // Si hay datos de tarea, guardarlos
-          /*if (task) {
-        this.taskParameters = {
-          ...this.taskParameters,
-          ...task,
-        };
-      }*/
-          // Cargar datos requeridos si es necesario
-          //await this.loadRequiredData();
-          // Determinar qué chat mostrar según la intención
-          switch (intent) {
-            case "Tarea":
-              this.currentTask = null;
-              this.$nextTick(() => {
-                const taskData =
-                  typeof response.data.task === "string"
-                    ? JSON.parse(response.data.task)
-                    : response.data.task;
-                this.currentTask = _.cloneDeep(taskData);
-                this.dialogChatTask = true;
-                this.scrollToBottom();
-              });
-              break;
-            case "Meta":
-              this.currentTask = null;
-              this.$nextTick(() => {
-                const taskData =
-                  typeof response.data.task === "string"
-                    ? JSON.parse(response.data.task)
-                    : response.data.task;
-                this.currentTask = _.cloneDeep(taskData);
-                this.dialogChatTask = true;
-                this.scrollToBottom();
-              });
-              break;
-            case "Gasto":
-              this.currentFinance = null;
-              this.$nextTick(() => {
-                const financeData =
-                  typeof finances === "string" ? JSON.parse(finances) : finances;
-                if (financeData.spent <= 0) {
-                  this.messages.push({
-                    from: "ai",
-                    text:
-                      /*answer ||*/
-                      "Detecte que desea registrar un gasto pero no especificaste el monto, podrías ser mas especifico",
-                    timestamp: new Date().toLocaleTimeString(),
-                  });
-                } else {
-                  this.currentFinance = _.cloneDeep(financeData);
-                  this.currentIntentFinance = response.data.intent;
-                  this.dialogChatFinance = true;
-                  this.scrollToBottom();
-                }
-              });
-              break;
-            case "Ingreso":
-              this.currentFinance = null;
-              this.$nextTick(() => {
-                const financeData =
-                  typeof finances === "string" ? JSON.parse(finances) : finances;
-                if (financeData.income <= 0) {
-                  this.messages.push({
-                    from: "ai",
-                    text:
-                      /*answer ||*/
-                      "Detecte que desea registrar un ingreso pero no especificaste el monto, podrías ser mas especifico",
-                    timestamp: new Date().toLocaleTimeString(),
-                  });
-                } else {
-                  this.currentFinance = _.cloneDeep(financeData);
-                  this.currentIntentFinance = response.data.intent;
-                  this.dialogChatFinance = true;
-                  this.scrollToBottom();
-                }
-              });
-              break;
-            case "Presupuesto":
-              this.currentBudget = null;
-              this.$nextTick(() => {
-                const budgetData =
-                  typeof budget === "string" ? JSON.parse(budget) : budget;
-                if (budgetData.amount <= 0) {
-                  this.messages.push({
-                    from: "ai",
-                    text:
-                      /*answer ||*/
-                      "Detecte que desea registrar un presupuesto pero no especificaste el monto, podrías ser mas especifico",
-                    timestamp: new Date().toLocaleTimeString(),
-                  });
-                } else {
-                  this.currentBudget = _.cloneDeep(budgetData);
-                  this.dialogChatBudget = true;
-                  this.scrollToBottom();
-                }
-              });
-              break;
-            case "Warehouse":
-              this.currentWarehouse = null;
-              this.$nextTick(() => {
-                const warehouseData =
-                  typeof warehouse === "string" ? JSON.parse(warehouse) : warehouse;
-                this.currentWarehouse = _.cloneDeep(warehouseData);
-                this.dialogChatWarehouse = true;
-                this.scrollToBottom();
-              });
-              break;
-            case "Producto":
-              this.currentProduct = null;
-              this.$nextTick(() => {
-                const productData =
-                  typeof product === "string" ? JSON.parse(product) : product;
-                if (
-                  isNaN(productData.quantity) ||
-                  isNaN(productData.unit_price) ||
-                  productData.quantity <= 0 ||
-                  productData.unit_price <= 0
-                ) {
-                  this.messages.push({
-                    from: "ai",
-                    text:
-                      "⚠️ Parece que aún no has especificado bien la **cantidad** o el **precio unitario** del producto. Ambos deben ser valores numéricos mayores a cero. ¿Podrías revisarlo y corregirlo, por favor?",
-                    timestamp: new Date().toLocaleTimeString(),
-                  });
-                  return; // Detener el flujo hasta que se corrijan
-                } else {
-                  this.currentProduct = _.cloneDeep(productData);
-                  this.dialogChatProduct = true;
-                  this.scrollToBottom();
-                }
-              });
-              break;
-            case "Deseo":
-              this.currentDesire = null;
-              this.$nextTick(() => {
-                const desireData =
-                  typeof desire === "string" ? JSON.parse(desire) : desire;
-                this.currentDesire = _.cloneDeep(desireData);
-                this.dialogChatDesire = true;
-                this.scrollToBottom();
-              });
-              break;
-            case "salud":
-              this.currentHealthData = _.cloneDeep(task || {});
-              this.dialogChatHealth = true;
-              this.scrollToBottom();
-              break;
-            case "compra":
-              this.currentShoppingData = _.cloneDeep(task || {});
-              this.dialogChatShopping = true;
-              this.scrollToBottom();
-              break;
-            default:
-              // Respuesta por defecto si no se reconoce la intención
-              this.messages.push({
-                from: "ai",
-                text:
-                  answer ||
-                  "No entendí muy bien tu solicitud. ¿Podrías ser más específico?",
-                timestamp: new Date().toLocaleTimeString(),
-              });
-          }
-        } else {
-          this.isTyping = false;
-          // No se detectó intención, solo mostrar respuesta normal
-          this.messages.push({
-            from: "ai",
-            text: answer || "No tengo claro qué necesitas. ¿Puedes ser más específico?",
-            timestamp: new Date().toLocaleTimeString(),
-          });
-        }
-      } catch (error) {
-        this.isTyping = false;
-        console.error("Error al procesar el mensaje:", error);
-        this.messages.push({
-          from: "ai",
-          text: "Ocurrió un error al procesar tu solicitud. Inténtalo nuevamente.",
-          timestamp: new Date().toLocaleTimeString(),
-        });
-      }
-    },
-    scrollToBottom() {
-      this.messages = [
-        {
-          text: `Hola 👋 ${
-            this.name ? this.name + ", " : ""
-          }¿En qué te puedo ayudar hoy?`,
-          from: "ai",
-          timestamp: new Date().toLocaleTimeString(),
-        },
-      ];
-      // Limpiar cualquier otro estado relacionado con el chat
-      this.texto = "";
-      this.textoTemporal = "";
-      this.$nextTick(() => {
-        const chatContainer = this.$refs.chatBody;
-        if (chatContainer) {
-          chatContainer.scrollTop = chatContainer.scrollHeight;
-        }
-      });
-    },
-    close() {
-      this.step = 0;
-      this.dialog = false;
-      this.$nextTick(() => {
-        this.editedItem = Object.assign({}, this.defaultItem);
-        this.originalItem = Object.assign({}, this.defaultItem);
-      });
-      this.editedIndex = -1;
-    },
-    async save() {
-      console.log("Guardando tarea...:", this.editedItem);
-      this.loading = true;
-      this.valid = false;
-      const fieldsToUpdate = [
-        "title",
-        "description",
-        "start_date",
-        "end_date",
-        "parent_id",
-        "status_id",
-        "category_id",
-        "home_id",
-        "recurrence",
-        "comments",
-        "estimated_time",
-        "attachments",
-        "geo_location",
-        "priority_id",
-        "people",
-        "start_time",
-        "end_time",
-        "type",
-      ];
-      let updatedFields = Object.keys(this.editedItem)
-        .filter(
-          (key) =>
-            fieldsToUpdate.includes(key) &&
-            this.editedItem[key] !== this.originalItem[key]
-        )
-        .reduce((obj, key) => {
-          if (key === "people") {
-            // Transformar el campo `people`
-            obj[key] = this.editedItem.people.map((person) => ({
-              home_id: Number(this.editedItem.home_id), // Asegurar que sea un número
-              person_id: Number(person.id), // Asegurar que sea un número
-              role_id: Number(person.roleId),
-              roleName: person.roleName,
-            }));
-          } else {
-            obj[key] = this.editedItem[key];
-          }
-          return obj;
-        }, {});
-      // Agregar campos adicionales si es necesario
-      if (Object.keys(updatedFields).length > 0) {
-        updatedFields.home_id = this.editedItem.home_id;
-        updatedFields.start_date = this.editedItem.start_date
-          ? this.editedItem.start_date
-          : `${new Date().getFullYear()}-${String(new Date().getMonth() + 1).padStart(
-              2,
-              "0"
-            )}-${String(new Date().getDate()).padStart(2, "0")}`;
-        updatedFields.estimated_time = this.editedItem.estimated_time
-          ? this.editedItem.estimated_time
-          : 0;
-        updatedFields.type = this.editedItem.type ? this.editedItem.type : "Tarea";
-        if (this.file) {
-          updatedFields.attachments = this.editedItem.attachments;
-        }
-        // Crear el objeto FormData
-        const formData = new FormData();
-        for (let key in updatedFields) {
-          if (key === "people") {
-            // Agregar cada elemento del array `people` al FormData
-            updatedFields[key].forEach((person, index) => {
-              for (const [personKey, value] of Object.entries(person)) {
-                formData.append(`people[${index}][${personKey}]`, value);
-              }
-            });
-          } else {
-            formData.append(key, updatedFields[key]);
-          }
-        }
-        try {
-          const result = await handleRequest({
-            endpoint: "task",
-            method: "POST",
-            data: formData,
-          });
-          // Manejo de la respuesta según el resultado
-          if (result.success) {
-            this.loading = false;
-            this.showAlert("success", result.message, 3000);
-            this.initialize();
-          } else {
-            this.loading = false;
-            this.showAlert("warning", result.message, 3000);
-          }
-        } catch (error) {
-          this.loading = false;
-          // Este bloque captura errores inesperados fuera del manejo estándar
-          this.showAlert(
-            "error",
-            "Ocurrió un error inesperado al procesar la solicitud.",
-            3000
-          );
-        }
-      } else {
-        this.loading = false;
-        this.showAlert("success", "Debe completar los datos de la tarea.", 3000);
-      }
-      this.close();
-    },
-    getDynamicValue(toPath) {
-      console.log("path");
-      console.log(toPath);
-      // Aquí implementa tu lógica para obtener el valor dinámico
-      // basado en el 'to' de la tarjeta
-      // Ejemplo simple:
-      if (toPath === "/task") return this.taskCount;
-      if (toPath === "/goals") return this.goalCount;
-      if (toPath === "/finance") return this.financeCount;
-      //if (toPath === '/saludMenu') return '12'
-      if (toPath === "/desire") return this.whishCount;
-      if (toPath === "/personwarehouse") return this.personWarehousesCount;
-      if (toPath === "/homes") return this.homeCount;
-      if (toPath === "/file") return this.fileCount;
-      if (toPath === "/product") return this.productCount;
-      if (toPath === "/suggestions") return this.suggestionCount;
-      // Añade más casos según tus necesidades
-      return "0";
-      // O puedes llamar a una API o consultar Vuex/store
-      // return this.$store.getters.getValueByPath(toPath)
-    },
-    toggleExpanded(key) {
-      this.expandedStates[key] = !this.expandedStates[key];
-    },
-    toggleStatus(index) {
-      const task = this.tasks[index];
-      task.status = task.status === "pendiente" ? "hecha" : "pendiente";
-    },
-    selectCategory(category) {
-      if (this.selectedCategory === category.name) {
-        // Si ya está seleccionada, la deseleccionamos
-        this.selectedCategory = null;
-      } else {
-        // Seleccionamos la nueva categoría
-        this.selectedCategory = category.name;
-        // Aquí puedes cargar los datos específicos para esta categoría
-        this.loadCategoryContent(category.name);
-      }
-    },
-    /*getStatusColor(status) {
-    const colorMap = {
-      'pending': 'orange', // Más vivo que orange-lighten-3
-      'in-progress': 'blue', // Más vivo que blue-lighten-3
-      'completed': 'green', // Más vivo que green-lighten-3
-      'cancelled': 'red' // Más vivo que red-lighten-1
-    };
-    return colorMap[status] || 'grey';
-    },
-    getStatusIcon(status) {
-      const iconMap = {
-        'pending': 'mdi-clock-outline',
-        'in-progress': 'mdi-progress-wrench',
-        'completed': 'mdi-check-bold',
-        'cancelled': 'mdi-close-circle-outline'
-      };
-      return iconMap[status] || 'mdi-help-circle';
-    },
-  getStatusText(status) {
-    const textMap = {
-      'pending': 'Pendiente',
-      'in-progress': 'En progreso',
-      'completed': 'Completado',
-      'cancelled': 'Cancelado'
-    };
-    return textMap[status] || 'Desconocido';
-  },
-  isCurrentStatus(task, statusValue) {
-    return task.status === statusValue;
-  },*/
-    getTypeColor(type) {
-      const colorMap = {
-        // Tipos principales
-        Tarea: "warning",
-        Meta: "purple",
-        Logros: "primary",
-        Deseos: "secondary",
-        // Segunda fila
-        Finanzas: "success",
-        Salud: "pink",
-        Nutrición: "deep-orange",
-        Mascotas: "blue-grey",
-        // Tercera fila
-        Hogar: "brown",
-        Almacenes: "error",
-        Archivos: "indigo",
-        Sugerencias: "amber",
-      };
-      return colorMap[type] || "grey-lighten-1"; // Color por defecto
+    formatDate(dateString) {
+      const [year, month, day] = dateString.split("-");
+      return `${day}-${month}-${year}`;
     },
     getStatusById(statusId) {
       return this.status.find((status) => status.id === statusId);
@@ -1462,114 +1438,15 @@ export default {
       task.statusDialog = false;
       // Aquí probablemente quieras hacer una llamada API para actualizar el estado en el backend
     },
-    /*changeTaskStatus(task, newStatus) {
-      task.status = newStatus;
-      task.statusDialog = false;
-    },*/
-    async showStatuses() {
-      this.data = {};
-      this.data.type = "Task";
-      this.data.home_id = this.home_id;
-      try {
-        const result = await handleRequest({
-          endpoint: "status-by-type",
-          method: "POST",
-          data: this.data,
-        });
-        if (result.success) {
-          // Si la solicitud es exitosa, asignamos las sucursales
-          this.status = result.data?.status || [];
-          this.taskCount = result.data?.task || 0;
-          this.goalCount = result.data?.goals || 0;
-          this.whishCount = result.data?.whish || 0;
-          this.financeCount = result.data?.finance || 0;
-          this.personWarehousesCount = result.data?.personWarehouses || 0;
-          this.homeCount = result.data?.home || 0;
-          this.fileCount = result.data?.file || 0;
-          this.suggestionCount = result.data.suggestion || 0;
-          this.productCount = result.data?.product || 0;
-        } else {
-          // Si no hay datos, asignamos un array vacío
-          this.status = [];
-        }
-      } catch (error) {
-        // Captura de errores no controlados
-        this.showAlert(
-          "error",
-          "Ocurrió un error inesperado al procesar la solicitud.",
-          3000
-        );
-      } finally {
-        this.initialize();
-      }
+    // Filtra las personas para mostrar en cada card según el rol
+    filteredPeople(roleId) {
+      return this.people.filter((person) => {
+        const assignedPerson = this.editedItem.people.find((p) => p.id === person.id);
+        return !assignedPerson || assignedPerson.roleId === roleId;
+      });
     },
-    async initialize() {
-      this.data = {};
-      this.data.home_id = this.home_id;
-      const today = new Date();
-      const year = today.getFullYear();
-      const month = String(today.getMonth() + 1).padStart(2, "0"); // Meses son 0-11
-      const day = String(today.getDate()).padStart(2, "0");
-      const formattedDate = `${year}-${month}-${day}`; // Formato "YYYY-MM-DD"
-      this.data.start_date = formattedDate;
-      try {
-        this.loading = true;
-        const result = await handleRequest({
-          endpoint: "task-date-web",
-          method: "POST",
-          data: this.data,
-        });
-        if (result.success) {
-          // Si la solicitud es exitosa, asignamos las sucursales
-          // Filtrar tareas que coincidan con el día actual
-          this.tasks = (result.data?.tasks || []).filter((task) => task.type === "Tarea");
-          this.loading_task=false;
-          
-        } else {
-          // Si no hay datos, asignamos un array vacío
-          this.tasks = [];
-             this.loading_task=false;
-          //this.showAlert('success', result.message || 'No hay tareas disponibles.', 3000);
-        }
-      } catch (error) {
-        this.loading = false;
-        // Captura de errores no controlados
-        this.showAlert(
-          "error",
-          "Ocurrió un error inesperado al cargar las tareas.",
-          3000
-        );
-      } finally {
-        this.loading = false;
-      }
-    },
-    showAlert(sb_type, sb_message, sb_timeout) {
-      this.sb_type = sb_type;
-      if (sb_type == "success") {
-        this.sb_title = "Éxito";
-        this.sb_icon = "mdi-check-circle";
-      }
-      if (sb_type == "error") {
-        this.sb_title = "Error";
-        this.sb_icon = "mdi-check-circle";
-      }
-      if (sb_type == "warning") {
-        this.sb_title = "Advertencia";
-        this.sb_icon = "mdi-alert-circle";
-      }
-      this.sb_message = sb_message;
-      this.sb_timeout = sb_timeout;
-      this.snackbar = true;
-    },
-    //tarea
-    nextStep() {
-      if (this.step < this.steps.length - 1) {
-        this.step++;
-      } else {
-        this.dialog = false;
-        this.step = 0;
-        this.save();
-      }
+    isPersonSelected(personId, roleId) {
+      return this.editedItem.people.some((p) => p.id === personId && p.roleId === roleId);
     },
     getRoleIcon(roleId) {
       const role = this.roles.find((r) => r.id === roleId);
@@ -1608,25 +1485,151 @@ export default {
       });
       console.log("Updated people:", this.editedItem.people);
     },
-    updateDate(val) {
-      this.input = val;
-      this.editedItem.start_date = this.dateFormatted;
-      this.menu = false;
-    },
-    updateDate1(val) {
-      this.input2 = val;
-      this.editedItem.end_date = this.dateFormatted2;
-      this.menu2 = false;
-    },
-    filteredPeople(roleId) {
-      return this.people.filter((person) => {
-        const assignedPerson = this.editedItem.people.find((p) => p.id === person.id);
-        return !assignedPerson || assignedPerson.roleId === roleId;
+    initializeSelections() {
+      // Verificar si person_id no está en editedItem.people
+      if (
+        this.person_id &&
+        !this.editedItem.people.some((p) => p.id === this.person_id)
+      ) {
+        // Buscar el rol "Responsable" en los roles disponibles
+        const responsableRole = this.roles.find((role) => role.name === "Responsable");
+        // Buscar la persona correspondiente al person_id (asumiendo que tienes acceso a las personas)
+        const person = this.people.find((p) => p.id === this.person_id); // Asegúrate de tener this.people disponible
+        if (responsableRole && person) {
+          // Agregar la persona con el rol de Responsable y toda la estructura requerida
+          this.editedItem.people.push({
+            id: person.id,
+            name: person.namePerson,
+            image: person.imagePerson,
+            roleId: responsableRole.id,
+            roleName: responsableRole.nameRol,
+          });
+        }
+      }
+      // Inicializar selectedItems para cada rol
+      this.roles.forEach((role) => {
+        this.selectedItems[role.id] = this.editedItem.people
+          .filter((p) => p.roleId === role.id)
+          .map((p) => p.id);
       });
     },
-    isPersonSelected(personId, roleId) {
-      console.log("isPersonSelected", personId, roleId);
-      return this.editedItem.people.some((p) => p.id === personId && p.roleId === roleId);
+    nextStep() {
+      if (this.step < this.steps.length - 1) {
+        this.step++;
+      } else {
+        this.dialog = false;
+        this.step = 0;
+        this.save();
+      }
+    },
+    /*isPersonSelected(personId) {
+      return this.editedItem.people.some((p) => p.person_id === personId);
+    },*/
+    togglePersonSelection(personId) {
+      const index = this.editedItem.people.findIndex((p) => p.person_id === personId);
+      if (index === -1) {
+        // Añadir persona seleccionada
+        this.editedItem.people.push({
+          person_id: personId,
+          home_id: this.home_id,
+        });
+      } else {
+        // No permitir deseleccionar al usuario actual
+        if (personId !== this.person_id) {
+          this.editedItem.people.splice(index, 1);
+        }
+      }
+      console.log("this.editedItem.people", this.editedItem.people);
+      this.$emit("update:selected-people", this.editedItem.people);
+    },
+    async addPeople(item) {
+      this.data = {};
+      this.data.home_id = this.home_id;
+      this.task_id = item.id;
+      try {
+        const result = await handleRequest({
+          endpoint: "category-status-priority-apk",
+          method: "POST",
+          data: this.data,
+        });
+        if (result.success) {
+          // Si la solicitud es exitosa, asignamos las sucursales
+          this.categories = result.data?.taskcategories || [];
+          this.status = result.data?.taskstatus || [];
+          this.priorities = result.data?.taskpriorities || [];
+          this.recurrences = result.data?.taskrecurrences || [];
+          this.people = result.data?.taskpeople || [];
+          this.roles = result.data?.taskroles || [];
+        } else {
+          // Si no hay datos, asignamos un array vacío
+          this.categories = [];
+          this.status = [];
+          this.priorities = [];
+          this.recurrences = [];
+          this.people = [];
+          this.roles = [];
+          this.showAlert("info", result.message || "No hay datos disponibles.", 3000);
+        }
+      } catch (error) {
+        this.showAlert("error", "Ocurrió un error inesperado al cargar los datos.", 3000);
+      } finally {
+        // Asignar a originalItem y editedItem solo las personas seleccionadas
+        this.originalItem = _.cloneDeep(item);
+        this.editedItem = _.cloneDeep(item);
+        this.people = this.people.filter((person) => {
+          // Verificar si la persona no está en editedItem.people
+          return !this.editedItem.people.some(
+            (editedPerson) => editedPerson.id === person.id
+          );
+        });
+        this.dialogAddPeople = true;
+      }
+    },
+    closeAddPeople() {
+      this.person_id = "";
+      this.role_id = "";
+      this.task_id = "";
+      this.dialogAddPeople = false;
+    },
+    async saveAddPeople() {
+      this.valid = false;
+      this.data = {};
+      this.data.person_id = this.person_id;
+      this.data.role_id = this.role_id;
+      this.data.home_id = this.home_id;
+      this.data.task_id = this.task_id;
+      const selectedRole = this.roles.find((role) => role.id === this.role_id);
+      // Agregar el nombre del rol a this.data
+      if (selectedRole) {
+        this.data.roleName = selectedRole.nameRol;
+      } else {
+        this.data.roleName = "Rol no encontrado"; // O algún valor por defecto
+      }
+      try {
+        const result = await handleRequest({
+          endpoint: "home-person-task",
+          method: "POST",
+          data: this.data,
+        });
+        // Manejo de la respuesta según el resultado
+        if (result.success) {
+          this.showAlert("success", result.message, 3000);
+          this.initialize();
+        } else {
+          this.showAlert("warning", result.message, 3000);
+          this.closeAddPeople();
+        }
+      } catch (error) {
+        // Este bloque captura errores inesperados fuera del manejo estándar
+        this.showAlert(
+          "error",
+          "Ocurrió un error inesperado al procesar la solicitud.",
+          3000
+        );
+        this.closeAddPeople();
+      } finally {
+        this.closeAddPeople();
+      }
     },
     generateTimeSlots() {
       const now = new Date();
@@ -1661,32 +1664,606 @@ export default {
       this.editedItem.start_time = formattedNearestTime;
       return orderedSlots;
     },
+    isImage(icon) {
+      // Validar si el valor es una URL válida (puedes personalizar esta lógica)
+      return (
+        typeof icon === "string" &&
+        (icon.startsWith("http") || /\.(png|jpe?g|gif|svg|webp)$/i.test(icon))
+      );
+    },
+    getIconName(icon) {
+      if (!icon) return "mdi-help-circle"; // Ícono por defecto si no hay valor
+      // Si el ícono tiene el prefijo "MdiIcons.", extraer solo el nombre
+      if (icon.startsWith("MdiIcons.")) {
+        return `mdi-${icon.split(".")[1].toLowerCase()}`;
+      }
+      // Si el ícono ya está en formato "mdi-*", devolverlo tal cual
+      if (icon.startsWith("mdi-")) {
+        return icon;
+      }
+      // En otros casos, devolver un ícono por defecto
+      return "mdi-help-circle";
+    },
+     updateDate(value) {
+    const year = value.getFullYear();
+    const month = String(value.getMonth() + 1).padStart(2, '0');
+    const day = String(value.getDate()).padStart(2, '0');
+    this.input = `${year}-${month}-${day}`;
+      this.editedItem.start_date = this.input;
+      this.menu = false;
+    },
+    updateDate1(value) {
+      const year = value.getFullYear();
+      const month = String(value.getMonth() + 1).padStart(2, '0');
+      const day = String(value.getDate()).padStart(2, '0');
+      this.input2 = `${year}-${month}-${day}`;
+      this.editedItem.end_date = this.input2;
+      this.menu2 = false;
+    },
+    parseDateString(dateString) {
+    if (!dateString) return null;
+    const [year, month, day] = dateString.split('-');
+    return new Date(year, month - 1, day);
+  },
+    async showAssiegnedPeople() {
+      this.tittlePerson = -1;
+      // Filtrar las personas que no están en editedItem.people usando el 'id' para la comparación
+      this.people = this.people.filter((person) => {
+        // Verificar si la persona no está en editedItem.people
+        return !this.editedItem.people.some(
+          (editedPerson) => editedPerson.id === person.id
+        );
+      });
+      this.dialogAssignedPeople = true;
+    },
+    async showAdd() {
+      (this.file = null),
+        (this.imgMiniatura = ""),
+        (this.showDetails = false),
+        (this.data = {});
+      this.editedItem.home_id = this.home_id;
+      this.data.home_id = this.editedItem.home_id;
+      this.editedIndex = -1;
+      try {
+        const result = await handleRequest({
+          endpoint: "category-status-priority-apk",
+          method: "POST",
+          data: this.data,
+        });
+        if (result.success) {
+          // Si la solicitud es exitosa, asignamos las sucursales
+          this.categories = result.data?.taskcategories || [];
+          this.status = result.data?.taskstatus || [];
+          this.priorities = result.data?.taskpriorities || [];
+          const normalPriority = this.priorities.find(
+            (priority) => priority.name === "Normal"
+          );
+          if (normalPriority) {
+            this.editedItem.priority_id = normalPriority.id;
+          }
+          this.recurrences = result.data?.taskrecurrences || [];
+          const diaryRecurrence = this.recurrences.find(
+            (recurrence) => recurrence.recurrenceName === "Diaria"
+          );
+          if (diaryRecurrence) {
+            this.editedItem.recurrence = diaryRecurrence.name;
+          }
+          this.people = result.data?.taskpeople || [];
+          this.roles = result.data?.taskroles || [];
+          this.typetasks = result.data?.tasktype || [];
+          console.log("typetasks:", this.typetasks);
+          //
+        } else {
+          // Si no hay datos, asignamos un array vacío
+          this.categories = [];
+          this.status = [];
+          this.priorities = [];
+          this.recurrences = [];
+          this.people = [];
+          this.roles = [];
+          this.typetasks = [];
+          this.showAlert("info", result.message || "No hay datos disponibles.", 3000);
+        }
+      } catch (error) {
+        this.showAlert("error", "Ocurrió un error inesperado al cargar los datos.", 3000);
+      } finally {
+        this.dialog = true;
+        this.initializeSelections();
+        this.timeSlots = this.generateTimeSlots();
+      }
+    },
+    close() {
+      this.step = 0;
+      this.dialog = false;
+      this.$nextTick(() => {
+        this.editedItem = Object.assign({}, this.defaultItem);
+        this.originalItem = Object.assign({}, this.defaultItem);
+      });
+      this.file = null;
+      this.imgMiniatura = "";
+      this.editedIndex = -1;
+    },
+    closeAssignedPeople() {
+      this.dialogAssignedPeople = false;
+      this.selectedPerson = null;
+      this.selectedRole = null;
+      this.tittlePerson = -1;
+    },
+    saveAssignedPeople() {
+      if (this.selectedPerson && this.selectedRole) {
+        const person = this.people.find((p) => p.id === this.selectedPerson);
+        const role = this.roles.find((r) => r.id === this.selectedRole);
+        if (!person || !role) {
+          console.error("Persona o rol no encontrado.");
+          return;
+        }
+        // Crear un nuevo objeto con los datos actuales
+        const newPerson = {
+          id: person.id,
+          name: person.namePerson,
+          image: person.imagePerson,
+          roleId: role.id,
+          roleName: role.nameRol,
+        };
+        // Verificar si la relación ya existe en editedItem.people
+        const existingPersonIndex = this.editedItem.people.findIndex(
+          (p) => p.id === newPerson.id
+        );
+        if (existingPersonIndex === -1) {
+          // No existe, por lo tanto, se agrega uno nuevo
+          this.editedItem.people.push(newPerson);
+        } else {
+          // Existe, por lo tanto se edita el existente
+          this.editedItem.people.splice(existingPersonIndex, 1, newPerson); // Actualiza el elemento en el array
+        }
+      }
+      // Reiniciar selección y cerrar diálogo
+      this.closeAssignedPeople();
+    },
+    editItemPeople(item) {
+      this.selectedPerson = item.id;
+      this.selectedRole = item.roleId;
+      this.dialogAssignedPeople = true;
+      this.tittlePerson = 1;
+    },
+    deleteItemPeople(item) {
+      const index = this.editedItem.people.findIndex((p) => p.id === item.id);
+      if (index !== -1) {
+        this.editedItem.people.splice(index, 1);
+      }
+    },
+    async initialize() {
+      this.data = {};
+      this.data.home_id = this.home_id;
+      const today = new Date();
+      const year = today.getFullYear();
+      const month = String(today.getMonth() + 1).padStart(2, "0"); // Meses son 0-11
+      const day = String(today.getDate()).padStart(2, "0");
+      const formattedDate = `${year}-${month}-${day}`; // Formato "YYYY-MM-DD"
+      //this.data.start_date = formattedDate;
+      try {
+        this.loading = true;
+        const result = await handleRequest({
+          endpoint: "task-date-web",
+          method: "POST",
+          data: this.data,
+        });
+        if (result.success) {
+          // Si la solicitud es exitosa, asignamos las sucursales
+          this.tasks = (result.data?.tasks || []).filter(task => 
+            task.type === 'Tarea'
+          );
+          this.status = result.data?.status || []; // Si no hay roles, asigna un arreglo vacío
+        } else {
+          // Si no hay datos, asignamos un array vacío
+          this.tasks = [];
+          this.status = [];
+          //this.showAlert('success', result.message || 'No hay tareas disponibles.', 3000);
+        }
+      } catch (error) {
+        this.loading = false;
+        // Captura de errores no controlados
+        this.showAlert(
+          "error",
+          "Ocurrió un error inesperado al cargar las tareas.",
+          3000
+        );
+      } finally {
+        this.loading = false;
+      }
+    },
+    getTypeIcon(type) {
+      switch (type) {
+        case "Task":
+          return "mdi-clipboard-text"; // Ícono para tareas
+        case "Sistema":
+          return "mdi-cog"; // Ícono para productos
+        case "Home":
+          return "mdi-home"; // Ícono para hogar
+        default:
+          return "mdi-help-circle"; // Ícono por defecto
+      }
+    },
+    getTypeDetails(type) {
+      switch (type) {
+        case "Task":
+          return { icon: "mdi-clipboard-text", name: "Tarea" }; // Ícono y nombre para tareas
+        case "Sistema":
+          return { icon: "mdi-cog", name: "Sistema" }; // Ícono y nombre para sistema
+        case "Home":
+          return { icon: "mdi-home", name: "Hogar" }; // Ícono y nombre para hogar
+        default:
+          return { icon: "mdi-help-circle", name: "Desconocido" }; // Ícono y nombre por defecto
+      }
+    },
+    async save() {
+      this.loading = true;
+      if (this.editedIndex === -1) {
+        this.valid = false;
+        const fieldsToUpdate = [
+          "title",
+          "description",
+          "start_date",
+          "end_date",
+          "parent_id",
+          "status_id",
+          "category_id",
+          "home_id",
+          "recurrence",
+          "comments",
+          "estimated_time",
+          "attachments",
+          "geo_location",
+          "priority_id",
+          "people",
+          "start_time",
+          "end_time",
+          "type",
+          "module",
+        ];
+        let updatedFields = Object.keys(this.editedItem)
+          .filter(
+            (key) =>
+              fieldsToUpdate.includes(key) &&
+              this.editedItem[key] !== this.originalItem[key]
+          )
+          .reduce((obj, key) => {
+            if (key === "people") {
+              // Transformar el campo `people`
+              obj[key] = this.editedItem.people.map((person) => ({
+                home_id: Number(this.editedItem.home_id), // Asegurar que sea un número
+                person_id: Number(person.id), // Asegurar que sea un número
+                role_id: Number(person.roleId),
+                roleName: person.roleName,
+              }));
+            } else {
+              obj[key] = this.editedItem[key];
+            }
+            return obj;
+          }, {});
+        // Agregar campos adicionales si es necesario
+        if (Object.keys(updatedFields).length > 0) {
+          updatedFields.home_id = this.editedItem.home_id;
+          updatedFields.start_date = this.editedItem.start_date
+            ? this.editedItem.start_date
+            : `${new Date().getFullYear()}-${String(new Date().getMonth() + 1).padStart(
+                2,
+                "0"
+              )}-${String(new Date().getDate()).padStart(2, "0")}`;
+          updatedFields.estimated_time = this.editedItem.estimated_time
+            ? this.editedItem.estimated_time
+            : 0;
+          updatedFields.type = this.editedItem.type ? this.editedItem.type : "Meta";
+          if (this.file) {
+            updatedFields.attachments = this.editedItem.attachments;
+          }
+          // Crear el objeto FormData
+          const formData = new FormData();
+          for (let key in updatedFields) {
+            if (key === "people") {
+              // Agregar cada elemento del array `people` al FormData
+              updatedFields[key].forEach((person, index) => {
+                for (const [personKey, value] of Object.entries(person)) {
+                  formData.append(`people[${index}][${personKey}]`, value);
+                }
+              });
+            } else {
+              formData.append(key, updatedFields[key]);
+            }
+          }
+          try {
+            const result = await handleRequest({
+              endpoint: "task",
+              method: "POST",
+              data: formData,
+            });
+            // Manejo de la respuesta según el resultado
+            if (result.success) {
+              this.loading = false;
+              this.showAlert("success", result.message, 3000);
+              if (result.data?.suggestedTasks?.length > 0) {
+                this.suggestedTasks = result.data.suggestedTasks;
+                this.dialogSuggested = true;
+              }
+              this.initialize();
+            } else {
+              this.loading = false;
+              this.showAlert("warning", result.message, 3000);
+            }
+          } catch (error) {
+            this.loading = false;
+            // Este bloque captura errores inesperados fuera del manejo estándar
+            this.showAlert(
+              "error",
+              "Ocurrió un error inesperado al procesar la solicitud.",
+              3000
+            );
+          }
+        } else {
+          this.loading = false;
+          this.showAlert("success", "Debe completar los datos de la tarea.", 3000);
+        }
+      } else {
+        this.valid = false;
+        const fieldsToUpdate = [
+          "title",
+          "description",
+          "start_date",
+          "end_date",
+          "parent_id",
+          "status_id",
+          "category_id",
+          "home_id",
+          "recurrence",
+          "comments",
+          "estimated_time",
+          "attachments",
+          "geo_location",
+          "priority_id",
+          "people",
+          "start_time",
+          "end_time",
+          "type",
+          "module"
+        ];
+        let updatedFields = Object.keys(this.editedItem)
+          .filter(
+            (key) =>
+              fieldsToUpdate.includes(key) &&
+              (key !== "people"
+                ? this.editedItem[key] !== this.originalItem[key]
+                : this.arePeopleDifferent(this.originalItem[key], this.editedItem[key])) // Compara el array people
+          )
+          .reduce((obj, key) => {
+            if (key === "people") {
+              // Transformar el campo `people`
+              obj[key] = this.editedItem.people.map((person) => ({
+                home_id: Number(this.editedItem.home_id), // Asegurar que sea un número
+                person_id: person.id ? Number(person.id) : Number(person.id), // Asegurar que sea un número
+                role_id: Number(person.roleId),
+                roleName: person.roleName, // Asegurar que sea un número
+              }));
+            } else {
+              obj[key] = this.editedItem[key];
+            }
+            return obj;
+          }, {});
+        if (Object.keys(updatedFields).length > 0) {
+          updatedFields.id = this.editedItem.id;
+          if (this.file) {
+            updatedFields.attachments = this.editedItem.attachments;
+          }
+          const formData = new FormData();
+          for (let key in updatedFields) {
+            if (key === "people") {
+              // Agregar cada elemento del array `people` al FormData
+              updatedFields[key].forEach((person, index) => {
+                for (const [personKey, value] of Object.entries(person)) {
+                  formData.append(`people[${index}][${personKey}]`, value);
+                }
+              });
+            } else {
+              formData.append(key, updatedFields[key]);
+            }
+          }
+          try {
+            const result = await handleRequest({
+              endpoint: "task-update",
+              method: "POST",
+              data: formData,
+            });
+            // Manejo de la respuesta según el resultado
+            if (result.success) {
+              this.loading = false;
+              this.showAlert("success", result.message, 3000);
+              this.initialize();
+            } else {
+              this.loading = false;
+              this.editedIndex = -1;
+              this.showAlert("warning", result.message, 3000);
+            }
+          } catch (error) {
+            this.loading = false;
+            this.editedIndex = -1;
+            // Este bloque captura errores inesperados fuera del manejo estándar
+            this.showAlert(
+              "error",
+              "Ocurrió un error inesperado al procesar la solicitud.",
+              3000
+            );
+          }
+        } else {
+          this.editedIndex = -1;
+          this.loading = false;
+          this.showAlert("success", "No se realizaron cambios.", 3000);
+        }
+      }
+      this.close();
+    },
+    arePeopleDifferent(originalPeople, editedPeople) {
+      // Convertir ambos arrays en cadenas de texto para una comparación profunda
+      const sortedOriginal = [...originalPeople].sort((a, b) => a.id - b.id);
+      const sortedEdited = [...editedPeople].sort((a, b) => a.id - b.id);
+      // Comparar las cadenas generadas
+      return JSON.stringify(sortedOriginal) !== JSON.stringify(sortedEdited);
+    },
+    async editItem(item) {
+      this.editedIndex = 1;
+      // Filtrar las personas que tengan 'select' igual a 1
+      //const selectedPeople = item.people.filter(person => person.select === 1);
+      // Asignar a originalItem y editedItem solo las personas seleccionadas
+      this.originalItem = _.cloneDeep(item);
+      this.editedItem = _.cloneDeep(item);
+      // Asignamos las personas seleccionadas a las propiedades 'people' de los dos objetos
+      //this.originalItem.people = _.cloneDeep(selectedPeople); // Aseguramos una copia profunda
+      //this.editedItem.people = _.cloneDeep(selectedPeople); // Aseguramos una copia profunda
+      this.file = null;
+      // Crear la imagen y configurar el src
+      const img = new Image();
+      img.src = `${this.$axios.defaults.baseURL}images/${item.attachments}`; // Se asume que item.image_url es la URL de la imagen
+      // Usar una función asíncrona para manejar la carga de la imagen
+      img.onload = async () => {
+        try {
+          // Asignar la imagen cargada a imgMiniatura
+          this.imgMiniatura = `${this.$axios.defaults.baseURL}images/${item.attachments}`;
+        } catch (error) {
+          console.error("Error al cargar la imagen", error);
+          this.showAlert("error", "Error al cargar la imagen.", 3000);
+        }
+      };
+      this.data = {};
+      this.data.home_id = this.home_id;
+      try {
+        const result = await handleRequest({
+          endpoint: "category-status-priority-apk",
+          method: "POST",
+          data: this.data,
+        });
+        if (result.success) {
+          // Si la solicitud es exitosa, asignamos las sucursales
+          this.categories = result.data?.taskcategories || [];
+          this.status = result.data?.taskstatus || [];
+          this.priorities = result.data?.taskpriorities || [];
+          this.recurrences = result.data?.taskrecurrences || [];
+          this.people = result.data?.taskpeople || [];
+          this.roles = result.data?.taskroles || [];
+        } else {
+          // Si no hay datos, asignamos un array vacío
+          this.categories = [];
+          this.status = [];
+          this.priorities = [];
+          this.recurrences = [];
+          this.people = [];
+          this.roles = [];
+          this.showAlert("info", result.message || "No hay datos disponibles.", 3000);
+        }
+      } catch (error) {
+        this.showAlert("error", "Ocurrió un error inesperado al cargar los datos.", 3000);
+      } finally {
+        this.initializeSelections();
+        //this.timeSlots = this.generateTimeSlots();
+        this.dialog = true;
+      }
+    },
+    deleteItem(item) {
+      this.editedIndex = 1;
+      this.editedItem.id = item.id;
+      this.dialogDelete = true;
+    },
+    closeDelete() {
+      this.dialogDelete = false;
+      this.$nextTick(() => {
+        this.editedItem = Object.assign({}, this.defaultItem);
+        this.originalItem = Object.assign({}, this.defaultItem);
+      });
+    },
+    async deleteItemConfirm() {
+      this.loading = true;
+      try {
+        let request = {
+          id: this.editedItem.id,
+        };
+        const result = await handleRequest({
+          endpoint: "task-destroy",
+          method: "POST",
+          data: request,
+        });
+        // Manejo de la respuesta según el resultado
+        if (result.success) {
+          this.showAlert("success", result.message, 3000);
+          this.initialize();
+        } else {
+          this.showAlert("warning", result.message, 3000);
+        }
+      } catch (error) {
+        // Este bloque captura errores inesperados fuera del manejo estándar
+        this.showAlert(
+          "error",
+          "Ocurrió un error inesperado al procesar la solicitud.",
+          3000
+        );
+      } finally {
+        this.loading = false;
+        this.closeDelete();
+      }
+    },
+    showAlert(sb_type, sb_message, sb_timeout) {
+      this.sb_type = sb_type;
+      if (sb_type == "success") {
+        this.sb_title = "Éxito";
+        this.sb_icon = "mdi-check-circle";
+      }
+      if (sb_type == "error") {
+        this.sb_title = "Error";
+        this.sb_icon = "mdi-check-circle";
+      }
+      if (sb_type == "warning") {
+        this.sb_title = "Advertencia";
+        this.sb_icon = "mdi-alert-circle";
+      }
+      this.sb_message = sb_message;
+      this.sb_timeout = sb_timeout;
+      this.snackbar = true;
+    },
+    imagenDisponible() {
+      if (this.imgedit !== undefined && this.imgedit !== "") {
+        // Intenta cargar la imagen en un elemento oculto para verificar si está disponible
+        let img = new Image();
+        img.src = this.imgedit;
+        return true; // Devuelve true si la imagen está disponible
+      }
+      return false; // Si la URL de la imagen no está definida o está vacía, devuelve false
+    },
+    onFileSelected(event) {
+      let file = event.target.files[0];
+      // Validar el tamaño del archivo (500 KB máximo)
+      const maxSize = 500 * 1024; // 500 KB en bytes
+      if (file && file.size > maxSize) {
+        this.showAlert("warning", "El archivo de imagen debe ser de máximo 500 KB", 3000);
+        return; // Detener el proceso si el archivo es demasiado grande
+      }
+      this.editedItem.image = file;
+      //console.log(this.editedItem.image_cardgift);
+      this.cargarImage(file);
+    },
+    cargarImage(file) {
+      let reader = new FileReader();
+      reader.onload = (e) => {
+        this.imgMiniatura = e.target.result;
+      };
+      reader.readAsDataURL(file);
+    },
   },
 };
 </script>
 <style scoped>
 .icono-concavo {
-  width: 40px;
-  height: 40px;
+  width: 50px;
+  height: 50px;
   display: flex;
   align-items: center;
   justify-content: center;
-  border-radius: 8px;
- 
-  color: white;
-  /* Mantenemos solo el efecto cóncavo en el ícono 
-  box-shadow: inset;*/
-  position: relative;
-  overflow: hidden;
-}
-.icono-concavo-card-task {
-  width: 60px;
-  height: 60px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: 8px;
- 
+  border-radius: 10px;
   color: white;
   /* Mantenemos solo el efecto cóncavo en el ícono 
   box-shadow: inset;*/
@@ -1717,102 +2294,99 @@ export default {
   line-height: 1;
   margin-top: 2px;
 }
-.v-icon {
-  font-size: 28px;
+.fullscreen-dialog {
+  height: 100vh !important;
+  max-height: 100vh !important;
+  min-width: 100vh;
+  margin: 0 !important;
+  padding: 0 !important;
 }
-.status-option {
-  transition: background-color 0.3s ease;
+.people-scroll-container {
+  width: 100%;
+  overflow-x: auto;
+  padding-bottom: 12px;
+  /* Más espacio para el scroll */
+  scrollbar-width: thin;
+  /* Para navegadores modernos */
 }
-.status-option:hover {
-  background-color: rgba(0, 0, 0, 0.05) !important;
+/* Estilo para la barra de scroll en WebKit */
+.people-scroll-container::-webkit-scrollbar {
+  height: 6px;
 }
-.current-status {
-  border-left: 4px solid;
-  border-left-color: inherit;
+.people-scroll-container::-webkit-scrollbar-thumb {
+  background-color: rgba(0, 0, 0, 0.2);
+  border-radius: 3px;
 }
-.v-card-title {
-  font-weight: 600;
+.people-scroll-wrapper {
+  display: inline-flex;
+  gap: 12px;
+  /* Más espacio entre cards */
+  padding: 4px 8px;
+  /* Padding para que no peguen a los bordes */
 }
-.menu-card {
+.person-card {
   cursor: pointer;
   transition: all 0.3s ease;
-  border-radius: 10px;
-  height: 100%;
+  width: 220px;
+  /* Ancho fijo */
+  flex-shrink: 0;
+  /* Evita que se reduzcan */
+  border-radius: 8px !important;
+  /* Bordes más redondeados */
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05) !important;
+  /* Sombra sutil por defecto */
 }
-.menu-card:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+.person-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.1) !important;
 }
-.v-card-title {
+.selected-person {
+  border: 2px solid #03626c;
+  background-color: rgba(3, 98, 108, 0.08) !important;
+  /* Color más suave */
+}
+.current-user {
+  border-left: 3px solid #1976d2;
+  /* Indicador lateral para el usuario actual */
+}
+.person-info {
+  max-width: calc(220px - 60px);
+  /* 220px (card) - 40px (avatar) - 20px (márgenes) */
+  overflow: hidden;
+}
+.text-truncate {
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }
-/* Estilo para el menú desplegable */
-.v-menu__content {
-  border-radius: 8px;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+/* OCULTAR HEADER DE v-data-table - Vuetify 3.4.7 */
+/* Máxima especificidad para ocultar el thead */
+.v-data-table > .v-data-table__wrapper > table > thead,
+.v-data-table > .v-data-table__wrapper > .v-table > table > thead,
+.v-data-table__content > table > thead,
+.v-data-table__content > thead,
+table.v-table > thead,
+.v-table > .v-table__wrapper > table > thead {
+  display: none !important;
+  visibility: hidden !important;
+  height: 0 !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  border: none !important;
+  border-spacing: 0 !important;
+  border-collapse: collapse !important;
 }
-.title-container {
-  position: relative;
-  display: flex;
-  align-items: center;
-  gap: 8px; /* Espacio entre título y círculo */
+.hidden-header .v-data-table__content > table > thead {
+  display: none !important;
 }
-.dynamic-circle {
-  width: 24px;
-  height: 24px;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 12px;
-  font-weight: bold;
-  color: white;
-  background-color: #03626c; /* Color por defecto */
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
-  flex-shrink: 0; /* Evita que se reduzca el tamaño */
-}
-.dynamic-circle.primary {
-  background-color: #03626c; /* Color primario */
-}
-.chat-wrapper {
-  max-width: 700px;
-  height: 85vh;
+.date-text {
+  width: 100%;
+  font-size: 0.75rem; /* Equivalente a text-caption */
+  line-height: 1.2; /* Mejor interlineado */
+  font-weight: 500; /* Medium weight */
   display: flex;
   flex-direction: column;
-}
-.chat-body {
-  flex: 1;
-  overflow-y: auto;
-  max-height: 65vh;
-  scrollbar-width: thin;
-  scrollbar-color: #ddd transparent;
-}
-.chat-body::-webkit-scrollbar {
-  width: 6px;
-}
-.chat-body::-webkit-scrollbar-thumb {
-  background-color: #ccc;
-  border-radius: 8px;
-}
-.chat-bubble {
-  max-width: 100%;
-  word-break: break-word;
-  font-size: 15px;
-  line-height: 1.4;
-}
-.fade-enter-active,
-.fade-leave-active {
-  transition: opacity 0.3s ease;
-}
-.fade-enter-from,
-.fade-leave-to {
-  opacity: 0;
-}
-.tools-bar {
-  overflow-x: auto;
-  white-space: nowrap;
-  gap: 8px;
+  justify-content: center;
+  align-items: center;
 }
 </style>
