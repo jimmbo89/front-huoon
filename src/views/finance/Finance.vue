@@ -19,7 +19,7 @@
   ">
       <!-- Encabezado con foto y datos -->
       <v-card-text>
-        <v-row class="mb-4" align="center" no-gutters>
+        <v-row class="mb-4" align="center" dense>
           <!-- Columna ícono + texto título: ocupando un ancho fijo o proporcional -->
           <v-col cols="12" sm="10" md="10" class="d-flex align-center">
             <v-avatar size="48" class="me-3" color="grey-lighten-4" variant="tonal">
@@ -50,17 +50,25 @@
           </v-col>
         </v-row>
 
-        <v-divider />
-        <v-card elevation="0" class="pa-2 bg-grey-lighten-5 tools-bar">
-          <v-btn v-for="tool in tools" :key="tool.name" @click="tool.action" color="#03626C" variant="text"
-            :prepend-icon="tool.icon" class="text-capitalize">
+        
+        <v-card-actions class="pa-3 bg-grey-lighten-5 tools-bar">
+          <v-btn
+            v-for="tool in tools"
+            :key="tool.name"
+            @click="tool.action()"
+            size="small"
+            color="primary"
+            variant="text"
+            prepend-icon="mdi-plus"
+            class="text-capitalize"
+          >
             {{ tool.name }}
           </v-btn>
-        </v-card>
-
+        </v-card-actions>
+        <v-divider />
         <!-- todo 712-->
 
-        <v-row dense>
+        <v-row dense class="mt-4">
           <v-col cols="12" sm="12" md="12">
             <v-card class="mx-auto" elevation="1" rounded="lg" border flat>
               <v-list-item height="60">
@@ -138,7 +146,7 @@
             </v-card>
           </v-col>
 
-          <v-col cols="12" md="6" class="d-flex">
+          <v-col cols="12" md="6" class="d-flex mt-4">
             <v-card class="mx-auto flex-grow-1 d-flex flex-column" elevation="1" rounded="lg" border flat>
 
               <!-- Título y Select -->
@@ -221,7 +229,7 @@
             </v-card>
           </v-col>
 
-          <v-col cols="12" md="6" class="d-flex">
+          <v-col cols="12" md="6" class="d-flex mt-4">
             <IncomeSpentChart v-if="initializated" :incomeData="customIncomeData" :spentData="customSpentData"
               :year="new Date().getFullYear()" />
           </v-col>

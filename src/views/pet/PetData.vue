@@ -70,7 +70,7 @@
                             </v-btn>
                 </v-card-actions>
                 <v-divider />-->
-                <v-row dense class="mt-1">
+                <v-row dense class="mt-4">
                     <v-col v-for="(tool, index) in petTools" :key="index" cols="12" sm="6" md="6" lg="3" class="px-1">
                         <v-card class="d-flex align-center pa-2" elevation="2" rounded="lg" density="comfortable"  :class="{ 'oscurecer-persistente': selectedView === tool.type }"
                            @click="abrirModal(tool)" style="cursor: pointer; height: 70px; width: 100%">
@@ -125,7 +125,7 @@
                         </v-card>
                     </v-col>
                 </v-row>
-                <v-row dense class="mt-1">
+                <v-row dense class="mt-4">
                 <v-col cols="12">
                   <component
                     :is="getComponentByType(selectedView)"

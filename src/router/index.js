@@ -91,6 +91,12 @@ const routes = [
           import(/* webpackChunkName: "home" */ "@/views/goal/Goals.vue"),
       },
       {
+        path: "/goals-data",
+        name: "GoalsData",
+        component: () =>
+          import(/* webpackChunkName: "home" */ "@/views/goal/GoalsData.vue"),
+      },
+      {
         path: "/health",
         name: "Health",
         component: () =>

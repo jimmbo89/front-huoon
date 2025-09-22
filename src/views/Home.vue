@@ -733,7 +733,7 @@ export default {
           title: "Metas",
           description: "Objetivos y metas personales",
           icon: "mdi-flag-checkered",
-          to: "/goals", // Ruta no implementada
+          to: "/goals-data", // Ruta no implementada
           name: "goals",
           color: "purple",
         },

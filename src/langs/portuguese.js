@@ -219,14 +219,14 @@ const portuguese = {
       no_name: "Sem nome",
     },
     activity: {
-    title: "Mostrar movimentos de produtos",
-    origin_warehouse: "Armazém de saída",
-    destination_warehouse: "Armazém de entrada",
-    product: "Produto",
-    quantity: "Quantidade",
-    date: "Data",
-    performed_by: "Realizado",
-  },
+      title: "Mostrar movimentos de produtos",
+      origin_warehouse: "Armazém de saída",
+      destination_warehouse: "Armazém de entrada",
+      product: "Produto",
+      quantity: "Quantidade",
+      date: "Data",
+      performed_by: "Realizado",
+    },
     settings: {
       category: "Categorias",
       warehouse: "Armazéns",
@@ -289,6 +289,9 @@ const portuguese = {
         edit: "Editar Tarefa",
         newGoal: "Adicionar Nova Meta",
         editGoal: "Editar Meta",
+        discoverGoals: "Descubra metas",
+        discoverTasks: "Descubra tarefas",
+        homeGoalsTitle: "Metas de casa"
       },
     },
     taskTypes: {

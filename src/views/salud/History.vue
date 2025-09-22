@@ -16,156 +16,153 @@
     <v-card class="pa-4" elevation="4" rounded="lg">
       <!-- Encabezado con foto y datos -->
       <v-card-text>
-        <v-row dense>
+        <v-row dense >
           <!-- Foto del usuario -->
           <v-col cols="auto">
-  <!-- Avatar -->
-  <v-avatar size="80" class="me-4">
-    <v-img :src="`${$axios.defaults.baseURL}images/${imageUrl}`" alt="Foto del paciente" />
-  </v-avatar>
-</v-col>
+            <!-- Avatar -->
+            <v-avatar size="80" class="me-4">
+              <v-img :src="`${$axios.defaults.baseURL}images/${imageUrl}`" alt="Foto del paciente" />
+            </v-avatar>
+          </v-col>
 
-<!-- Datos del paciente (contenedor principal clickeable) -->
-<v-col>
-  <!-- 🚫 Eliminamos el @click manual -->
-  <!-- ✅ Ahora usamos el <v-menu> como único controlador -->
-
-  <v-menu
-    v-model="menuPerson"
-    :close-on-content-click="false"
-    location="bottom start"
-    offset-y
-    :min-width="null"
-    :max-width="null"
-    class="rounded-lg"
-  >
-    <!-- 🔥 ACTIVADOR: Todo el contenedor de datos + avatar + ícono -->
-    <template #activator="{ props }">
-      <div
-        v-bind="props"
-        class="cursor-pointer d-flex align-center"
-        style="max-width: fit-content; gap: 12px;"
-      >
-        <!-- Datos del paciente (apilados verticalmente) -->
-        <div class="flex-grow-1">
-          <!-- Nombre -->
-          <div class="text-body-2 font-weight-bold mb-1">{{ selectedPerson.name }}</div>
-
-          <!-- Edad -->
-          <div class="d-flex align-center justify-space-between mb-1">
-            <div class="text-body-2 text-grey-darken-1">
-              {{
-                selectedPerson.age !== null
-                  ? $t("personDetails.age.withValue", { age: selectedPerson.age })
-                  : $t("personDetails.age.withoutValue")
-              }}
-            </div>
-          </div>
-
-          <!-- Tipo de documento -->
-          <div class="d-flex align-center justify-space-between mb-1">
-            <div class="text-body-2 text-grey-darken-1">
-              {{
-                selectedPerson.documentType
-                  ? $t("personDetails.documentType.withValue", { type: selectedPerson.documentType })
-                  : $t("personDetails.documentType.withoutValue")
-              }}
-            </div>
-          </div>
-
-          <!-- Número de documento (ÚLTIMA LÍNEA) -->
-          <div class="d-flex align-center justify-space-between">
-            <div class="text-body-2 text-grey-darken-1">
-              {{
-                selectedPerson.documentNumber !== null
-                  ? $t("personDetails.documentNumber.withValue", { number: selectedPerson.documentNumber })
-                  : $t("personDetails.documentNumber.withoutValue")
-              }}
-            </div>
-          </div>
-        </div>
-
-        <!-- ✅ ÍCONO DE DESPLIEGUE: A LA DERECHA, CENTRADO VERTICALMENTE CON TODO EL CONTENIDO -->
-        <v-icon
-          :class="{ 'rotate': menuPerson }"
-          class="transition-fast-in-fast-out ms-2"
-          size="20"
-          color="grey"
-          style="vertical-align: middle; flex-shrink: 0;"
-          v-if="this.type === 'Hogar'"
-        >
-          mdi-menu-down
-        </v-icon>
-      </div>
-    </template>
-
-    <!-- MENÚ DESPLEGABLE -->
-    <v-card max-width="900px" class="mx-auto rounded-lg" v-if="this.type === 'Hogar'">
-      <v-card-text>
-        <v-container fluid>
-          <v-row justify="center">
-            <!-- TARJETAS UNIFORMES -->
-            <v-col
-              v-for="person in homePerson"
-              :key="person.id"
-              cols="auto"
-              min-width="200px"
-              class="pa-2"
+          <!-- Datos del paciente (contenedor principal clickeable) -->
+          <v-col>
+            <v-menu
+              v-model="menuPerson"
+              :close-on-content-click="false"
+              location="bottom start"
+              offset-y
+              :min-width="null"
+              :max-width="null"
+              class="rounded-lg"
             >
-              <v-card
-                class="text-center store-card"
-                elevation="3"
-                rounded="lg"
-                width="200px"
-                height="auto"
-                @click="selectPerson(person)"
-                :class="{
-                  'bg-blue-lighten-5': selectedPerson?.id === person.id,
-                }"
-              >
-                <!-- Imagen ajustada dentro de contenedor fijo -->
-                <div class="icon-wrapper rounded-lg mb-3">
-                  <v-img
-                    :src="`${$axios.defaults.baseURL}images/${person.image}?t=${getCacheTimestamp()}`"
-                    alt="Foto de la persona"
-                    width="100%"
-                    height="130"
-                    cover
-                    class="rounded-lg"
-                  />
-                </div>
-
-                <!-- Texto centrado y con espacio fijo -->
-                <div class="store-name" style="font-size: 0.875rem; font-weight: 500; margin-top: 8px; height: 1.2em; line-height: 1.2em; overflow: hidden; text-overflow: ellipsis;">
-                  {{ person.name }}
-                </div>
-
-                <div class="store-products" style="font-size: 0.75rem; color: #757575; margin-top: 4px; height: 1.2em; line-height: 1.2em; overflow: hidden; text-overflow: ellipsis;">
-                  {{
-                    person.age !== null
-                      ? $t("personDetails.age.withValue", { age: person.age })
-                      : $t("personDetails.age.withoutValue")
-                  }}
-                </div>
-
-                <!-- Check de selección -->
-                <v-icon
-                  v-if="selectedPerson?.id === person.id"
-                  color="primary"
-                  size="18"
-                  class="position-absolute"
-                  style="top: 8px; right: 8px;"
+              <!-- 🔥 ACTIVADOR: Todo el contenedor de datos + avatar + ícono -->
+              <template #activator="{ props }">
+                <div
+                  v-bind="props"
+                  class="cursor-pointer d-flex align-center"
+                  style="max-width: fit-content; gap: 12px;"
                 >
-                  mdi-check-circle
-                </v-icon>
+                  <!-- Datos del paciente (apilados verticalmente) -->
+                  <div class="flex-grow-1">
+                    <!-- Nombre -->
+                    <div class="text-body-2 font-weight-bold mb-1">{{ selectedPerson.name }}</div>
+
+                    <!-- Edad -->
+                    <div class="d-flex align-center justify-space-between mb-1">
+                      <div class="text-body-2 text-grey-darken-1">
+                        {{
+                          selectedPerson.age !== null
+                            ? $t("personDetails.age.withValue", { age: selectedPerson.age })
+                            : $t("personDetails.age.withoutValue")
+                        }}
+                      </div>
+                    </div>
+
+                    <!-- Tipo de documento -->
+                    <div class="d-flex align-center justify-space-between mb-1">
+                      <div class="text-body-2 text-grey-darken-1">
+                        {{
+                          selectedPerson.documentType
+                            ? $t("personDetails.documentType.withValue", { type: selectedPerson.documentType })
+                            : $t("personDetails.documentType.withoutValue")
+                        }}
+                      </div>
+                    </div>
+
+                    <!-- Número de documento (ÚLTIMA LÍNEA) -->
+                    <div class="d-flex align-center justify-space-between">
+                      <div class="text-body-2 text-grey-darken-1">
+                        {{
+                          selectedPerson.documentNumber !== null
+                            ? $t("personDetails.documentNumber.withValue", { number: selectedPerson.documentNumber })
+                            : $t("personDetails.documentNumber.withoutValue")
+                        }}
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- ✅ ÍCONO DE DESPLIEGUE: A LA DERECHA, CENTRADO VERTICALMENTE CON TODO EL CONTENIDO -->
+                  <v-icon
+                    :class="{ 'rotate': menuPerson }"
+                    class="transition-fast-in-fast-out ms-2"
+                    size="20"
+                    color="grey"
+                    style="vertical-align: middle; flex-shrink: 0;"
+                    v-if="this.type === 'Hogar'"
+                  >
+                    mdi-menu-down
+                  </v-icon>
+                </div>
+              </template>
+
+              <!-- MENÚ DESPLEGABLE -->
+              <v-card max-width="900px" class="mx-auto rounded-lg" v-if="this.type === 'Hogar'">
+                <v-card-text>
+                  <v-container fluid>
+                    <v-row justify="center">
+                      <!-- TARJETAS UNIFORMES -->
+                      <v-col
+                        v-for="person in homePerson"
+                        :key="person.id"
+                        cols="auto"
+                        min-width="200px"
+                        class="pa-2"
+                      >
+                        <v-card
+                          class="text-center store-card"
+                          elevation="3"
+                          rounded="lg"
+                          width="200px"
+                          height="auto"
+                          @click="selectPerson(person)"
+                          :class="{
+                            'bg-blue-lighten-5': selectedPerson?.id === person.id,
+                          }"
+                        >
+                          <!-- Imagen ajustada dentro de contenedor fijo -->
+                          <div class="icon-wrapper rounded-lg mb-3">
+                            <v-img
+                              :src="`${$axios.defaults.baseURL}images/${person.image}?t=${getCacheTimestamp()}`"
+                              alt="Foto de la persona"
+                              width="100%"
+                              height="130"
+                              cover
+                              class="rounded-lg"
+                            />
+                          </div>
+
+                          <!-- Texto centrado y con espacio fijo -->
+                          <div class="store-name" style="font-size: 0.875rem; font-weight: 500; margin-top: 8px; height: 1.2em; line-height: 1.2em; overflow: hidden; text-overflow: ellipsis;">
+                            {{ person.name }}
+                          </div>
+
+                          <div class="store-products" style="font-size: 0.75rem; color: #757575; margin-top: 4px; height: 1.2em; line-height: 1.2em; overflow: hidden; text-overflow: ellipsis;">
+                            {{
+                              person.age !== null
+                                ? $t("personDetails.age.withValue", { age: person.age })
+                                : $t("personDetails.age.withoutValue")
+                            }}
+                          </div>
+
+                          <!-- Check de selección -->
+                          <v-icon
+                            v-if="selectedPerson?.id === person.id"
+                            color="primary"
+                            size="18"
+                            class="position-absolute"
+                            style="top: 8px; right: 8px;"
+                          >
+                            mdi-check-circle
+                          </v-icon>
+                        </v-card>
+                      </v-col>
+                    </v-row>
+                  </v-container>
+                </v-card-text>
               </v-card>
-            </v-col>
-          </v-row>
-        </v-container>
-      </v-card-text>
-    </v-card>
-  </v-menu>
-</v-col>
+            </v-menu>
+          </v-col>
 
           <v-col cols="12" sm="6" md="3">
              <div class="d-flex align-right justify-end pa-2">
@@ -191,7 +188,7 @@
 
 
 
-        <v-row dense v-if="this.type === 'Hogar'" class="my-1">
+        <v-row dense v-if="this.type === 'Hogar'" class="mt-4">
           <v-col cols="12" sm="12" md="12">
             <v-card class="mx-auto" elevation="1" rounded="lg" border flat>
               <v-list-item height="60">

@@ -220,15 +220,16 @@ const spanish = {
       no_records: "Sin registros",
       no_name: "Sin Nombre",
     },
-    activity: { // ← nuevo bloque
-    title: "Mostrar movimientos de productos",
-    origin_warehouse: "Almacén saliente",
-    destination_warehouse: "Almacén entrante",
-    product: "Producto",
-    quantity: "Cantidad",
-    date: "Fecha",
-     performed_by: "Realizado",
-  },
+    activity: {
+      // ← nuevo bloque
+      title: "Mostrar movimientos de productos",
+      origin_warehouse: "Almacén saliente",
+      destination_warehouse: "Almacén entrante",
+      product: "Producto",
+      quantity: "Cantidad",
+      date: "Fecha",
+      performed_by: "Realizado",
+    },
     settings: {
       category: "Categorías",
       warehouse: "Almacenes",
@@ -286,6 +287,9 @@ const spanish = {
         edit: "Editar Tarea",
         newGoal: "Agregar Nueva Meta",
         editGoal: "Editar Meta",
+        discoverGoals: "Descubre metas",
+        discoverTasks: "Descubre tareas",
+        homeGoalsTitle: "Metas del hogar",
       },
     },
     taskTypes: {

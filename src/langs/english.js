@@ -214,14 +214,14 @@ const english = {
       no_name: "Unnamed",
     },
     activity: {
-    title: "Show product movements",
-    origin_warehouse: "Origin warehouse",
-    destination_warehouse: "Destination warehouse",
-    product: "Product",
-    quantity: "Quantity",
-    date: "Date",
-    performed_by: "Performed",
-  },
+      title: "Show product movements",
+      origin_warehouse: "Origin warehouse",
+      destination_warehouse: "Destination warehouse",
+      product: "Product",
+      quantity: "Quantity",
+      date: "Date",
+      performed_by: "Performed",
+    },
     settings: {
       category: "Categories",
       warehouse: "Warehouses",
@@ -284,6 +284,9 @@ const english = {
         edit: "Edit Task",
         newGoal: "Add New Goal",
         editGoal: "Edit Goal",
+        discoverGoals: "Descubre metas",
+        discoverTasks: "Descubre tareas",
+        homeGoalsTitle: "Home goals"
       },
     },
     taskTypes: {
