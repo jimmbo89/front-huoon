@@ -206,7 +206,7 @@
         theme="dark"
         border
         density="compact"
-        class="py-1 px-2 alert-multiline-icon"
+         class="py-1 px-2 d-flex align-center"
         @click="showProducts()"
         style="cursor: pointer;"
       >
@@ -241,7 +241,7 @@
                   <v-card-text class="pa-4">
                     <v-row dense class="d-flex flex-wrap justify-left">
                       <div v-for="category in categoryAvailability" :key="category.id"
-                        class="mx-1 my-1 d-flex justify-left">
+                        class="mx-1 my-1 d-flex justify-left" @click="showProducts()" style="cursor: pointer;">
                         <v-tooltip top>
                           <template v-slot:activator="{ props }">
                             <v-sheet class="pa-1 text-center d-flex flex-column justify-center align-center"

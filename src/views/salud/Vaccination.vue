@@ -317,7 +317,6 @@
                       color="#03626C"
                       :model-value="dateInput"
                       @update:model-value="updateDate"
-                      :max="new Date().toISOString().split('T')[0]"
                     ></v-date-picker>
                     </v-locale-provider>
                   </v-menu>

@@ -179,8 +179,7 @@
 
               <!-- Contenedor del gráfico (flexible con scroll si es necesario) -->
               <div class="flex-grow-1 d-flex align-center justify-center position-relative">
-                <v-pie :key="selectedGroup" :items="currentItems" v-model="selectedItems"
-                  :legend="{ position: $vuetify.display.mdAndUp ? 'right' : 'bottom' }" :tooltip="true" gap="4"
+                <v-pie :key="selectedGroup" :items="currentItems" :legend="{ position: $vuetify.display.mdAndUp ? 'right' : 'bottom' }" :tooltip="true" gap="4"
                   inner-cut="70" item-key="id" rounded="1" animation hide-slice reveal size="230">
 
                   <template v-slot:center>
@@ -847,6 +846,7 @@ export default {
   data() {
     return {
       initializated: false,
+      selectedItems: [],
       tools: [
         {
           name: this.$t("finances.titles.new.finance"),
@@ -1384,7 +1384,7 @@ export default {
 
       // Llama al método de inicialización
       this.initialize();
-    }
+    },
   },
   methods: {
     validateSpent(value) {
