@@ -205,6 +205,7 @@
             v-if="selectedView"
             :key="selectedView"
             :selected-person="selectedPerson"
+            @update-medical-information="initialize"
           />
         </v-col>
       </v-row>
@@ -446,9 +447,10 @@ export default {
       return d.toLocaleDateString(locale, options);
     },
     abrirModal(item) {
-      this.selectedView = item.type;
-      if(this.selectedView === 'person'){
+      if(item.type === 'person'){
         this.dialogBlood = true;
+      }else{
+      this.selectedView = item.type;
       }
       console.log(this.selectedView);
     },

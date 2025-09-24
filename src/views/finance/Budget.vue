@@ -15,9 +15,9 @@
     <v-card elevation="2" rounded="lg" flat>
       <!-- Encabezado con foto y datos -->
       <v-card-text>
-
+        <v-row class="mb-4" align="center" dense>
            <!-- Columna ícono + texto título: ocupando un ancho fijo o proporcional -->
-          <v-col cols="12" sm="9" md="9" class="d-flex align-center">
+          <v-col cols="12" sm="10" md="10" class="d-flex align-center">
             <v-avatar size="48" class="me-3" color="grey-lighten-4" variant="tonal">
               <v-icon color="green-darken-2">mdi-cash</v-icon>
             </v-avatar>
@@ -30,7 +30,19 @@
               </div>
             </div>
           </v-col>
-
+          <v-col cols="12" sm="2" md="2">
+            <div class="d-flex align-right justify-end pa-2">
+              <v-switch v-model="selectedType" true-value="Personal" false-value="Hogar" :base-color="switchColor"
+                :color="switchColor" hide-details inset class="mb-4 font-weight-bold">
+                <template v-slot:label>
+                  <span class="text-body-1" :style="{ color: switchColor }">
+                    {{ getCurrentName }}
+                  </span>
+                </template>
+              </v-switch>
+            </div>
+          </v-col>
+          </v-row>
 
              <v-divider />
           <v-card-actions class="pa-3 bg-grey-lighten-5 tools-bar">
@@ -96,12 +108,12 @@
                 </div>
 
                 <!-- Categoría / Descripción (40%) -->
-                <div style="width: 44%; min-width: 0" class="text-left">
+                <div style="width: 49%; min-width: 0" class="text-left">
                   {{ $t('budget.fields.category') }} / {{ $t('budget.fields.description') }}
                 </div>
 
                 <!-- Monto (10%) -->
-                <div style="width: 10%; min-width: 0" class="text-left">
+                <div style="width: 15%; min-width: 0" class="text-left">
                   {{ $t('budget.fields.amount') }}
                 </div>
 
@@ -110,10 +122,10 @@
                   {{ $t('budget.fields.used_amount') }}
                 </div>
 
-                <!-- Tipo (10%) -->
+                <!-- Tipo (10%) 
                 <div style="width: 10%; min-width: 0" class="text-left">
                   {{ $t('budget.fields.budget_type') }}
-                </div>
+                </div>-->
 
                 <!-- Moneda (5%) -->
                 <div style="width: 5%; min-width: 0" class="text-left">
@@ -147,7 +159,7 @@
                   </div>
 
                     <!-- Categoría + Descripción - 40% -->
-                    <div style="width: 44%; min-width: 0" class="d-flex flex-column">
+                    <div style="width: 49%; min-width: 0" class="d-flex flex-column">
                       <div class="text-body-2 text-truncate">
                         {{ slotProps.item.description }}
                         </div>
@@ -157,7 +169,7 @@
                     </div>
 
                     <!-- Monto - 10% -->
-                    <div style="width: 10%; min-width: 0" class="text-body-2 text-truncate">
+                    <div style="width: 15%; min-width: 0" class="text-body-2 text-truncate">
                       {{ formatCurrency(slotProps.item.amount) }}
                     </div>
 
@@ -166,7 +178,7 @@
                       {{ formatCurrency(slotProps.item.used_amount) }}
                     </div>
 
-                    <!-- Tipo (con ícono) - 10% -->
+                    <!-- Tipo (con ícono) - 10% 
                     <div style="width: 10%; min-width: 0" class="d-flex align-center">
                       <v-icon 
                         :color="getTypeColor(slotProps.item.budget_type)"
@@ -176,7 +188,7 @@
                       <span class="text-grey-darken-1 text-body-2 text-truncate">
                         {{ slotProps.item.budget_type }}
                       </span>
-                    </div>
+                    </div>-->
 
                     <!-- Moneda (con ícono) - 5% -->
                     <div style="width: 5%; min-width: 0" class="d-flex align-center">
@@ -472,9 +484,20 @@ import { handleRequest } from "@/utils/api";
 import _ from "lodash";
 import { shallowRef } from "vue";
 export default {
+  props: {
+    types: {
+      type: Array,
+      required: true
+    },
+    type: {
+      type: String,
+      required: true
+    }
+  },
   data: () => ({
     selected: shallowRef([2]),
     selected2: null,
+    selectedType: '',
     step: 0,
     time: null,
     modal2: false,
@@ -513,7 +536,6 @@ export default {
     dialog: false,
     dialogDelete: false,
     budgets: [],
-    types: [],
     
     categoryChildren: [], // hijas de la categoría seleccionada
     selectedParent: null, // categoría padre seleccionada
@@ -631,6 +653,13 @@ export default {
           !v || v.length <= 50 || this.$t("budget.validationMessages.type.maxLength"), // Validación de longitud máxima*/
       ];
     },
+     switchColor() {
+      return this.selectedType === 'Personal' ? '#03626C' : '#FB8C00';
+    },
+    getCurrentName() {
+      const type = this.types.find(t => t.id === this.selectedType);
+      return type ? type.name : this.selectedType;
+    },
   },
   watch: {
   selectedParent(newParentId) {
@@ -656,7 +685,14 @@ export default {
         this.selectedParent = child.parent_id;
       }
     }
-  }
+  },
+   selectedType(newVal) {
+      // Actualiza budget_type según el valor del switch
+      this.editedItem.budget_type = newVal;
+
+      // Llama al método de inicialización
+      this.initialize();
+    }
 },
    created() {
     this.tools = [
@@ -668,7 +704,8 @@ export default {
   },
   mounted() {
     this.home_id = JSON.parse(LocalStorageService.getItem("home_id"));
-    this.initialize();
+    //this.initialize();
+    this.selectedType = this.type;
   },
   methods: {
     getCurrencyColor(currency) {
@@ -805,11 +842,11 @@ export default {
         });
         if (result.success) {
           this.categories = result.data.categories || [];
-          this.types = result.data.types || [];
+          //this.types = result.data.types || [];
           this.typesPeriodo = result.data.typesPeriodo || [];
         } else {
           this.categories = [];
-          this.types = [];
+          //this.types = [];
           this.typesPeriodo = [];
         }
       } catch (error) {
@@ -828,6 +865,7 @@ export default {
       this.$nextTick(() => {
         this.editedItem = Object.assign({}, this.defaultItem);
         this.originalItem = Object.assign({}, this.defaultItem);
+        this.editedItem.budget_type = this.selectedType;
       });
       this.editedIndex = -1;
     },
@@ -835,6 +873,7 @@ export default {
       try {
         this.data = {};
         this.data.home_id = this.home_id;
+        this.data.type = this.selectedType;
         this.loading = true;
         const result = await handleRequest({
           endpoint: "get-budget-person",
@@ -974,11 +1013,11 @@ export default {
         });
         if (result.success) {
           this.categories = result.data.categories || [];
-          this.types = result.data.types || [];
+          //this.types = result.data.types || [];
           this.typesPeriodo = result.data.typesPeriodo || [];
         } else {
           this.categories = [];
-          this.types = [];
+          //this.types = [];
           this.typesPeriodo= [];
         }
       } catch (error) {

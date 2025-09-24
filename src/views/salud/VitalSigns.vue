@@ -225,7 +225,7 @@
             :class="{ 'oscurecer-persistente': selectedView === 'treatment' }"
             elevation="1"
             rounded="lg"
-            @click="abrirModal({ type: 'treatment', ...treatmentData })"
+            @click="abrirModal({ type: 'treatment', ...treatmentData[0] })"
             style="cursor: pointer"
           >
             <v-avatar size="40" class="me-3" color="purple lighten-4" variant="tonal">
@@ -244,8 +244,8 @@
                     class="text-caption text-grey-darken-1 text-truncate"
                   >
                     {{
-                      treatmentData?.medication
-                        ? [treatmentData.medication, treatmentData.dosage, treatmentData.typeName]
+                      treatmentData[0]?.medication
+                        ? [treatmentData[0].medication, treatmentData[0].dosage, treatmentData[0].typeName]
                             .filter(Boolean)
                             .join(" - ")
                         : $t("treatment.no_definido")
@@ -254,8 +254,8 @@
                 </template>
                 <span>
                   {{
-                    treatmentData?.medication
-                      ? [treatmentData.medication, treatmentData.dosage, treatmentData.typeName]
+                    treatmentData[0]?.medication
+                      ? [treatmentData[0].medication, treatmentData[0].dosage, treatmentData[0].typeName]
                           .filter(Boolean)
                           .join(" - ")
                       : $t("treatment.no_definido")
@@ -266,7 +266,7 @@
               <div class="text-caption text-grey-lighten-1 mt-1">
                 {{
                   formatoFecha(
-                    treatmentData?.startDate || new Date().toISOString().split("T")[0]
+                    treatmentData[0]?.startDate || new Date().toISOString().split("T")[0]
                   )
                 }}
               </div>
@@ -281,6 +281,7 @@
             v-if="selectedView"
             :key="selectedView"
             :selected-person="selectedPerson"
+            @update-vital-signs="initialize"
           />
           <v-alert v-else type="info" variant="tonal">
             {{ $t("vitalSignsnoData") }}

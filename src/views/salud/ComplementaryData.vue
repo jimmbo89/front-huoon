@@ -290,6 +290,7 @@
             v-if="selectedView"
             :key="selectedView"
             :selected-person="selectedPerson"
+            @update-complementary-data="initialize"
           />
         </v-col>
       </v-row>

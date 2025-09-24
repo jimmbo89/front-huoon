@@ -400,7 +400,7 @@
                     <template v-slot:activator="{ props }">
                       <v-text-field
                         v-bind="props"
-                        :model-value="endDateFormatted"
+                        :model-value="endDateInput"
                         variant="underlined"
                         :label="$t('treatment.fields.endDate')"
                         :rules="dateRules"
@@ -412,7 +412,7 @@
                     <v-locale-provider>
                       <v-date-picker
                         color="#03626C"
-                        :model-value="editedItem.endDate ? new Date(editedItem.endDate) : null"
+                        :model-value="endDateInput"
                         @update:model-value="updateEndDate"
                         format="yyyy-MM-dd"
                         :min="editedItem.startDate ? new Date(editedItem.startDate) : null"
@@ -493,6 +493,7 @@ export default {
       required: true
     },
   },
+  emits: ['update-vital-signs'],
   data: () => ({
     selected: shallowRef([2]),
     selected2: null,
@@ -857,9 +858,12 @@ created() {
     this.editedItem.startDate = this.startDateInput;
     this.startDateMenu = false;
   },
-    updateEndDate(val) {
-      this.endDateInput = val;
-      this.editedItem.endDate = this.endDateFormatted;
+    updateEndDate(value) {
+      const year = value.getFullYear();
+    const month = String(value.getMonth() + 1).padStart(2, '0');
+    const day = String(value.getDate()).padStart(2, '0');
+    this.startDateInput = `${year}-${month}-${day}`;
+      this.editedItem.endDate = this.startDateInput;
       this.endDateMenu = false;
     },
     async showAdd() {
@@ -975,6 +979,7 @@ created() {
               this.loading = false;
               this.showAlert("success", result.message, 3000);
               this.initialize();
+              this.$emit('update-vital-signs');
             } else {
               this.loading = false;
               this.showAlert("warning", result.message, 3000);
@@ -1026,6 +1031,7 @@ created() {
               this.loading = false;
               this.showAlert("success", result.message, 3000);
               this.initialize();
+              this.$emit('update-vital-signs');
             } else {
               this.loading = false;
               this.editedIndex = -1;
@@ -1056,6 +1062,8 @@ created() {
       // Asignar a originalItem y editedItem solo las personas seleccionadas
       this.originalItem = Object.assign({}, item);
       this.editedItem = Object.assign({}, item);
+      this.startDateInput = item.startDate;
+      this.endDateInput = item.endDate;
       this.data = {};
       this.data.type = 'Tratamiento';
       try {
@@ -1104,6 +1112,7 @@ created() {
         if (result.success) {
           this.showAlert("success", result.message, 3000);
           this.initialize();
+          this.$emit('update-vital-signs');
         } else {
           this.showAlert("warning", result.message, 3000);
         }

@@ -319,7 +319,7 @@ export default {
       required: true
     },
   },
-
+  emits: ['update-vital-signs'],
   data: () => ({
     selected: shallowRef([2]),
     selected2: null,
@@ -665,6 +665,7 @@ export default {
               this.loading = false;
               this.showAlert("success", result.message, 3000);
               this.initialize();
+              this.$emit('update-vital-signs');
             } else {
               this.loading = false;
               this.showAlert("warning", result.message, 3000);
@@ -736,6 +737,7 @@ export default {
               this.loading = false;
               this.showAlert("success", result.message, 3000);
               this.initialize();
+              this.$emit('update-vital-signs');
             } else {
               this.loading = false;
               this.editedIndex = -1;
@@ -829,6 +831,7 @@ export default {
         if (result.success) {
           this.showAlert("success", result.message, 3000);
           this.initialize();
+          this.$emit('update-vital-signs');
         } else {
           this.showAlert("warning", result.message, 3000);
         }

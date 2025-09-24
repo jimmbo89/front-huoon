@@ -318,6 +318,7 @@ export default {
       required: true
     },
   },
+  emits: ['update-complementary-data'],
   data: () => ({
     selected: shallowRef([2]),
     selected2: null,
@@ -654,6 +655,7 @@ export default {
               this.loading = false;
               this.showAlert("success", result.message, 3000);
               this.initialize();
+              this.$emit('update-complementary-data');
             } else {
               this.loading = false;
               this.showAlert("warning", result.message, 3000);
@@ -725,6 +727,7 @@ export default {
               this.loading = false;
               this.showAlert("success", result.message, 3000);
               this.initialize();
+              this.$emit('update-complementary-data');
             } else {
               this.loading = false;
               this.editedIndex = -1;

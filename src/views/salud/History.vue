@@ -184,11 +184,11 @@
                                 {{ tool.name }}
                             </v-btn>
                 </v-card-actions>
-        <v-divider v-if="this.type === 'Hogar'" />
+        <v-divider />
 
 
 
-        <v-row dense v-if="this.type === 'Hogar'" class="mt-4">
+        <v-row dense class="mt-4">
           <v-col cols="12" sm="12" md="12">
             <v-card class="mx-auto" elevation="1" rounded="lg" border flat>
               <v-list-item height="60">
@@ -306,8 +306,6 @@
           />
         </v-col>
       </v-row>
-
-         <v-divider class="my-4" v-if="this.type === 'Hogar'" />
         <SuggestionsList :items="suggestions" :title="$t('finances.sections.suggestions')" icon="mdi-finance" v-if="this.type === 'Hogar'">
           <template #detail="{ taskData, onClose }">
             <ChatTaskSalud :taskData="taskData" @close-dialog="onClose" />

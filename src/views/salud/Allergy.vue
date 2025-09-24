@@ -527,6 +527,7 @@ export default {
       required: true
     },
   },
+  emits: ['update-medical-information'],
   data: () => ({
     selected: shallowRef([2]),
     selected2: null,
@@ -919,6 +920,7 @@ export default {
             if (result.success) {
               this.showAlert("success", result.message, 3000);
               this.initialize();
+              this.$emit('update-medical-information');
             } else {
               this.showAlert("warning", result.message, 3000);
             }
@@ -962,6 +964,7 @@ export default {
             if (result.success) {
               this.showAlert("success", result.message, 3000);
               this.initialize();
+              this.$emit('update-medical-information');
             } else {
               this.showAlert("warning", result.message, 3000);
             }
@@ -1041,6 +1044,7 @@ export default {
         if (result.success) {
           this.showAlert("success", result.message, 3000);
           this.initialize();
+          this.$emit('update-medical-information');
         } else {
           this.showAlert("warning", result.message, 3000);
         }

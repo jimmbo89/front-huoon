@@ -24,7 +24,8 @@
     <v-card elevation="2" rounded="lg" flat>
       <!-- Encabezado con foto y datos -->
       <v-card-text>
-        <v-col cols="12" sm="9" md="9" class="d-flex align-center">
+      <v-row class="mb-4" align="center" dense>
+        <v-col cols="12" sm="10" md="10" class="d-flex align-center">
           <v-avatar size="48" class="me-3" color="grey-lighten-4" variant="tonal">
             <v-icon color="green-darken-2">mdi-cash-multiple</v-icon>
           </v-avatar>
@@ -35,6 +36,19 @@
             <div class="text-body-2 text-grey-darken-1"></div>
           </div>
         </v-col>
+        <v-col cols="12" sm="2" md="2">
+            <div class="d-flex align-right justify-end pa-2">
+              <v-switch v-model="selectedType" true-value="Personal" false-value="Hogar" :base-color="switchColor"
+                :color="switchColor" hide-details inset class="mb-4 font-weight-bold">
+                <template v-slot:label>
+                  <span class="text-body-1" :style="{ color: switchColor }">
+                    {{ getCurrentName }}
+                  </span>
+                </template>
+              </v-switch>
+            </div>
+          </v-col>
+      </v-row>
 
         <v-divider />
         <v-card-actions class="pa-3 bg-grey-lighten-5 tools-bar">
@@ -122,14 +136,14 @@
                 </div>
 
                 <!-- Categoría / Descripción (40%) -->
-                <div style="width: 35%; min-width: 0" class="text-left">
+                <div style="width: 40%; min-width: 0" class="text-left">
                   {{ $t("finances.fields.budget") }} /
                   {{ $t("finances.fields.description") }}
                 </div>
 
                 <!-- Monto (10%) -->
                 <div
-                  style="width: 10%; min-width: 0"
+                  style="width: 11%; min-width: 0"
                   class="text-center text-green-darken-1"
                 >
                   {{ $t("finances.fields.income") }}
@@ -137,28 +151,28 @@
 
                 <!-- Usado (15%) -->
                 <div
-                  style="width: 10%; min-width: 0"
+                  style="width: 11%; min-width: 0"
                   class="text-center text-red-darken-1"
                 >
                   {{ $t("finances.fields.spent") }}
                 </div>
 
                 <!-- Usado (15%) -->
-                <div style="width: 10%; min-width: 0" class="text-center">
+                <div style="width: 15%; min-width: 0" class="text-center">
                   {{ $t("finances.fields.saldo") }}
                 </div>
 
-                <!-- Tipo (10%) -->
-                <div style="width: 10%; min-width: 0" class="text-center">
+                <!-- Tipo (10%) 
+                <div style="width: 13%; min-width: 0" class="text-center">
                   {{ $t("finances.fields.type") }}
-                </div>
+                </div>-->
 
                 <div style="width: 10%; min-width: 0" class="text-left">
                   {{ $t("finances.fields.file") }}
                 </div>
 
                 <!-- Acciones (10%) -->
-                <div style="width: 10%; min-width: 0" class="d-flex justify-end">
+                <div style="width: 7%; min-width: 0" class="d-flex justify-end">
                   {{ $t("settings.actions") }}
                 </div>
               </v-card-text>
@@ -201,7 +215,7 @@
                     </div>
 
                     <!-- Categoría + Descripción - 40% -->
-                    <div style="width: 35%; min-width: 0" class="d-flex flex-column">
+                    <div style="width: 40%; min-width: 0" class="d-flex flex-column">
                       <div v-if="slotProps.item.income">
                         <div class="text-body-2 text-truncate">
                           {{ slotProps.item.description }}
@@ -223,7 +237,7 @@
 
                     <!-- Monto - 10% -->
                     <div
-                      style="width: 10%; min-width: 0; text-align: center"
+                      style="width: 11%; min-width: 0; text-align: center"
                       class="text-body-2 text-green-darken-1 text-truncate"
                     >
                       {{ formatCurrency(slotProps.item.income) }}
@@ -231,14 +245,14 @@
 
                     <!-- Usado - 15% -->
                     <div
-                      style="width: 10%; min-width: 0; text-align: center"
+                      style="width: 11%; min-width: 0; text-align: center"
                       class="text-body-2 text-red-darken-1 text-truncate"
                     >
                       {{ formatCurrency(slotProps.item.spent) }}
                     </div>
 
                     <div
-                      style="width: 10%; min-width: 0; text-align: center"
+                      style="width: 15%; min-width: 0; text-align: center"
                       class="text-body-2 text-truncate"
                       :class="{
                         'text-green-darken-1': parseFloat(slotProps.item.available) > 0,
@@ -249,8 +263,8 @@
                       {{ formatCurrency(slotProps.item.available) }}
                     </div>
 
-                    <!-- Tipo (con ícono) - 10% -->
-                    <div style="width: 10%; min-width: 0; text-align: center">
+                    <!-- Tipo (con ícono) - 10% 
+                    <div style="width: 13%; min-width: 0; text-align: center">
                       <v-icon
                         :color="getTypeColor(slotProps.item.type)"
                         style="font-size: 10px; margin-right: 4px"
@@ -259,7 +273,7 @@
                       <span class="text-grey-darken-1 text-body-2 text-truncate">
                         {{ slotProps.item.type }}
                       </span>
-                    </div>
+                    </div>-->
 
                     <!-- Moneda (con ícono) - 5% -->
                     <div style="width: 10%; min-width: 0; text-align: center">
@@ -285,7 +299,7 @@
                     <!-- Acciones - 10% -->
                     <div
                       class="d-flex gap-1"
-                      style="width: 10%; justify-content: flex-end; flex-wrap: nowrap"
+                      style="width: 7%; justify-content: flex-end; flex-wrap: nowrap"
                     >
                       <v-btn
                         size="35"
@@ -674,8 +688,20 @@ import { shallowRef } from "vue";
 import { ThemeSymbol } from "vuetify/lib/composables/theme";
 
 export default {
+  name: 'IncomeSpent',
+  props: {
+    types: {
+      type: Array,
+      required: true
+    },
+    type: {
+      type: String,
+      required: true
+    }
+  },
   data: () => ({
     selected: shallowRef([2]),
+    selectedType: '',
     selected2: null,
     step: 0,
     time: null,
@@ -766,12 +792,19 @@ export default {
     },
     editedIndex: -1,
     search: "",
-    types: [],
     budgets: [],
     blance: {},
     selectRules: [(v) => !!v || "Seleccionar al menos un elemento"],
   }),
+  watch: {
+    selectedType(newVal) {
+      // Actualiza budget_type según el valor del switch
+      this.editedItem.type = newVal;
 
+      // Llama al método de inicialización
+      this.initialize();
+    }
+  },
   computed: {
     maxDate() {
       const today = new Date();
@@ -895,12 +928,20 @@ export default {
       const formatted = this.formatCurrency(amount);
       return `Disponible: ${formatted}`;
     },
+    switchColor() {
+      return this.selectedType === 'Personal' ? '#03626C' : '#FB8C00';
+    },
+    getCurrentName() {
+      const type = this.types.find(t => t.id === this.selectedType);
+      return type ? type.name : this.selectedType;
+    },
   },
 
   mounted() {
     this.home_id = JSON.parse(LocalStorageService.getItem("home_id"));
     this.person_id = JSON.parse(LocalStorageService.getItem("person_id"));
-    this.initialize();
+    //this.initialize();
+    this.selectedType = this.type;
   },
   created() {
     this.tools = [
@@ -1099,9 +1140,11 @@ export default {
       this.originalItem = Object.assign({}, this.defaultItem);
       this.dateInput = this.obtenerFechaLocal();
       this.editedItem.date = this.dateInput;
+      this.editedItem.type = this.type;
       this.file = null;
       this.data = {};
       this.data.home_id = this.home_id;
+      this.data.type = this.selectedType;
       this.imgMiniatura = "";
       try {
         const result = await handleRequest({
@@ -1111,7 +1154,7 @@ export default {
         });
 
         if (result.success) {
-          this.types = result.data?.types || [];
+          //this.types = result.data?.types || [];
           this.budgets = result.data?.budgets || [];
           this.balance = result.data?.balance || {};
 
@@ -1119,7 +1162,7 @@ export default {
             this.editedItem.type = this.types[0].id;
           }
         } else {
-          this.types = [];
+          //this.types = [];
           this.budgets = [];
           this.balance = {};
         }
@@ -1149,7 +1192,7 @@ export default {
     async initialize() {
       this.data = {};
       this.data.home_id = this.home_id;
-      this.data.type = "Todas";
+      this.data.type = this.editedItem.type;
       try {
         this.loading = true;
         const result = await handleRequest({
@@ -1205,7 +1248,8 @@ export default {
         const updatedBalance = this.calculateNewAvailable(
           this.balance,
           this.editedItem,
-          "create"
+          "create",
+          this.originalItem
         );
 
         this.editedItem.available = updatedBalance;
@@ -1389,6 +1433,9 @@ export default {
       } else {
         this.icono = "mdi-file";
       }
+      this.data = {};
+      this.data.home_id = this.home_id;
+      this.data.type = this.selectedType;
       try {
         const result = await handleRequest({
           endpoint: "get-finances-data",
@@ -1396,11 +1443,11 @@ export default {
         });
 
         if (result.success) {
-          this.types = result.data?.types || [];
+          //this.types = result.data?.types || [];
           this.budgets = result.data?.budgets || [];
           this.balance = result.data?.balance || {};
         } else {
-          this.types = [];
+          //this.types = [];
           this.budgets = [];
           this.balance = {};
         }
@@ -1433,7 +1480,7 @@ export default {
       this.loading = true;
       try {
         const result = await handleRequest({
-          endpoint: "delete-financial-record",
+          endpoint: "finance-destroy",
           method: "POST",
           data: { id: this.editedItem.id },
         });

@@ -110,17 +110,12 @@
               </div>
 
               <!-- Tipo + Descripción (33%) -->
-              <div style="width: 33%; min-width: 0" class="text-left">
-                {{ $t("familyBackground.fields.type") }}
-              </div>
-
-              <!-- Severidad (10%) -->
-              <div style="width: 30%; min-width: 0" class="text-left">
+              <div style="width: 54%; min-width: 0" class="text-left">
                 {{ $t("familyBackground.fields.disease") }}
               </div>
 
               <!-- Detalles (30%) -->
-              <div style="width: 10%; min-width: 0" class="text-left">
+              <div style="width: 15%; min-width: 0" class="text-left">
                 {{ $t("familyBackground.fields.relationship") }}
               </div>
 
@@ -170,9 +165,9 @@
                   </div>
 
                   <!-- Tipo + Descripción (33%) -->
-                  <div style="width: 33%; min-width: 0" class="d-flex flex-column">
+                  <div style="width: 54%; min-width: 0" class="d-flex flex-column">
                     <div class="text-body-2 text-truncate">
-                      {{ slotProps.item.typeName || "" }}
+                      {{ slotProps.item.disease || "" }}
                     </div>
                     <div class="text-caption text-grey-darken-1 text-truncate mt-1">
                       {{ slotProps.item.details || "" }}
@@ -185,18 +180,8 @@
                     </div>
                   </div>
 
-                  <!-- Severidad (10%) → Mapeado a disease -->
-                  <div style="width: 30%; min-width: 0" class="text-body-2 text-truncate">
-                    <span>{{ slotProps.item.disease || "" }}</span>
-                    <v-tooltip activator="parent" location="bottom" max-width="350px">
-                      <span style="white-space: normal; word-break: break-word">
-                        {{ slotProps.item.disease || "-" }}
-                      </span>
-                    </v-tooltip>
-                  </div>
-
                   <!-- Detalles (30%) → Mapeado a relationship -->
-                  <div style="width: 10%; min-width: 0" class="text-body-2 text-truncate">
+                  <div style="width: 15%; min-width: 0" class="text-body-2 text-truncate">
                     <span>{{ slotProps.item.relationship || "" }}</span>
                   </div>
 
@@ -301,7 +286,7 @@
 
               <!-- Paso 1: Detalles -->
               <v-row dense v-if="step === 0">
-                <v-col cols="12" sm="6">
+                <!--<v-col cols="12" sm="6">
                   <v-autocomplete
                     v-model="editedItem.type_id"
                     :items="backgroundTypes"
@@ -334,7 +319,7 @@
                       </v-list-item>
                     </template>
                   </v-autocomplete>
-                </v-col>
+                </v-col>-->
 
                 <v-col cols="12" sm="6">
                   <v-select
@@ -538,6 +523,7 @@ export default {
       required: true
     },
   },
+  emits: ['update-medical-information'],
   data: () => ({
     selected: shallowRef([2]),
     selected2: null,
@@ -571,7 +557,6 @@ export default {
     backgroundFamilies: [],
     tittlePerson: -1,
     selectedItems: {},
-    backgroundTypes: [],
     relationships: [],
     dateMenu: false,
     dateInput: null,
@@ -780,10 +765,10 @@ export default {
         });
 
         if (result.success) {
-          this.backgroundTypes = result.data?.types || [];
+          //this.backgroundTypes = result.data?.types || [];
           this.relationships = result.data?.relationships || [];
         } else {
-          this.backgroundTypes = [];
+          //this.backgroundTypes = [];
           this.relationships = [];
         }
       } catch (error) {
@@ -878,6 +863,7 @@ export default {
             if (result.success) {
               this.showAlert("success", result.message, 3000);
               this.initialize();
+              this.$emit('update-medical-information');
             } else {
               this.showAlert("warning", result.message, 3000);
             }
@@ -923,6 +909,7 @@ export default {
             if (result.success) {
               this.showAlert("success", result.message, 3000);
               this.initialize();
+              this.$emit('update-medical-information');
             } else {
               this.showAlert("warning", result.message, 3000);
             }
@@ -955,10 +942,10 @@ export default {
         });
 
         if (result.success) {
-          this.backgroundTypes = result.data?.types || [];
+          //this.backgroundTypes = result.data?.types || [];
           this.relationships = result.data?.relationships || [];
         } else {
-          this.backgroundTypes = [];
+          //this.backgroundTypes = [];
           this.relationships = [];
         }
       } catch (error) {
@@ -997,6 +984,7 @@ export default {
         if (result.success) {
           this.showAlert("success", result.message, 3000);
           this.initialize();
+          this.$emit('update-medical-information');
         } else {
           this.showAlert("warning", result.message, 3000);
         }

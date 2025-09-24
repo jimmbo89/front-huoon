@@ -104,7 +104,7 @@
                       <div class="text-caption font-weight-medium">
                         <v-chip color="teal-darken-2" label rounded="lg" variant="text">
                           <v-icon icon="mdi-trending-up"></v-icon>
-                          <span class="text-subtitle-2">{{ budget.remaining }} CLP disponibles</span>
+                          <span class="text-subtitle-2">{{ balance.available }} CLP disponibles</span>
                         </v-chip>
                       </div>
                     </div>
@@ -123,13 +123,13 @@
                       <!-- Consumido - Izquierda -->
                       <v-chip color="red-darken-4" label rounded="lg" variant="text">
                         <v-icon icon="mdi-trending-down" size="small"></v-icon>
-                        <span class="text-subtitle-2 ml-1">{{ budget.used }} CLP consumidos</span>
+                        <span class="text-subtitle-2 ml-1">{{ balance.spent }} CLP consumidos</span>
                       </v-chip>
 
                       <!-- Presupuesto - Derecha -->
                       <v-chip color="green-darken-4" label rounded="lg" variant="text">
                         <v-icon icon="mdi-wallet" size="small"></v-icon>
-                        <span class="text-subtitle-2 ml-1">{{ budget.current }} CLP presupuesto</span>
+                        <span class="text-subtitle-2 ml-1">{{ balance.income }} CLP ingresado</span>
                       </v-chip>
                     </div>
                   </div>
@@ -179,10 +179,10 @@
 
               <!-- Contenedor del gráfico (flexible con scroll si es necesario) -->
               <div class="flex-grow-1 d-flex align-center justify-center position-relative">
-                <v-pie :key="selectedGroup" :items="currentItems"
+                <v-pie :key="selectedGroup" :items="currentItems" v-model="selectedItems"
                   :legend="{ position: $vuetify.display.mdAndUp ? 'right' : 'bottom' }" :tooltip="true" gap="4"
                   inner-cut="70" item-key="id" rounded="1" animation hide-slice reveal size="230">
-                  <!-- Centro del gráfico -->
+
                   <template v-slot:center>
                     <div class="text-center">
                       <div class="text-h6 font-weight-bold">{{ totalDisplay }}</div>
@@ -190,22 +190,22 @@
                     </div>
                   </template>
 
-                  <!-- Tooltip personalizado: muestra nombre, consumo y porcentaje -->
                   <template v-slot:tooltip="{ item }">
-                    <!-- Nombre -->
                     <div class="font-weight-bold">{{ item.title }}</div>
 
-                    <!-- Consumido X de Y (X%) -->
                     <div>
                       Consumido:
                       {{ formatCurrency(parseFloat(item.raw.amount || 0)) }}
                       de
-                      {{ formatCurrency(parseFloat(item.raw.budget || 0)) }}
+                      {{ formatCurrency(
+                          selectedGroup 
+                            ? parseFloat(item.raw.budget || 0) 
+                            : dataSpent.totalAmount
+                        ) }}
                       ({{ item.value }}%)
                     </div>
                   </template>
 
-                  <!-- Leyenda -->
                   <template v-slot:legend="{ items, toggle, isActive }">
                     <v-list class="py-0 bg-transparent" density="compact"
                       :width="$vuetify.display.mdAndUp ? 250 : '100%'" max-height="200" style="overflow-y: auto;">
@@ -620,7 +620,9 @@
     <v-card class="bg-grey-lighten-4">
       <v-card-text>
         <!-- Aquí pasamos el 'selectedWorker' al componente dentro del diálogo -->
-        <Budget />
+        <Budget 
+        :types="types"
+        :type="budget_type"/>
       </v-card-text>
       <v-divider></v-divider>
       <v-card-actions>
@@ -633,7 +635,10 @@
     <v-card class="bg-grey-lighten-4">
       <v-card-text>
         <!-- Aquí pasamos el 'selectedWorker' al componente dentro del diálogo -->
-        <IncomeSpent />
+        <IncomeSpent 
+        :types="types"
+        :type="budget_type"/>
+        
       </v-card-text>
       <v-divider></v-divider>
       <v-card-actions>
@@ -1030,6 +1035,7 @@ export default {
         method: "",
         income: null,
         spent: null,
+        available: null,
         description: "",
         date: null,
         image: null,
@@ -1041,6 +1047,7 @@ export default {
         method: "",
         income: null,
         spent: null,
+        available: null,
         description: "",
         date: null,
         image: null,
@@ -1052,6 +1059,7 @@ export default {
         method: "",
         income: null,
         spent: null,
+        available: null,
         description: "",
         date: null,
         image: null,
@@ -1126,6 +1134,7 @@ export default {
       spent: {},
       //grafico de pie
         selectedGroup: null, // null = mostrar resumen; si es ID, mostrar subcategorías
+        selectedItems: [],
     dataSpent: null,     // datos del backend
       balance: {},
       budget: {},
@@ -1155,7 +1164,16 @@ export default {
       return `${year}-${month}-${day}`;
     // Esto asegura que sea el inicio del día (evita problemas de hora/minuto)
   },
-      currentItems() {
+     
+
+  /*totalDisplay() {
+    if (!this.dataSpent) return "0.00";
+    return (this.selectedGroup 
+      ? (this.dataSpent.totalBudgetByGroup?.[this.selectedGroup] || 0)
+      : this.dataSpent.totalAmount
+    ).toFixed(2);
+  },*/
+   currentItems() {
     if (!this.dataSpent) return [];
 
     if (!this.selectedGroup) {
@@ -1170,15 +1188,25 @@ export default {
     // Vista detalle: subcategorías
     return this.dataSpent.details[this.selectedGroup] || [];
   },
-
   totalDisplay() {
-    if (!this.dataSpent) return "0.00";
+  if (!this.dataSpent) return "0.00";
+
+  // Si no hay selecciones, usar el valor original
+  if (this.selectedItems.length === 0) {
     return (this.selectedGroup 
       ? (this.dataSpent.totalBudgetByGroup?.[this.selectedGroup] || 0)
       : this.dataSpent.totalAmount
     ).toFixed(2);
-  },
+  }
 
+  // Si hay selecciones, sumar solo los montos de los items seleccionados
+  const total = this.selectedItems.reduce((sum, key) => {
+    const item = this.currentItems.find(i => i.id === key);
+    return sum + (parseFloat(item?.raw?.amount || item?.amount || 0) || 0);
+  }, 0);
+
+  return total.toFixed(2);
+},
   selectItems() {
     if (!this.dataSpent) return [];
     return [
@@ -1191,8 +1219,8 @@ export default {
     ];
   },
    currentUsageAsNumber() {
-  const str = this.budget?.currentUsage || '0';
-  const num = parseFloat(str);
+  const str = this.balance?.spentPercentage || '0';
+  const num = parseFloat(str).toFixed(2);
   return isNaN(num) ? 0 : num;
 },
     progressColor() {
@@ -1854,11 +1882,11 @@ export default {
           // Si la solicitud es exitosa, asignamos las sucursales
           this.income = result.data?.incomeCard || [];
           this.spent = result.data?.spentCard || [];
-          //this.balance = result.data?.balanceCard || [];
+          this.balance = result.data?.balance || [];
           this.suggestions = result.data?.suggestions || [];
           this.statusuggestions = result.data?.statusuggestions || [];
           this.movent = result.data?.movementsCard || {};
-          this.budget = result.data?.budgetCard || [];
+          //this.budget = result.data?.budgetCard || [];
           this.customIncomeData = result.data?.financeData.customIncomeData || Array(12).fill(0);
           this.customSpentData = result.data?.financeData.customSpentData || Array(12).fill(0);
           console.log("customIncomeData:", this.customIncomeData);
@@ -1871,7 +1899,7 @@ export default {
           // Si no hay datos, asignamos un array vacío
           this.spent = [];
           this.income = [];
-          //this.balance = [];
+          this.balance = [];
           this.suggestions = [];
           this.movent = {};
           this.statusuggestions = [];
@@ -1919,6 +1947,7 @@ export default {
       this.editedIndex = 1;
       this.editedItem = Object.assign({}, this.defaultItem);
       this.originalItem = Object.assign({}, this.defaultItem);
+      this.editedItem.type = this.budget_type;
       this.file = null;
       this.imgMiniatura = "";
       this.data = {};
@@ -2022,6 +2051,38 @@ export default {
       this.imgMiniatura = "";
       this.initialize();
     },
+
+    calculateNewAvailable(currentBalance, editedItem, mode, originalItem = {}) {
+      // Determinar la clave según el texto del type
+      const typeKey = editedItem.type === "Hogar" ? "home" : "personal";
+
+      // Obtener la categoría actual
+      const category = currentBalance[typeKey];
+      if (!category) return 0;
+
+      // Clonamos los valores actuales para trabajar con ellos
+      let { income, spent, available } = { ...category };
+
+      // Si es edición, revertimos el efecto del registro original
+      if (mode === "update") {
+        const origIncome = parseFloat(originalItem.income) || 0;
+        const origSpent = parseFloat(originalItem.spent) || 0;
+
+        income -= origIncome;
+        spent -= origSpent;
+        available = income - spent; // Recalculamos para evitar errores de redondeo
+      }
+
+      // Aplicamos los nuevos valores
+      const newIncome = parseFloat(editedItem.income) || 0;
+      const newSpent = parseFloat(editedItem.spent) || 0;
+
+      income += newIncome;
+      spent += newSpent;
+      available = income - spent;
+
+      return available; // 👈 Solo devolvemos el número, ej: 287000
+    },
     async save() {
       this.loading = true;
 
@@ -2037,8 +2098,15 @@ export default {
         "type",
         "method",
         "budget_id",
+        "available"
       ];
-
+      const updatedBalance = this.calculateNewAvailable(
+          this.balance,
+          this.editedItem,
+          "create",
+          this.originalItem
+        );
+        this.editedItem.available = updatedBalance;
       let updatedFields = Object.keys(this.editedItem)
         .filter(
           (key) =>
