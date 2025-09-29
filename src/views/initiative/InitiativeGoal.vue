@@ -1,4 +1,5 @@
 <template>
+  <div>
   <v-snackbar class="mt-12" location="right top" :timeout="sb_timeout" :color="sb_type" elevation="24"
     :multi-line="true" vertical v-model="snackbar">
     <v-row>
@@ -47,7 +48,7 @@
       <!-- Spacer (solo visible en md+) -->
       <v-spacer class="d-none d-md-block"></v-spacer>
       <!-- Campo de búsqueda global -->
-      <div class="flex-grow-1" style="max-width: 300px">
+       <div class="flex-grow-1" style="max-width: 300px">
         <v-text-field
           v-model="search"
           density="compact"
@@ -58,33 +59,6 @@
           single-line
           flat
         >
-        <template v-slot:append-inner>
-        <v-locale-provider>
-      <v-menu
-        v-model="dateMenu"
-        :close-on-content-click="false"
-        transition="scale-transition"
-        offset-y
-        min-width="auto"
-      >
-        <template v-slot:activator="{ props }">
-          <v-icon
-            v-bind="props"
-            color="#03626C"
-            style="cursor: pointer"
-            @click.stop="dateMenu = true"
-          >
-            mdi-calendar
-          </v-icon>
-        </template>
-        <v-date-picker
-          color="#03626C"
-          v-model="pickerDate"
-          @update:model-value="updateSearchDate"
-        ></v-date-picker>
-      </v-menu>
-      </v-locale-provider>
-    </template>
         </v-text-field>
       </div>
     </v-card-title>
@@ -92,7 +66,7 @@
     <!-- Tabla de datos -->
     <v-data-table
       :headers="headers"
-      :items="filteredTasks"
+      :items="initiatives"
       :search="search"
       :items-per-page-text="$t('dataTable.itemsPerPageText')"
       :no-data-text="$t('dataTable.noDataText')"
@@ -107,7 +81,6 @@
         border: none !important;
         outline: none !important;
         box-shadow: none !important;
-        padding: 0;
       "
     >
       <!-- Header personalizado (simulado) -->
@@ -137,38 +110,27 @@
               align-items: center;
             "
           >
-            <!-- Fecha (7%) -->
-            <div style="width: 7%; min-width: 0" class="text-left">
-              {{ $t("taskForm.fields.date") }}
-            </div>
-
             <!-- Nombre y descripción (40%) -->
-            <div style="width: 40%; min-width: 0" class="text-left">
+            <div style="width: 50%; min-width: 0" class="text-left">
               {{ $t("taskForm.fields.title") }} / {{ $t("taskForm.fields.description") }}
             </div>
 
-            <!-- Ubicación (15%) -->
-            <div style="width: 15%; min-width: 0" class="text-left">
-              {{ $t("taskForm.fields.participants") }}
-            </div>
-
             <!-- Tipo (10%) -->
-            <div style="width: 10%; min-width: 0" class="text-center">
+            <div style="width: 15%; min-width: 0" class="text-center">
               {{ $t("taskForm.fields.recurrence") }}
             </div>
 
             <!-- Prioridad (10%) -->
-            <div style="width: 10%; min-width: 0" class="text-center">
+            <div style="width: 15%; min-width: 0" class="text-center">
               {{ $t("taskForm.fields.priority") }}
             </div>
 
-            <!-- Estado (13%) -->
-            <div style="width: 13%; min-width: 0" class="text-center">
-              {{ $t("taskForm.fields.status") }}
+            <div style="width: 13%; min-width: 0" class="d-flex justify-center">
+              Tipo
             </div>
 
             <!-- Acciones (5%) -->
-            <div style="width: 5%; min-width: 0" class="d-flex justify-end">
+            <div style="width: 7%; min-width: 0" class="d-flex justify-center">
               {{ $t("settings.actions") }}
             </div>
           </v-card-text>
@@ -189,28 +151,9 @@
                 class="d-flex align-center pa-2"
                 style="width: 100%; min-width: 0"
               >
-                <!-- Fecha con barra lateral de color - 7% -->
-                <div style="width: 7%; min-width: 0" class="d-flex align-center">
-                  <div
-                    class="icono-concavo d-flex flex-column justify-center justify-start mr-2"
-                    :class="`bg-${getTypeColor(slotProps.item.type)}`"
-                    style="min-height: 48px; min-width: 48px; border-radius: 8px;"
-                  >
-                    <div class="date-display text-center" style="font-size: 0.95em">
-                      {{ formatIntuitiveDate(slotProps.item.start_date) }}
-                    </div>
-                    <div
-                      v-if="slotProps.item.start_time"
-                      class="time-display text-center"
-                      style="font-size: 0.80em; margin-top: 2px"
-                    >
-                      {{ formatTime(slotProps.item.start_time) }}
-                    </div>
-                  </div>
-                </div>
 
                 <!-- Nombre + Descripción - 40% -->
-                <div style="width: 40%; min-width: 0" class="d-flex flex-column">
+                <div style="width: 50%; min-width: 0" class="d-flex flex-column">
                   <div class="font-weight-bold text-body-2 text-truncate">
                     {{ slotProps.item.title }}
                   </div>
@@ -224,164 +167,46 @@
                   </v-tooltip>
                 </div>
 
-                <!-- Ubicación - 15% -->
-                <div style="width: 15%; min-width: 0" class="text-body-2 text-truncate">
-                <v-tooltip v-for="person in slotProps.item.people" :key="person.id" bottom :open-delay="300"
-                  :close-delay="100">
-                  <template v-slot:activator="{ props }">
-                    <v-avatar class="avatar-item hover-expand" size="32" v-bind="props">
-                      <v-img :src="`${this.$axios.defaults.baseURL}images/${
-                          person.image
-                        }`" alt="avatar" />
-                    </v-avatar>
-                  </template>
-                  <span>{{ person.name }}<br />{{ person.roleName }}</span>
-                </v-tooltip>
-              </div>
-
                 <!-- Tipo - 10% -->
-                <div style="width: 10%; min-width: 0; text-align: center">
-                  <!--<v-icon
-                    :color="getTypeColor(slotProps.item.type)"
-                    style="font-size: 10px; margin-right: 4px"
-                    icon="mdi-circle"
-                  ></v-icon>-->
+                <div style="width: 15%; min-width: 0; text-align: center">
                   <span class="text-body-2 text-truncate">
                     {{ slotProps.item.recurrence }}
                   </span>
                 </div>
 
                 <!-- Prioridad - 10% -->
-                <div style="width: 10%; min-width: 0; text-align: center">
+                <div style="width: 15%; min-width: 0; text-align: center">
                   <span class="text-body-2 text-truncate">
                     {{ slotProps.item.namePriority }}
                   </span>
                 </div>
 
-                <!-- Estado - 13% -->
-                <div style="width: 13%; min-width: 0; text-align: center">
-                  <v-dialog v-model="slotProps.item.statusDialog" width="400">
-                    <template v-slot:activator="{ props }">
-                      <v-btn
-                        v-bind="props"
-                        :color="'#' + (getStatusById(slotProps.item.status_id)?.colorStatus || 'grey')"
-                        variant="text"
-                        size="small"
-                        :prepend-icon="getStatusById(slotProps.item.status_id)?.iconStatus || 'mdi-help-circle'"
-                        class="text-body-2"
-                      >
-                        {{ getStatusById(slotProps.item.status_id)?.nameStatus || "Desconocido" }}
-                      </v-btn>
-                    </template>
-                    <v-card>
-                      <v-card-title class="pa-4 text-center">
-                        {{ $t("taskForm.updateStatus") }}
-                      </v-card-title>
-                      <v-divider></v-divider>
-                      <v-card-text class="pa-0">
-                        <v-row class="px-2 pb-1" dense>
-                          <v-col
-                            cols="12"
-                            v-for="(statusOption, i) in status"
-                            :key="i"
-                            class="py-1"
-                          >
-                            <v-card
-                              @click="changeTaskStatus(slotProps.item, statusOption.id)"
-                              :class="[
-                                'status-option mx-1',
-                                { 'current-status': slotProps.item.status_id === statusOption.id },
-                              ]"
-                              :style="
-                                slotProps.item.status_id === statusOption.id
-                                  ? {
-                                      'background-color': `#${statusOption.colorStatus}`,
-                                      'border-color': `#${statusOption.colorStatus}`,
-                                      color: 'white',
-                                    }
-                                  : {}
-                              "
-                              variant="outlined"
-                              :elevation="slotProps.item.status_id === statusOption.id ? 2 : 0"
-                              style="border-radius: 12px; cursor: pointer"
-                            >
-                              <v-card-item class="pa-2">
-                                <div class="d-flex align-center">
-                                  <v-icon
-                                    :color="
-                                      slotProps.item.status_id === statusOption.id
-                                        ? 'white'
-                                        : '#' + statusOption.colorStatus
-                                    "
-                                    :icon="statusOption.iconStatus"
-                                    size="large"
-                                    class="mr-3"
-                                  ></v-icon>
-                                  <v-card-title
-                                    :style="{
-                                      color:
-                                        slotProps.item.status_id === statusOption.id
-                                          ? 'white'
-                                          : 'inherit',
-                                      'font-size': '1rem',
-                                    }"
-                                  >
-                                    {{ statusOption.nameStatus }}
-                                  </v-card-title>
-                                  <v-spacer></v-spacer>
-                                  <v-icon
-                                    v-if="slotProps.item.status_id === statusOption.id"
-                                    color="white"
-                                    icon="mdi-check-circle"
-                                  ></v-icon>
-                                </div>
-                              </v-card-item>
-                            </v-card>
-                          </v-col>
-                        </v-row>
-                      </v-card-text>
-                      <v-divider></v-divider>
-                      <v-card-actions>
-                        <v-spacer></v-spacer>
-                        <v-btn
-                          variant="flat"
-                          color="#03626C"
-                          @click="slotProps.item.statusDialog = false"
-                        >
-                          {{ $t("buttons.cancel") }}
-                        </v-btn>
-                      </v-card-actions>
-                    </v-card>
-                  </v-dialog>
-                </div>
+                <div style="width: 12%; min-width: 0; text-align: center">
+                  <v-avatar size="24" :color="'#' + getTaskTypeColor(slotProps.item.task_type)" class="mr-1">
+                    <v-icon size="16" color="white">
+                      {{ getTaskTypeIcon(slotProps.item.task_type)  }}
+                    </v-icon>
+                  </v-avatar>
+                  <span class="text-body-2">
+                    {{ slotProps.item.task_type }}
+                  </span>
+              </div>
 
                 <!-- Acciones - 5% -->
                 <div
                   class="d-flex gap-1"
-                  style="width: 5%; justify-content: flex-end; flex-wrap: nowrap"
+                  style="width: 7%; justify-content: flex-end; flex-wrap: nowrap"
                 >
                   <v-btn
                     size="35"
                     icon
                     variant="text"
                     color="green-darken-2"
-                    @click="editItem(slotProps.item)"
+                    @click="showAdd(slotProps.item)"
                     class="flex-shrink-0 mr-1"
-                    :title="$t('buttons.edit')"
+                    :title="$t('buttons.add')"
                   >
-                    <v-icon size="20">mdi-pencil</v-icon>
-                  </v-btn>
-
-                  <v-btn
-                    size="35"
-                    icon
-                    variant="text"
-                    color="red-darken-2"
-                    @click="deleteItem(slotProps.item)"
-                    class="flex-shrink-0"
-                    :title="$t('buttons.delete')"
-                  >
-                    <v-icon size="20">mdi-delete</v-icon>
+                    <v-icon size="20">mdi-plus</v-icon>
                   </v-btn>
                 </div>
               </v-card-text>
@@ -772,6 +597,7 @@
       </v-card-text>
     </v-card>
   </v-dialog>
+  </div>
 </template>
 
 <script>
@@ -853,19 +679,17 @@ export default {
     person_id: "",
     role_id: "",
     task_id: "",
+    initiatives: [],
     timeSlots: [], // Inicialmente vacío
     selectedPerson: null, // Persona seleccionada en el formulario
     selectedRole: null, // Rol seleccionado en el formulario
    search: "",
        headers: [
-        { title: "Fecha", key: "start_date", sortable: false },
         { title: "Título", key: "title", sortable: false },
         { title: "Descripción", key: "description", sortable: false },
-        { title: "Ubicación", key: "geo_location", sortable: false },
-        { title: "Tipo", key: "typeName", sortable: false },
+        { title: "Tipo", key: "task_type", sortable: false },
         { title: "Recurrencia", key: "recurrence", sortable: false },
         { title: "Prioridad", key: "namePriority", sortable: false },
-        { title: "Estado", key: "status_id", sortable: false },
         { title: "Acciones", key: "actions", sortable: false },
       ],
     headersPeople: [
@@ -1115,11 +939,35 @@ export default {
   mounted() {
     this.home_id = JSON.parse(LocalStorageService.getItem("home_id"));
     this.person_id = JSON.parse(LocalStorageService.getItem("person_id"));
-    //this.initialize();
+    this.initialize();
     this.timeSlots = this.generateTimeSlots(); // Genera los horarios al montar el componente
     this.editedItem.task_type = this.task_type;
   },
   methods: {
+    getTaskTypeIcon(type) {
+    const icons = {
+      Personal: 'mdi-account-outline',
+      Hogar: 'mdi-home-outline',
+      Trabajo: 'mdi-briefcase-outline',
+      Salud: 'mdi-heart-pulse',
+      Otro: 'mdi-puzzle-outline',
+      Inactiva: 'mdi-cancel',
+      Activa: 'mdi-check-circle-outline'
+    };
+    return icons[type] || 'mdi-tag-outline';
+  },
+  getTaskTypeColor(type) {
+    const colors = {
+      Personal: '2196F3', // azul
+      Hogar: 'FF9800',   // naranja
+      Trabajo: '9C27B0', // morado
+      Salud: '4CAF50',   // verde
+      Otro: '9E9E9E',    // gris
+      Inactiva: 'F44336',
+      Activa: '4CAF50',
+    };
+    return colors[type] || '757575';
+  },
     async handleSkip(){
       this.dialogSuggested = false;
     },
@@ -1603,11 +1451,13 @@ export default {
       });
       this.dialogAssignedPeople = true;
     },
-    async showAdd() {
+    async showAdd(item) {
       (this.file = null),
         (this.imgMiniatura = ""),
         (this.showDetails = false),
         (this.data = {});
+       this.editedItem = Object.assign({}, this.defaultItem, item);
+        //this.originalItem = _.cloneDeep(this.editedItem);
         this.input = this.obtenerFechaLocal();
       this.editedItem.start_date = this.input;
       this.editedItem.home_id = this.home_id;
@@ -1623,19 +1473,7 @@ export default {
           // Si la solicitud es exitosa, asignamos las sucursales
           this.categories = result.data?.taskcategories || [];
           this.priorities = result.data?.taskpriorities || [];
-          const normalPriority = this.priorities.find(
-            (priority) => priority.name === "Normal"
-          );
-          if (normalPriority) {
-            this.editedItem.priority_id = normalPriority.id;
-          }
           this.recurrences = result.data?.taskrecurrences || [];
-          const diaryRecurrence = this.recurrences.find(
-            (recurrence) => recurrence.recurrenceName === "Diaria"
-          );
-          if (diaryRecurrence) {
-            this.editedItem.recurrence = diaryRecurrence.name;
-          }
           this.people = result.data?.taskpeople || [];
           this.roles = result.data?.taskroles || [];
           this.typetasks = result.data?.tasktype || [];
@@ -1721,34 +1559,24 @@ export default {
         this.editedItem.people.splice(index, 1);
       }
     },
-    /*async initialize() {
-      /*this.data = {};
-      this.data.home_id = this.home_id;
-      const today = new Date();
-      const year = today.getFullYear();
-      const month = String(today.getMonth() + 1).padStart(2, "0"); // Meses son 0-11
-      const day = String(today.getDate()).padStart(2, "0");
-      const formattedDate = `${year}-${month}-${day}`; // Formato "YYYY-MM-DD"
+    async initialize() {
+      this.data = {};
+      this.data.status = 'Activa';
       this.data.task_type = this.task_type;
-      this.data.type = 'Meta';
       //this.data.start_date = formattedDate;
       try {
         this.loading = true;
         const result = await handleRequest({
-          endpoint: "task-date-web",
+          endpoint: "get-active-initiative",
           method: "POST",
           data: this.data,
         });
         if (result.success) {
           // Si la solicitud es exitosa, asignamos las sucursales
-          this.tasks = (result.data?.tasks || []).filter(task => 
-            task.type === 'Meta'
-          );
-          this.status = result.data?.status || []; // Si no hay roles, asigna un arreglo vacío
+          this.initiatives = result.data?.initiatives || [];
         } else {
           // Si no hay datos, asignamos un array vacío
-          this.tasks = [];
-          this.status = [];
+          this.initiatives = [];
           //this.showAlert('success', result.message || 'No hay tareas disponibles.', 3000);
         }
       } catch (error) {
@@ -1761,9 +1589,9 @@ export default {
         );
       } finally {
         this.loading = false;
-      }*/
-     /*this.$emit('goals-updated');
-    },*/
+      }
+     //this.$emit('goals-updated');
+    },
     getTypeIcon(type) {
       switch (type) {
         case "Task":
@@ -1875,10 +1703,12 @@ export default {
               this.loading = false;
               this.showAlert("success", result.message, 3000);
               if (result.data?.suggestedTasks?.length > 0) {
-                this.suggestedTasks = result.data.suggestedTasks;
-                this.dialogSuggested = true;
+                this.$emit('save-form');
+                this.$emit('suggested-tasks', result.data.suggestedTasks);
               }
-              this.$emit('goals-updated');
+              else{
+                this.$emit('save-form');
+              }
               //this.initialize();
             } else {
               this.loading = false;

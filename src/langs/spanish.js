@@ -1417,7 +1417,7 @@ const spanish = {
       },
     },
     pets: {
-      title: "Mascotas asociadas",
+      title: "Mascotas del hogar",
       empty: "No hay mascotas registradas",
       search: "Buscar mascotas...",
       addButton: "Registrar nueva mascota",

@@ -833,6 +833,7 @@ created() {
 
     // Formatear a YYYY-MM-DD
     this.editedItem.endDate = endDate.toISOString().split('T')[0];
+    this.endDateInput = endDate.toISOString().split('T')[0];
   } catch (error) {
     console.error('Error calculando fecha final:', error);
     this.editedItem.endDate = '';
@@ -1103,7 +1104,7 @@ created() {
           id: this.editedItem.id,
         };
         const result = await handleRequest({
-          endpoint: "physical-exams-delete",
+          endpoint: "treatment-delete",
           method: "POST",
           data: request,
         });

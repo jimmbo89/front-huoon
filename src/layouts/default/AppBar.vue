@@ -234,9 +234,12 @@
               <template v-slot:prepend>
                 <v-icon :icon="item.icon" size="small"></v-icon>
               </template>
-              <v-list-item-title class="text-body-1">{{
-                $t(`settings.${item.to.replace("/", "")}`)
-              }}</v-list-item-title>
+              <v-list-item-title class="text-body-1"> {{
+                    $t(`settings.${item.to.replace("/", "")}`) !== `settings.${item.to.replace("/", "")}`
+                      ? $t(`settings.${item.to.replace("/", "")}`)
+                      : item.title
+                  }}
+              </v-list-item-title>
             </v-list-item>
           </v-list>
         </v-menu>
@@ -730,7 +733,8 @@ export default {
       { title: "Roles", icon: "mdi-account-cog-outline", to: "/role" },
       { title: "Estados", icon: "mdi-check-circle-outline", to: "/status" },
       { title: "Tipos de Hogar", icon: "mdi-home-group", to: "/hometype" },
-      { title: "Tipos de Salud", icon: "mdi-heart-pulse", to: "/type" },
+      { title: "Tipos", icon: "mdi-tag", to: "/type" },
+      { title: "Iniciativas de Metas", icon: "mdi-target", to: "/initiatives" },
       //{ title: "Historias Clínicas", icon: "mdi-clipboard-text-outline", to: "/history" },
       /*{ title: "Consultas Médicas", icon: "mdi-stethoscope", to: "/consultation" },
       { title: "Exámenes Médicos", icon: "mdi-microscope", to: "/exam" },

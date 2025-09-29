@@ -239,19 +239,37 @@
                   <v-divider></v-divider>
 
                   <v-card-text class="pa-4">
-                    <v-row dense class="d-flex flex-wrap justify-left">
-                      <div v-for="category in categoryAvailability" :key="category.id"
-                        class="mx-1 my-1 d-flex justify-left" @click="showProducts()" style="cursor: pointer;">
+                    <v-row dense class="d-flex flex-wrap">
+                      <v-col
+                        v-for="category in categoryAvailability"
+                        :key="category.id"
+                        :cols="$vuetify.display.xs ? 4 : 2" 
+                        class="pa-1 d-flex justify-center align-center"
+                        @click="showProducts()"
+                        style="cursor: pointer;"
+                      >
                         <v-tooltip top>
                           <template v-slot:activator="{ props }">
-                            <v-sheet class="pa-1 text-center d-flex flex-column justify-center align-center"
-                              rounded="lg" outlined v-bind="props" :style="{
-                                  width: $vuetify.display.xs ? '90px' : '120px',
-                                  height: $vuetify.display.xs ? '90px' : '120px'
-                                }" elevation="1">
-                              <v-progress-circular :model-value="category.percentage"
-                                :size="$vuetify.display.xs ? 50 : 70" width="5"
-                                :color="getCategoryColor(category.percentage)" class="mb-1">
+                            <v-sheet
+                              class="pa-1 text-center d-flex flex-column justify-center align-center"
+                              rounded="lg"
+                              outlined
+                              v-bind="props"
+                              elevation="1"
+                              :style="{
+                                width: '100%',
+                                height: '100%',
+                                maxWidth: $vuetify.display.xs ? '90px' : '140px',
+                                maxHeight: $vuetify.display.xs ? '90px' : '140px'
+                              }"
+                            >
+                              <v-progress-circular
+                                :model-value="category.percentage"
+                                :size="$vuetify.display.xs ? 50 : 70"
+                                width="5"
+                                :color="getCategoryColor(category.percentage)"
+                                class="mb-1"
+                              >
                                 <strong class="font-weight-bold">{{ category.totalQuantity }}</strong>
                               </v-progress-circular>
                               <div class="mt-2 font-weight-medium text-center" style="line-height: 1.1">
@@ -260,11 +278,10 @@
                             </v-sheet>
                           </template>
                           <span>
-                            {{ category.totalQuantity }} productos de {{ totalGeneral }} totales ({{ category.percentage
-                            }}%)
+                            {{ category.totalQuantity }} productos de {{ totalGeneral }} totales ({{ category.percentage }}%)
                           </span>
                         </v-tooltip>
-                      </div>
+                      </v-col>
                     </v-row>
                   </v-card-text>
                 </v-card>
@@ -547,9 +564,13 @@
                     <img v-if="imagenDisponible()" :src="imgedit" height="120" width="210" />
                   </v-card>
                 </v-col>
-                <v-col cols="12" md="12">
+                <v-col cols="12" md="6">
                   <v-textarea v-model="editedItemProduct.additional_notes"
-                    :label="$t('product.fields.additional_notes')" variant="underlined"></v-textarea>
+                    :label="$t('product.fields.additional_notes')" variant="underlined" :rwos="3"></v-textarea>
+                </v-col>
+                <v-col cols="12" md="6">
+                <v-textarea v-model="editedItemProduct.purchase_place" :label="$t('product.fields.purchase_place')"
+                    variant="underlined" :rwos="3"></v-textarea>
                 </v-col>
               </v-row>
 
@@ -595,15 +616,13 @@
                         <template v-slot:prepend>
                           <v-avatar size="24">
                             <template v-if="isImage(item.raw.iconCategory)">
-                              <img :src="`${this.$axios.defaults.baseURL}images/${
-                                    item.raw.iconCategory
-                                  }?t=${Date.now()}`" alt="icon" />
+                              <img :src="getImageUrl(item.raw.iconCategory)" alt="icon" />
                             </template>
                             <template v-else>
-                              <v-icon>{{ getIconName(item.raw.iconCategory) }}</v-icon>
+                              <v-icon :color="normalizeHexColor(item.raw.colorCategory)">{{ getIconName(item.raw.iconCategory) }}</v-icon>
                             </template>
                           </v-avatar>
-                        </template>
+                        </template>    
                       </v-list-item>
                     </template>
                   </v-autocomplete>
@@ -638,7 +657,7 @@
                 </v-col>
               </v-row>
 
-              <!-- Paso 3: Configuración adicional -->
+              <!-- Paso 3: Configuración adicional 
               <v-row dense v-if="stepP === 2">
                 <v-col cols="12" md="6">
                   <v-text-field v-model="editedItemProduct.frequency" :label="$t('product.fields.frequency')"
@@ -653,7 +672,7 @@
                   <v-text-field v-model="editedItemProduct.purchase_place" :label="$t('product.fields.purchase_place')"
                     variant="underlined"></v-text-field>
                 </v-col>
-              </v-row>
+              </v-row>-->
 
               <!-- Navegación -->
               <div class="d-flex justify-space-between mt-8">
@@ -705,7 +724,7 @@ export default {
     stepsP: [
       { title: "basic", subtitle: "basic_information" },
       { title: "purchase", subtitle: "purchase_details" },
-      { title: "additional", subtitle: "additional_configuration" },
+      //{ title: "additional", subtitle: "additional_configuration" },
     ],
     steps: [
       {
@@ -1109,6 +1128,10 @@ created() {
     this.initialize();
   },
   methods: {
+    normalizeHexColor (color) {
+  if (!color) return 'currentColor'; // fallback seguro
+  return color.startsWith('#') ? color : `#${color}`;
+},
     updateDate(value) {
       // value viene como objeto Date desde el date-picker
       // Convertimos a formato YYYY-MM-DD
@@ -1158,6 +1181,15 @@ created() {
       const month = String(hoy.getMonth() + 1).padStart(2, "0");
       const day = String(hoy.getDate()).padStart(2, "0");
       return `${year}-${month}-${day}`;
+    },
+    getImageUrl(imagePath) {
+      return `${this.$axios.defaults.baseURL}images/${imagePath}?t=${this.getCacheTimestamp()}`;
+    },
+    getCacheTimestamp() {
+      // Usamos medianoche (00:00:00) del día actual
+      const now = new Date();
+      const startOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+      return startOfDay.getTime(); // Ej: 1714003200000 (cambia una vez al día)
     },
     async showAddProduct() {
       this.loadingProduct = true;

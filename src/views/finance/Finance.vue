@@ -81,11 +81,22 @@
                 <template v-slot:title> Día {{ todayDay }} de {{ lastDayOfMonth }} </template>
                 <template v-slot:subtitle> {{ fullDate }} </template>
                 <template v-slot:append>
-                  <v-chip class="ma-2" color="teal" label rounded="lg">
-                    <v-icon icon="mdi-emoticon" start></v-icon>
-                    <div class="text-subtitle-2">Excelente!!</div>
-                  </v-chip>
-                </template>
+                    <v-tooltip location="top">
+                      <template v-slot:activator="{ props }">
+                        <v-chip
+                          v-bind="props"
+                          class="ma-2"
+                          :color="currentStatus.color"
+                          label
+                          rounded="lg"
+                        >
+                          <v-icon :icon="currentStatus.icon" start></v-icon>
+                          <span class="text-subtitle-2">{{ currentStatus.levelLabel }}</span>
+                        </v-chip>
+                      </template>
+                      <span>{{ currentStatus.message }}</span>
+                    </v-tooltip>
+                  </template>
               </v-list-item>
 
               <v-divider></v-divider>
@@ -95,7 +106,7 @@
                   <div class="pa-4">
                     <!-- Título: Presupuesto del mes -->
                     <div class="text-subtitle-2 font-weight-bold">
-                      Presupuesto del mes de {{ fullMonth }}
+                      Balance del mes de {{ fullMonth }}
                     </div>
 
                     <!-- Disponible (restante) -->
@@ -110,8 +121,8 @@
                     </div>
                     <!-- Barra de progreso -->
                     <v-progress-linear :model-value="currentUsageAsNumber" :max="100" :color="progressColor"
-                      :bg-color="progressBgColor" :buffer-value="projectedUsage" buffer-opacity="0.3" height="16"
-                      rounded class="mt-2" style="height: 16px !important;">
+                      :bg-color="progressBgColor" height="16"
+                      rounded class="mt-2" style="height: 16px !important;"> <!--:buffer-value="projectedUsage" buffer-opacity="0.3"-->
                       <template v-slot:default>
                         <span class="text-caption font-weight-bold">
                           {{ currentUsageAsNumber }}%
@@ -206,16 +217,29 @@
                   </template>
 
                   <template v-slot:legend="{ items, toggle, isActive }">
-                    <v-list class="py-0 bg-transparent" density="compact"
-                      :width="$vuetify.display.mdAndUp ? 250 : '100%'" max-height="200" style="overflow-y: auto;">
+                    <v-list class="py-0 bg-transparent"  :width="$vuetify.display.mdAndUp ? 250 : '100%'" max-height="200" style="overflow-y: auto;">
                       <v-list-item v-for="item in items" :key="item.key"
-                        :class="['my-1', { 'opacity-40': !isActive(item) }]" :title="item.title" rounded="lg" link
+                        :class="['my-1', { 'opacity-40': !isActive(item) }]" rounded="lg" link
                         @click="toggle(item)">
                         <template v-slot:prepend>
                           <v-avatar :color="item.color" :size="16" />
                         </template>
+                        <template v-slot:title>
+                          <v-tooltip location="top">
+                            <template v-slot:activator="{ props }">
+                              <div
+                                v-bind="props"
+                                class="text-body-1 text-truncate"
+                                style="max-width: 150px;"
+                              >
+                                {{ item.title }}
+                              </div>
+                            </template>
+                            <span>{{ item.title }}</span>
+                          </v-tooltip>
+                        </template>
                         <template v-slot:append>
-                          <div class="text-right">
+                          <div class="text-right text-body-1">
                             <div>{{ item.value }}%</div>
                           </div>
                         </template>
@@ -263,11 +287,10 @@
       </v-card-text>
     </v-card>
   </v-container>
-  <!--dialogo de ingresos-->
+  <!--dialogo de ingresos
   <v-dialog v-model="dialogIncome" fullscreen transition="dialog-bottom-transition">
     <v-card>
       <v-card-text>
-        <!-- Aquí pasamos el 'selectedWorker' al componente dentro del diálogo -->
         <Income />
       </v-card-text>
       <v-divider></v-divider>
@@ -276,13 +299,12 @@
         <v-btn text @click="close">Cerrar</v-btn>
       </v-card-actions>
     </v-card>
-  </v-dialog>
+  </v-dialog>-->
 
-  <!--dialogo de gastos-->
+  <!--dialogo de gastos
   <v-dialog v-model="dialogSpent" fullscreen transition="dialog-bottom-transition">
     <v-card>
       <v-card-text>
-        <!-- Aquí pasamos el 'selectedWorker' al componente dentro del diálogo -->
         <Spent />
       </v-card-text>
       <v-divider></v-divider>
@@ -291,7 +313,7 @@
         <v-btn text @click="close">Cerrar</v-btn>
       </v-card-actions>
     </v-card>
-  </v-dialog>
+  </v-dialog>-->
 
   <v-dialog v-model="dialogAddFinance" fullscreen persistent transition="dialog-bottom-transition"
     content-class="fullscreen-dialog">
@@ -390,9 +412,9 @@
                   <v-text-field v-else v-model="editedItem.spent" :label="$t('finances.fields.spent')"
                     variant="underlined" type="number" :rules="[validateSpent]" :hint="spentHint" persistent-hint
                     required :class="{
-                      'has-negative-hint': availableAmount < 0,
-                      'has-positive-hint': availableAmount > 0,
-                      'has-neutral-hint': availableAmount === 0
+                      'has-negative-hint': availableAmountDynamic < 0,
+                      'has-positive-hint': availableAmountDynamic > 0,
+                      'has-neutral-hint': availableAmountDynamic === 0
                     }" />
                 </v-col>
 
@@ -484,7 +506,7 @@
     </v-form>
   </v-dialog>
 
-  <v-dialog v-model="dialogAddSpent" fullscreen persistent transition="dialog-bottom-transition"
+  <!--<v-dialog v-model="dialogAddSpent" fullscreen persistent transition="dialog-bottom-transition"
     content-class="fullscreen-dialog">
     <v-form ref="form" v-model="valid" class="h-100">
       <v-card class="pa-10">
@@ -494,7 +516,6 @@
           </p>
 
           <v-row class="mt-12">
-            <!-- Side steps -->
             <v-col cols="3">
               <v-timeline align="start" side="end" dense>
                 <v-timeline-item v-for="(s, index) in steps" :key="index" :dot-color="
@@ -522,13 +543,11 @@
               </v-timeline>
             </v-col>
 
-            <!-- Contenido dinámico según paso -->
             <v-col cols="9">
               <h3 class="text-deep-purple-accent-3 mb-8">
                 {{ $t(`finances.steps.${steps[step].title}.title`) }}
               </h3>
 
-              <!-- Paso 1: Detalles del ingreso -->
               <v-row dense v-if="step === 0">
                 <v-col cols="12" sm="6">
                   <v-autocomplete v-model="editedItem.type" :items="types" :label="$t('finances.fields.type')"
@@ -574,7 +593,6 @@
                 </v-col>
               </v-row>
 
-              <!-- Step 2: Descripción y fecha -->
               <v-row dense v-if="step === 1">
                 <v-col cols="12">
                   <v-textarea v-model="editedItem.description" :label="$t('finances.fields.description')"
@@ -594,7 +612,6 @@
                 </v-col>
               </v-row>
 
-              <!-- Navegación -->
               <div class="d-flex justify-space-between mt-8">
                 <v-btn variant="text" class="text-grey-darken-1" @click="step > 0 ? step-- : this.closeDialogSpents()">
                   {{ step === 0 ? $t("buttons.close") : $t("buttons.previous") }}
@@ -613,7 +630,7 @@
         </v-card-text>
       </v-card>
     </v-form>
-  </v-dialog>
+  </v-dialog>-->
 
   <v-dialog v-model="dialogBugets" fullscreen transition="dialog-bottom-transition">
     <v-card class="bg-grey-lighten-4">
@@ -789,7 +806,7 @@
       </v-card-actions>
     </v-card>
   </v-dialog>-->
-  <v-dialog v-model="dialogAlerta" max-width="500">
+  <!--<v-dialog v-model="dialogAlerta" max-width="500">
     <v-card rounded-lg>
       <v-card-title class="text-body-2">Alertas para Hoy</v-card-title>
       <v-card-text>
@@ -819,7 +836,7 @@
         <v-btn text @click="dialogAlerta = false">Cerrar</v-btn>
       </v-card-actions>
     </v-card>
-  </v-dialog>
+  </v-dialog>-->
 </template>
 
 <script>
@@ -835,8 +852,8 @@ import IncomeSpent from "./IncomeSpent.vue";
 import IncomeSpentChart from "./IncomeSpentChart.vue";
 export default {
   components: {
-    Income,
-    Spent,
+    //Income,
+    //Spent,
     Budget,
     ChatTask,
     SuggestionsList,
@@ -846,7 +863,6 @@ export default {
   data() {
     return {
       initializated: false,
-      selectedItems: [],
       tools: [
         {
           name: this.$t("finances.titles.new.finance"),
@@ -1098,6 +1114,7 @@ export default {
       statusuggestions: [],
       people: [],
       movent: {},
+      currentStatus: {},
       finances: {
         incomeCard: {
           current: "0",
@@ -1189,40 +1206,40 @@ export default {
     return this.dataSpent.details[this.selectedGroup] || [];
   },
   totalDisplay() {
-  if (!this.dataSpent) return "0.00";
+    if (!this.dataSpent) return "0.00";
 
-  // Si no hay selecciones, usar el valor original
-  if (this.selectedItems.length === 0) {
-    return (this.selectedGroup 
-      ? (this.dataSpent.totalBudgetByGroup?.[this.selectedGroup] || 0)
-      : this.dataSpent.totalAmount
-    ).toFixed(2);
-  }
+    // Si no hay selecciones, usar el valor original
+    if (this.selectedItems.length === 0) {
+      return (this.selectedGroup 
+        ? (this.dataSpent.totalBudgetByGroup?.[this.selectedGroup] || 0)
+        : this.dataSpent.totalAmount
+      ).toFixed(2);
+    }
 
-  // Si hay selecciones, sumar solo los montos de los items seleccionados
-  const total = this.selectedItems.reduce((sum, key) => {
-    const item = this.currentItems.find(i => i.id === key);
-    return sum + (parseFloat(item?.raw?.amount || item?.amount || 0) || 0);
-  }, 0);
+    // Si hay selecciones, sumar solo los montos de los items seleccionados
+    const total = this.selectedItems.reduce((sum, key) => {
+      const item = this.currentItems.find(i => i.id === key);
+      return sum + (parseFloat(item?.raw?.amount || item?.amount || 0) || 0);
+    }, 0);
 
-  return total.toFixed(2);
-},
-  selectItems() {
-    if (!this.dataSpent) return [];
-    return [
-      { 
-        title: "Todas las categorías", 
-        value: null,
-        icon: "mdi-view-dashboard" // opcional: ícono para "Todas"
-      },
-      ...this.dataSpent.categories // ya incluyen: id, title, value, icon, color
-    ];
+    return total.toFixed(2);
   },
+    selectItems() {
+      if (!this.dataSpent) return [];
+      return [
+        { 
+          title: "Todas las categorías", 
+          value: null,
+          icon: "mdi-view-dashboard" // opcional: ícono para "Todas"
+        },
+        ...this.dataSpent.categories // ya incluyen: id, title, value, icon, color
+      ];
+    },
    currentUsageAsNumber() {
-  const str = this.balance?.spentPercentage || '0';
-  const num = parseFloat(str).toFixed(2);
-  return isNaN(num) ? 0 : num;
-},
+      const str = this.balance?.spentPercentage || '0';
+      const num = parseFloat(str).toFixed(2);
+      return isNaN(num) ? 0 : num;
+    },
     progressColor() {
     const usage = this.currentUsageAsNumber;
     if (usage >= 100) return 'red-darken-4';     // 🔴 Rojo muy oscuro
@@ -1366,8 +1383,21 @@ export default {
       ? this.balance.personal.available
       : this.balance.home?.available || 0;
   },
+  availableAmountDynamic() {
+  if (!this.editedItem.type || !this.balance) return 0;
+
+  const spent = parseFloat(this.editedItem.spent) || 0;
+
+  if (this.editedItem.type === 'Personal') {
+    const income = this.balance.personal.available || 0;
+    return income - spent;
+  } else {
+    const income = this.balance.home?.available || 0;
+    return income - spent;
+  }
+},
    spentHint() {
-    const amount = this.availableAmount;
+    const amount = this.availableAmountDynamic;
     const formatted = this.formatCurrency(amount);
     return `Disponible: ${formatted}`;
   }
@@ -1895,6 +1925,7 @@ export default {
           this.dataSpent = result.data.dataSpent;
           this.budgetAlerts = result.data?.alertsBudget || [];
           this.spentAlerts = result.data?.alertsSpent || null;
+          this.currentStatus = result.data?.statusFinance || {};
         } else {
           // Si no hay datos, asignamos un array vacío
           this.spent = [];
@@ -1906,6 +1937,7 @@ export default {
           this.dataSpent = null;
           this.budgetAlerts = [];
           this.spentAlerts = {};
+          this.currentStatus = {};
           //this.showAlert('info', 'No hay finanzas disponibles.', 3000);
         }
       } catch (error) {
@@ -1932,12 +1964,12 @@ export default {
       }
     },
     //Ingresos
-    showIncome() {
+    /*showIncome() {
       this.dialogIncome = true;
     },
     showSpent() {
       this.dialogSpent = true;
-    },
+    },*/
     close() {
       this.dialogIncome = false;
       this.dialogSpent = false;
@@ -2002,7 +2034,7 @@ export default {
     },
 
     //Gastos
-    async showAddSpent() {
+    /*async showAddSpent() {
       this.editedIndex = 2;
       this.editedItem = Object.assign({}, this.defaultItem);
       this.originalItem = Object.assign({}, this.defaultItem);
@@ -2039,8 +2071,8 @@ export default {
         this.dialogAddSpent = true; // Abrimos el diálogo
       }
       this.dialogAddSpent = true; // Abrimos el diálogo
-    },
-    closeDialogSpents() {
+    },*/
+    /*closeDialogSpents() {
       this.dialogAddSpent = false; // Cerramos el diálogo
       this.$nextTick(() => {
         this.editedItem = Object.assign({}, this.defaultItem);
@@ -2050,7 +2082,7 @@ export default {
       this.file = null;
       this.imgMiniatura = "";
       this.initialize();
-    },
+    },*/
 
     calculateNewAvailable(currentBalance, editedItem, mode, originalItem = {}) {
       // Determinar la clave según el texto del type

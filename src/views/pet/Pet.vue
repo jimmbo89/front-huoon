@@ -28,7 +28,7 @@
                             <div style="position: relative; display: inline-block;">
                                 <v-avatar size="60" class="me-4">
                                     <v-img
-                                        :src="`${this.$axios.defaults.baseURL}images/${selectedPet.image}?t=${getCacheTimestamp()}`"
+                                        :src="getImageUrl(selectedPet.image)"
                                         alt="Foto de la mascota" />
                                 </v-avatar>
                                 <!-- Botón de edición superpuesto -->
@@ -85,8 +85,7 @@
                                                     @click="selectPet(pet)"
                                                     :class="selectedPet?.id === pet.id ? 'bg-blue-lighten-5' : ''">
                                                     <div class="icon-wrapper rounded-lg mb-3">
-                                                        <v-img :src="`${this.$axios.defaults.baseURL}images/${
-                                                          pet.image }?t=${getCacheTimestamp()}`" alt="Foto de Mascota" width="100%" height="130"  cover
+                                                        <v-img :src="getImageUrl(pet.image)" alt="Foto de Mascota" width="100%" height="130"  cover
                                                     class="rounded-lg" />
                                                     </div>
                                                     <div class="store-name">{{ pet.name }}</div>
@@ -148,8 +147,8 @@
                         <v-card-text class="pa-4">
                           <!-- Bloque de alerta -->
                           <v-alert color="warning" variant="tonal" border="start" icon="mdi-alert-circle" rounded="lg"
-                            class="mb-4">
-                            ⚠️ 1 mascota con control pendiente. Revisa la alerta.
+                            class="mb-4 cursor-pointer" @click="openModal('control')">
+                            ⚠️ {{ stats.pendingControls }} mascota con control pendiente. Revisa la alerta.
                           </v-alert>
 
                           <!-- Fila Estado General + KPI Circulares -->
@@ -162,7 +161,7 @@
                                 <v-col cols="6" sm="6" md="3">
                                   <v-tooltip top>
                                     <template v-slot:activator="{ props }">
-                                      <v-card class="pa-4 text-center" rounded="lg" outlined v-bind="props">
+                                      <v-card class="pa-4 text-center cursor-pointer" rounded="lg" outlined v-bind="props" @click="openModal('vaccination')">
                                         <v-progress-circular :model-value="stats.totalPets ? (stats.upToDateVaccinations / stats.totalPets) * 100 : 0" size="80" width="8" color="red-darken-2">
                                           <strong>{{ stats.upToDateVaccinations }}/ {{ stats.totalPets }}</strong>
                                         </v-progress-circular>
@@ -177,7 +176,7 @@
                                 <v-col cols="6" sm="6" md="3">
                                   <v-tooltip top>
                                     <template v-slot:activator="{ props }">
-                                      <v-card class="pa-4 text-center" rounded="lg" outlined v-bind="props" style="cursor: pointer;"> <!--
+                                      <v-card class="pa-4 text-center cursor-pointer" rounded="lg" outlined v-bind="props" style="cursor: pointer;" @click="openModal('control')"> <!--
                                         @click="this.dialogCardConsultations = true"-->
                                         <v-progress-circular
                                           :model-value="stats.totalPets ? (stats.pendingControls / stats.totalPets) * 100 : 0"
@@ -187,21 +186,21 @@
                                         <div class="mt-2 font-weight-medium">Controles Pendientes</div>
                                       </v-card>
                                     </template>
-                                    <span><span>{{ stats.pendingControls }} de {{ stats.totalPets }} mascotas tienen controles pendientes</span></span>
+                                    <span>{{ stats.pendingControls }} de {{ stats.totalPets }} mascotas tienen controles pendientes</span>
                                   </v-tooltip>
                                 </v-col>
                                 <!-- Vacunas completas -->
                                 <v-col cols="6" sm="6" md="3">
                                   <v-tooltip top>
                                     <template v-slot:activator="{ props }">
-                                      <v-card class="pa-4 text-center" rounded="lg" outlined v-bind="props">
+                                      <v-card class="pa-4 text-center cursor-pointer" rounded="lg" outlined v-bind="props" @click="openModal('visit')">
                                         <v-progress-circular :model-value="stats.totalPets ? (stats.upcomingVetVisits / stats.totalPets) * 100 : 0" size="80" width="8" color="green-darken-2">
                                           <strong>{{ stats.upcomingVetVisits }}/{{ stats.totalPets }}</strong>
                                         </v-progress-circular>
                                         <div class="mt-2 font-weight-medium">Citas veterinarias</div>
                                       </v-card>
                                     </template>
-                                    <span>{{ stats.upcomingVetVisits }}  de {{ stats.totalPets }} mascotas tienen vacunas completas</span>
+                                    <span>{{ stats.upcomingVetVisits }}  de {{ stats.totalPets }} mascotas tienen citas veterinarias</span>
                                   </v-tooltip>
                                 </v-col>
 
@@ -286,11 +285,11 @@
                                                     <v-avatar size="24">
                                                         <!-- Verifica si es URL o ícono -->
                                                         <template v-if="isImage(item.raw.iconCategory)">
-                                                            <img :src="`${this.$axios.defaults.baseURL}images/${item.raw.iconCategory}`"
+                                                            <img :src="imageUrl(item.raw.iconCategory)"
                                                                 alt="icon" />
                                                         </template>
                                                         <template v-else>
-                                                            <v-icon>{{ getIconName(item.raw.iconCategory) }}</v-icon>
+                                                            <v-icon :color="normalizeHexColor(item.raw.colorCategory)">{{ getIconName(item.raw.iconCategory) }}</v-icon>
                                                         </template>
                                                     </v-avatar>
                                                 </template>
@@ -309,10 +308,10 @@
 
                                 <v-col cols="12" sm="6">
                                     <v-select v-model="editedItem.sex" :label="$t('pets.fields.sex')" :items="[
-                      { title: $t('pets.gender.male'), value: 'Male' },
-                      { title: $t('pets.gender.female'), value: 'Female' },
-                      { title: $t('pets.gender.other'), value: 'Other' },
-                    ]" variant="underlined" :rules="selectRules" />
+                                      { title: $t('pets.gender.male'), value: 'Male' },
+                                      { title: $t('pets.gender.female'), value: 'Female' },
+                                      { title: $t('pets.gender.other'), value: 'Other' },
+                                    ]" variant="underlined" :rules="selectRules" />
                                 </v-col>
 
                                 <v-col cols="12" sm="6">
@@ -325,12 +324,12 @@
                                         <v-menu v-model="menu" :close-on-content-click="false" :nudge-right="40"
                                             transition="scale-transition" offset-y min-width="290px">
                                             <template v-slot:activator="{ props }">
-                                                <v-text-field v-bind="props" :modelValue="this.editedItem.date_birth"
+                                                <v-text-field v-bind="props" :modelValue="this.input"
                                                     variant="underlined"
                                                     :label="$t('pets.fields.date_birth')"></v-text-field>
                                             </template>
                                             <v-date-picker color="#03626C"
-                                                :modelValue="parseDateString(this.editedItem.date_birth)"
+                                                :modelValue="this.input"
                                                 @update:model-value="updateDate" format="yyyy-MM-dd"></v-date-picker>
                                         </v-menu>
                                     </v-locale-provider>
@@ -412,9 +411,7 @@
                         <v-col v-for="pet in pets" :key="pet.id" cols="auto" min-width="200px">
                             <v-card class="text-center store-card" elevation="3" rounded="lg" @click="selectPet(pet)">
                                 <div class="icon-wrapper mb-3">
-                                    <v-img :src="`${$axios.defaults.baseURL}images/${
-                      pet.image
-                    }?t=${getCacheTimestamp()}`" alt="Foto de Mascota" width="100%" height="150" contain />
+                                    <v-img :src="getImageUrl(pet.image)" alt="Foto de Mascota" width="100%" height="150" contain />
                                 </div>
                                 <div class="store-name">{{ pet.name }}</div>
                                 <div class="store-products">{{ pet.breed }}</div>
@@ -425,6 +422,21 @@
             </v-card-text>
         </v-card>
     </v-dialog>
+   <VaccinationStatusData
+    v-model="dialogVaccination"
+    :items="vaccinationData"
+    @close="closeModal"
+  />
+  <ControlStatusData
+    v-model="dialogControl"
+    :items="controlData"
+    @close="closeModal"
+  />
+  <VetVisitStatusData
+    v-model="dialogVisit"
+    :items="visitData"
+    @close="closeModal"
+  />
 </template>
 
 <script>
@@ -435,15 +447,24 @@ import _ from "lodash";
 import SuggestionsList from "../suggestion/SuggestionsList.vue";
 import ChatTask from "../chat/ChatTask.vue";
 import PetData from "./PetData.vue";
+import VaccinationStatusData from "./VaccinationStatusData.vue";
+import ControlStatusData from "./ControlStatusData.vue";
+import VetVisitStatusData from "./VetVisitStatusData.vue";
 export default {
   components: {
     ChatTask,
     SuggestionsList,
-    PetData
+    PetData,
+    VaccinationStatusData,
+    ControlStatusData,
+    VetVisitStatusData
   },
   data: () => ({
     currentView: null, 
     dialogPetData: false,
+    dialogVisit: false,
+    dialogControl: false,
+    dialogVaccination: false,
     dialogPet: false,
     selectedPet: {},
    
@@ -462,6 +483,10 @@ export default {
     loading: false,
     dialogDelete: false,
     pets: [],
+    vaccinationData: [],
+    controlData: [],
+    visitData: [],
+    expandedConsultationRows: [],
     categories: [],
     types: [],
     stats: {},
@@ -523,6 +548,12 @@ export default {
       person_id: null,
       type: "",
     },
+    headersVaccination: [
+      { title: "Mascota", key: "name" },
+      { title: "Estado", key: "hasVaccinations" },
+      { title: "Cantidad", key: "totalVaccinations" },
+    ],
+    searchVaccination: "",
     search: "",
     menu: false,
     menuPet: false,
@@ -607,23 +638,61 @@ export default {
     this.initialize();
   },
   methods: {
-    getCacheTimestamp() {
-      // Usamos medianoche (00:00:00) del día actual
-      const now = new Date();
-      const startOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-      return startOfDay.getTime(); // Ej: 1714003200000 (cambia una vez al día)
+    obtenerFechaLocal() {
+      const hoy = new Date();
+      const year = hoy.getFullYear();
+      const month = String(hoy.getMonth() + 1).padStart(2, "0");
+      const day = String(hoy.getDate()).padStart(2, "0");
+      return `${year}-${month}-${day}`;
     },
-    formatIntuitiveDate(dateString) {
-      if (!dateString) return "Sin fecha";
+    updateDate(value) {
+      // value viene como objeto Date desde el date-picker
+      // Convertimos a formato YYYY-MM-DD
+      const year = value.getFullYear();
+      const month = String(value.getMonth() + 1).padStart(2, "0");
+      const day = String(value.getDate()).padStart(2, "0");
+      this.input = `${year}-${month}-${day}`;
+      this.editedItem.date_birth = this.input;
+      this.menu = false;
+    },
+  normalizeHexColor (color) {
+  if (!color) return 'currentColor'; // fallback seguro
+  return color.startsWith('#') ? color : `#${color}`;
+},
+    openModal(type) {
+      if (type === "visit") {
+        this.dialogVisit = true;
+      }else if (type === "control") {
+        this.dialogControl = true;
+      }else if (type === "vaccination") {
+        this.dialogVaccination = true;
+      }
+    },
+    closeModal() {
+      this.dialogVisit = false;
+      this.dialogControl = false;
+      this.dialogVaccination = false;
+    },
+    toggleExpand(id) {
+    const index = this.expandedConsultationRows.indexOf(id);
+    if (index > -1) {
+      this.expandedConsultationRows.splice(index, 1);
+    } else {
+      this.expandedConsultationRows.push(id);
+    }
+  },
 
+  isExpanded(id) {
+    return this.expandedConsultationRows.includes(id);
+  },
+  formatIntuitiveDate(dateString) {
+      if (!dateString) return "Sin fecha";
       // 1. Parsear la fecha de entrada (formato YYYY-MM-DD)
       const [year, month, day] = dateString.split("-");
       const inputDate = new Date(year, month - 1, day); // Mes es 0-based
-
       // 2. Obtener fecha actual (sin horas/minutos/segundos)
       const today = new Date();
       today.setHours(0, 0, 0, 0);
-
       // 3. Normalizar ambas fechas a UTC para evitar problemas de zona horaria
       const inputUTC = Date.UTC(
         inputDate.getFullYear(),
@@ -631,12 +700,16 @@ export default {
         inputDate.getDate()
       );
       const todayUTC = Date.UTC(today.getFullYear(), today.getMonth(), today.getDate());
-
       // 4. Calcular diferencia en días
       const diffDays = Math.floor((inputUTC - todayUTC) / (1000 * 60 * 60 * 24));
-
       // 5. Determinar el texto a mostrar
       switch (diffDays) {
+        case 0:
+          return "Hoy";
+        case 1:
+          return "Mañana";
+        case -1:
+          return "Ayer";
         default:
           return inputDate
             .toLocaleDateString("es-ES", {
@@ -645,8 +718,25 @@ export default {
               month: "short",
               year: "numeric", // <-- Añadido: muestra el año
             })
-            .replace(/\./g, ""); // Elimina los puntos de abreviaturas (ej: "mar." → "mar")
+            .replace(/\./g, "");
       }
+    },
+     getTypeColor(type) {
+      const colorMap = {
+        Tarea: "warning",
+        Meta: "purple",
+        // Agrega más tipos si es necesario
+      };
+      return colorMap[type] || "warning"; // Color por defecto
+    },
+    getImageUrl(imagePath) {
+      return `${this.$axios.defaults.baseURL}images/${imagePath}?t=${this.getCacheTimestamp()}`;
+    },
+    getCacheTimestamp() {
+      // Usamos medianoche (00:00:00) del día actual
+      const now = new Date();
+      const startOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+      return startOfDay.getTime(); // Ej: 1714003200000 (cambia una vez al día)
     },
     showPetData() {
       if (!this.selectedPet.id) {
@@ -740,19 +830,12 @@ export default {
       }
     },
 
-    updateDate(value) {
-      const year = value.getFullYear();
-      const month = String(value.getMonth() + 1).padStart(2, "0");
-      const day = String(value.getDate()).padStart(2, "0");
-      this.input = `${year}-${month}-${day}`;
-
-      this.editedItem.date_birth = this.input;
-      this.menu = false;
-    },
     async showAdd() {
       this.step = 0;
       (this.file = null), (this.editedIndex = -1);
       (this.imgMiniatura = ""), (this.data = {});
+      this.input = this.obtenerFechaLocal();
+      this.editedItem.date_birth = this.input;
       try {
         const result = await handleRequest({
           endpoint: "category-pets",
@@ -807,12 +890,24 @@ export default {
           if (!this.selectedPet?.id && this.pets.length > 0) {
             this.selectedPet = { ...this.pets[0] };
           }
+          if (this.selectedPet && this.selectedPet.id) {
+            const updatedPet = this.pets.find(pet => pet.id === this.selectedPet.id);
+            if (updatedPet) {
+              this.selectedPet = { ...updatedPet }; // Reemplaza con los datos frescos
+            }
+          }
+          this.vaccinationData = result.data?.details?.upToDateVaccinations;
+          this.controlData = result.data?.details?.pendingControls;
+          this.visitData = result.data?.details?.upcomingVetVisits;
         } else {
           // Si no hay datos, asignamos un array vací
           this.pets = [];
           this.stats = {};
           this.suggestions = [];
           this.statusuggestions = [];
+          this.vaccinationData = [];
+          this.controlData = [];
+          this.visitData = [];
         }
       } catch (error) {
         this.loading = false;

@@ -1412,7 +1412,7 @@ const portuguese = {
       },
     },
     pets: {
-      title: "Animais de Estimação Associados",
+      title: "Animais do lar",
       empty: "Nenhum animal registrado",
       search: "Buscar animais...",
       addButton: "Cadastrar novo animal",

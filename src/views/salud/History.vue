@@ -276,6 +276,7 @@
               <v-card-text class="pa-4">
                 <!-- Bloque de alerta -->
                 <v-alert
+                  v-if="totalMembersWithConsultations > 0 || type === 'Personal'"
                   color="warning"
                   variant="tonal"
                   border="start"
@@ -285,7 +286,7 @@
                   @click="openModal('consultation')"
                   style="cursor: pointer"
                 >
-                  ⚠️ {{this.totalMembersWithConsultations}} miembro{{ this.totalMembersWithConsultations !== 1  ? 's' : ''}} con control{{ this.totalMembersWithConsultations !== 1  ? 's' : ''}} pendiente{{ this.totalMembersWithConsultations !== 1  ? 's' : ''}}. Revisa la alerta.
+                  ⚠️ {{ consultationAlertMessage }}
                 </v-alert>
 
                 <!-- Fila Estado General + KPI Circulares -->
@@ -306,31 +307,17 @@
                               style="cursor: pointer"
                             >
                               <v-progress-circular
-                                :model-value="
-                                  this.healthMetrics.totalMembers
-                                    ? (this.healthMetrics.countHealthyWeight /
-                                        this.healthMetrics.totalMembers) *
-                                      100
-                                    : 0
-                                "
+                                :model-value="healthyWeightProgress"
                                 size="80"
                                 width="8"
-                                color="indigo"
+                                :color="healthyWeightColor"
                               >
-                                <strong
-                                  >{{ this.healthMetrics.countHealthyWeight }}/{{
-                                    this.healthMetrics.totalMembers
-                                  }}</strong
-                                >
+                                <strong >{{ healthyWeightDisplay }}</strong>
                               </v-progress-circular>
-                              <div class="mt-2 font-weight-medium">Peso saludable</div>
+                              <div class="mt-2 font-weight-medium">Peso</div>
                             </v-card>
                           </template>
-                          <span
-                            >{{ this.healthMetrics.countHealthyWeight }} de
-                            {{ this.healthMetrics.totalMembers }} miembros tienen peso
-                            saludable</span
-                          >
+                          <span>{{ healthyWeightTooltip }}</span>
                         </v-tooltip>
                       </v-col>
 
@@ -347,31 +334,17 @@
                               style="cursor: pointer"
                             >
                               <v-progress-circular
-                                :model-value="
-                                  this.healthMetrics.totalMembers
-                                    ? (this.healthMetrics.countNormalBloodPressure /
-                                        this.healthMetrics.totalMembers) *
-                                      100
-                                    : 0
-                                "
+                                :model-value="bloodPressureProgress"
                                 size="80"
                                 width="8"
-                                color="red-darken-2"
+                                :color="bloodPressureColor"
                               >
-                                <strong
-                                  >{{ this.healthMetrics.countNormalBloodPressure }}/{{
-                                    this.healthMetrics.totalMembers
-                                  }}</strong
-                                >
+                                <strong>{{ bloodPressureDisplay }}</strong>
                               </v-progress-circular>
-                              <div class="mt-2 font-weight-medium">Presión normal</div>
+                              <div class="mt-2 font-weight-medium">Presión</div>
                             </v-card>
                           </template>
-                          <span
-                            >{{ this.healthMetrics.countNormalBloodPressure }} de
-                            {{ this.healthMetrics.totalMembers }} miembros tienen presión
-                            arterial dentro del rango normal</span
-                          >
+                         <span>{{ bloodPressureTooltip }}</span>
                         </v-tooltip>
                       </v-col>
 
@@ -388,35 +361,17 @@
                               style="cursor: pointer"
                             >
                               <v-progress-circular
-                                :model-value="
-                                  this.healthMetrics.totalMembers
-                                    ? (this.householdVaccination
-                                        .totalPeopleWithPendingVaccines /
-                                        this.healthMetrics.totalMembers) *
-                                      100
-                                    : 0
-                                "
+                                :model-value="vaccinationProgress"
                                 size="80"
                                 width="8"
-                                color="green-darken-2"
+                                 :color="vaccinationColor"
                               >
-                                <strong
-                                  >{{
-                                    this.householdVaccination
-                                      .totalPeopleWithPendingVaccines
-                                  }}/{{ this.healthMetrics.totalMembers }}</strong
-                                >
+                                <strong>{{ vaccinationDisplay }}</strong>
                               </v-progress-circular>
                               <div class="mt-2 font-weight-medium">Vacunas</div>
                             </v-card>
                           </template>
-                          <span
-                            >{{
-                              this.householdVaccination.totalPeopleWithPendingVaccines
-                            }}
-                            de {{ this.healthMetrics.totalMembers }} miembros tienen
-                            vacunas pendientes</span
-                          >
+                          <span>{{ vaccinationTooltip }}</span>
                         </v-tooltip>
                       </v-col>
 
@@ -435,27 +390,17 @@
                               <!--
                               @click="this.dialogCardConsultations = true"-->
                               <v-progress-circular
-                                :model-value="
-                                  this.healthMetrics.totalMembers
-                                    ? (this.totalMembersWithConsultations /
-                                        this.healthMetrics.totalMembers) *
-                                      100
-                                    : 0
-                                "
+                                :model-value="consultationProgress"
                                 size="80"
                                 width="8"
-                                color="amber-darken-3"
+                                :color="consultationColor"
                               >
-                                <strong
-                                  >{{ this.totalMembersWithConsultations }}/{{
-                                    this.membersConsultation?.length || 0
-                                  }}</strong
-                                >
+                               <strong>{{ consultationDisplay }}</strong>
                               </v-progress-circular>
                               <div class="mt-2 font-weight-medium">Citas esta semana</div>
                             </v-card>
                           </template>
-                          <span>{{ this.tooltipText }}</span>
+                          <span>{{ consultationTooltip }}</span>
                         </v-tooltip>
                       </v-col>
                     </v-row>
@@ -598,7 +543,7 @@
     transition="dialog-bottom-transition"
   >
     <v-card class="pa-1">
-      <v-card-title class="text-h6 font-weight-bold">
+      <v-card-title class="text-body-2 font-weight-bold">
         {{ $t("home.steps.members.title") }}
       </v-card-title>
 
@@ -655,7 +600,7 @@
               "
             >
               <v-card-text
-                class="d-flex pa-2"
+                class="d-flex pa-2 font-weight-bold"
                 style="
                   width: 100%;
                   min-width: 0;
@@ -723,7 +668,7 @@
 
                       <!-- Contenedor de texto -->
                       <div class="d-flex flex-column justify-center" style="min-width: 0">
-                        <div class="font-weight-bold text-body-2 text-truncate">
+                        <div class="text-body-2 text-truncate">
                           <span>{{ slotProps.item.name }}</span>
                           <v-tooltip
                             activator="parent"
@@ -769,17 +714,22 @@
                         justify-content: center;
                       "
                     >
-                      <v-switch
-                        :model-value="slotProps.item.isHealthyWeight"
-                        readonly
-                        hide-details
-                        density="compact"
+                        <v-icon
                         :color="slotProps.item.isHealthyWeight ? 'success' : 'red'"
-                        :base-color="slotProps.item.isHealthyWeight ? 'success' : 'red'"
-                        inset
+                        size="25"
+                        class="mr-1"
                       >
-                      </v-switch>
-                      <v-tooltip activator="parent" location="bottom" max-width="350px">
+                        {{
+                          slotProps.item.isHealthyWeight
+                            ? 'mdi-check-circle-outline'
+                            : 'mdi-alert-circle-outline'
+                        }}
+                      </v-icon>
+                      <v-tooltip
+                        activator="parent"
+                        location="bottom"
+                        max-width="350px"
+                      >
                         <span style="white-space: normal; word-break: break-word">
                           {{
                             slotProps.item.isHealthyWeight
@@ -811,7 +761,7 @@
     transition="dialog-bottom-transition"
   >
     <v-card class="pa-1">
-      <v-card-title class="text-h6 font-weight-bold">
+      <v-card-title class="text-body-2 font-weight-bold">
         {{ $t("home.steps.members.title") }}
       </v-card-title>
 
@@ -868,7 +818,7 @@
               "
             >
               <v-card-text
-                class="d-flex pa-2"
+                class="d-flex pa-2 font-weight-bold"
                 style="
                   width: 100%;
                   min-width: 0;
@@ -879,18 +829,18 @@
                 "
               >
                 <!-- Fecha / Periodo (7%) -->
-                <div style="width: 73%; min-width: 0" class="text-left">
+                <div style="width: 60%; min-width: 0" class="text-left">
                   {{ $t("home.membersTable.name") }}
                 </div>
 
                 <!-- Descripción + Severidad (34%) -->
-                <div style="width: 20%; min-width: 0" class="text-left">
+                <div style="width: 30%; min-width: 0" class="text-left">
                   {{ $t("physicalExam.fields.blood_pressure") }}
                 </div>
 
 
                 <!-- Detalles (34%) -->
-                <div style="width: 7%; min-width: 0" class="text-left">
+                <div style="width: 10%; min-width: 0" class="text-center">
                   {{ $t("taskForm.fields.status") }}
                 </div>
               </v-card-text>
@@ -912,7 +862,7 @@
                     style="width: 100%; min-width: 0"
                   >
                     <!-- Descripción + Severidad (34%) -->
-                    <div style="width: 73%; min-width: 0" class="d-flex align-left">
+                    <div style="width: 60%; min-width: 0" class="d-flex align-left">
                       <v-avatar
                         size="48"
                         class="mr-1 icono-concavo"
@@ -928,7 +878,7 @@
 
                       <!-- Contenedor de texto -->
                       <div class="d-flex flex-column justify-center" style="min-width: 0">
-                        <div class="font-weight-bold text-body-2 text-truncate">
+                        <div class="text-body-2 text-truncate">
                           <span>{{ slotProps.item.name }}</span>
                           <v-tooltip
                             activator="parent"
@@ -945,7 +895,7 @@
 
                     <!-- Estado (15%) -->
                     <div
-                      style="width: 20%; min-width: 0"
+                      style="width: 30%; min-width: 0"
                       class="text-body-2 text-truncate"
                     >
                       <span>{{ slotProps.item.bloodPressure }}</span>
@@ -953,24 +903,29 @@
 
                     <div
                       style="
-                        width: 7%;
+                        width: 10%;
                         min-width: 0;
                         display: flex;
                         align-items: center;
                         justify-content: center;
                       "
                     >
-                      <v-switch
-                        :model-value="slotProps.item.isNormalBloodPressure"
-                        readonly
-                        hide-details
-                        density="compact"
+                     <v-icon
                         :color="slotProps.item.isNormalBloodPressure ? 'success' : 'red'"
-                        :base-color="slotProps.item.isNormalBloodPressure ? 'success' : 'red'"
-                        inset
+                        size="25"
+                        class="mr-1"
                       >
-                      </v-switch>
-                      <v-tooltip activator="parent" location="bottom" max-width="350px">
+                        {{
+                          slotProps.item.isNormalBloodPressure
+                            ? 'mdi-check-circle-outline'
+                            : 'mdi-alert-circle-outline'
+                        }}
+                      </v-icon>
+                      <v-tooltip
+                        activator="parent"
+                        location="bottom"
+                        max-width="350px"
+                      >
                         <span style="white-space: normal; word-break: break-word">
                           {{
                             slotProps.item.isNormalBloodPressure
@@ -1002,7 +957,7 @@
     transition="dialog-bottom-transition"
   >
     <v-card class="pa-1">
-      <v-card-title class="text-h6 font-weight-bold">
+      <v-card-title class="text-body-2 font-weight-bold">
         {{ $t("home.steps.members.title") }}
       </v-card-title>
 
@@ -1059,7 +1014,7 @@
             "
           >
             <v-card-text
-              class="d-flex pa-2"
+              class="d-flex pa-2 font-weight-bold"
               style="
                 width: 100%;
                 min-width: 0;
@@ -1069,10 +1024,10 @@
                 align-items: center;
               "
             >
-              <div style="width: 85%; min-width: 0" class="text-left">
+              <div style="width: 75%; min-width: 0" class="text-left">
                 {{ $t("home.membersTable.name") }}
               </div>
-              <div style="width: 10%; min-width: 0" class="text-center">
+              <div style="width: 20%; min-width: 0" class="text-center">
                 {{ $t("taskForm.fields.status") }}
               </div>
               <div style="width: 5%; min-width: 0" class="text-left">
@@ -1092,9 +1047,9 @@
               density="comfortable"
               flat
             >
-              <v-card-text class="d-flex align-center pa-2" style="width: 100%; min-width: 0">
+              <v-card-text class="d-flex align-center pa-2 font-weight-bold" style="width: 100%; min-width: 0">
                 <!-- Nombre + imagen -->
-                <div style="width: 85%; min-width: 0" class="d-flex align-center">
+                <div style="width: 75%; min-width: 0" class="d-flex align-center">
                   <v-avatar
                     size="48"
                     class="mr-1 icono-concavo"
@@ -1109,7 +1064,7 @@
                   </v-avatar>
 
                   <div class="d-flex flex-column justify-center" style="min-width: 0">
-                    <div class="font-weight-bold text-body-2 text-truncate">
+                    <div class="text-body-2 text-truncate">
                       <span>{{ item.name }}</span>
                       <v-tooltip activator="parent" location="bottom" max-width="350px">
                         <span style="white-space: normal; word-break: break-word">
@@ -1125,33 +1080,32 @@
 
                 <!-- Switch de estado -->
                 <div
-                  style="width: 10%; min-width: 0; display: flex; align-items: center; justify-content: center"
+                  style="width: 20%; min-width: 0; display: flex; align-items: center; justify-content: center"
                 >
-                  <v-switch
-                    v-if="item.hasConsultations !== undefined"
-                    :model-value="item.hasConsultations"
-                    readonly
-                    hide-details
-                    density="compact"
-                    :color="item.hasConsultations ? 'red' : 'success'"
-                    :base-color="item.hasConsultations ? 'red' : 'success'"
-                    inset
-                  />
-                  <v-tooltip
-                    v-if="item.hasConsultations !== undefined"
-                    activator="parent"
-                    location="bottom"
-                    max-width="350px"
-                  >
-                    <span style="white-space: normal; word-break: break-word">
-                      {{
-                        item.hasConsultations
-                          ? "Tiene consultas médicas esta semana"
-                          : "No tiene consultas médicas esta semana"
-                      }}
-                    </span>
-                  </v-tooltip>
-                  <span v-else class="text--disabled">—</span>
+                 <v-icon
+                        :color="!item.hasConsultations ? 'success' : 'red'"
+                        size="25"
+                        class="mr-1"
+                      >
+                        {{
+                          !item.hasConsultations
+                            ? 'mdi-check-circle-outline'
+                            : 'mdi-alert-circle-outline'
+                        }}
+                      </v-icon>
+                      <v-tooltip
+                        activator="parent"
+                        location="bottom"
+                        max-width="350px"
+                      >
+                        <span style="white-space: normal; word-break: break-word">
+                          {{
+                            item.hasConsultations
+                              ? "Tiene consultas médicas esta semana"
+                              : "No tiene consultas médicas esta semana"
+                          }}
+                        </span>
+                      </v-tooltip>
                 </div>
 
                 <!-- Ícono de expansión AL FINAL (solo si tiene consultas) -->
@@ -1246,7 +1200,7 @@
     transition="dialog-bottom-transition"
   >
     <v-card class="pa-1">
-      <v-card-title class="text-h6 font-weight-bold">
+      <v-card-title class="text-body-2 font-weight-bold">
         {{ $t("home.steps.members.title") }}
       </v-card-title>
 
@@ -1303,7 +1257,7 @@
             "
           >
             <v-card-text
-              class="d-flex pa-2"
+              class="d-flex pa-2 font-weight-bold"
               style="
                 width: 100%;
                 min-width: 0;
@@ -1313,10 +1267,10 @@
                 align-items: center;
               "
             >
-              <div style="width: 85%; min-width: 0" class="text-left">
+              <div style="width: 75%; min-width: 0" class="text-left">
                 {{ $t("home.membersTable.name") }}
               </div>
-              <div style="width: 10%; min-width: 0" class="text-center">
+              <div style="width: 20%; min-width: 0" class="text-center">
                 {{ $t("taskForm.fields.status") }}
               </div>
               <div style="width: 5%; min-width: 0" class="text-left">
@@ -1338,7 +1292,7 @@
             >
               <v-card-text class="d-flex align-center pa-2" style="width: 100%; min-width: 0">
                 <!-- Nombre + imagen -->
-                <div style="width: 85%; min-width: 0" class="d-flex align-center">
+                <div style="width: 75%; min-width: 0" class="d-flex align-center">
                   <v-avatar
                     size="48"
                     class="mr-1 icono-concavo"
@@ -1353,7 +1307,7 @@
                   </v-avatar>
 
                   <div class="d-flex flex-column justify-center" style="min-width: 0">
-                    <div class="font-weight-bold text-body-2 text-truncate">
+                    <div class="text-body-2 text-truncate">
                       <span>{{ item.name }}</span>
                       <v-tooltip activator="parent" location="bottom" max-width="350px">
                         <span style="white-space: normal; word-break: break-word">
@@ -1369,33 +1323,32 @@
 
                 <!-- Switch de estado -->
                 <div
-                  style="width: 10%; min-width: 0; display: flex; align-items: center; justify-content: center"
+                  style="width: 20%; min-width: 0; display: flex; align-items: center; justify-content: center"
                 >
-                  <v-switch
-                    v-if="item.hasPendingVaccines !== undefined"
-                    :model-value="item.hasPendingVaccines"
-                    readonly
-                    hide-details
-                    density="compact"
-                    :color="item.hasPendingVaccines ? 'red' : 'success'"
-                    :base-color="item.hasPendingVaccines ? 'red' : 'success'"
-                    inset
-                  />
-                  <v-tooltip
-                    v-if="item.hasPendingVaccines !== undefined"
-                    activator="parent"
-                    location="bottom"
-                    max-width="350px"
-                  >
-                    <span style="white-space: normal; word-break: break-word">
-                      {{
-                        item.hasConsultations
-                          ? "Tiene vacunas pendientes"
-                          : "No tiene vacunas pendientes"
-                      }}
-                    </span>
-                  </v-tooltip>
-                  <span v-else class="text--disabled">—</span>
+                <v-icon
+                        :color="!item.hasPendingVaccines ? 'success' : 'red'"
+                        size="25"
+                        class="mr-1"
+                      >
+                        {{
+                          !item.hasPendingVaccines
+                            ? 'mdi-check-circle-outline'
+                            : 'mdi-alert-circle-outline'
+                        }}
+                      </v-icon>
+                      <v-tooltip
+                        activator="parent"
+                        location="bottom"
+                        max-width="350px"
+                      >
+                        <span style="white-space: normal; word-break: break-word">
+                          {{
+                            item.hasPendingVaccines
+                              ? "Tiene vacunas pendientes"
+                              : "No tiene vacunas pendientes"
+                          }}
+                        </span>
+                      </v-tooltip>
                 </div>
 
                 <!-- Ícono de expansión AL FINAL (solo si tiene consultas) -->
@@ -1619,6 +1572,169 @@ export default {
     vaccinationData: [],
   }),
   computed: {
+      // --- Colores dinámicos ---
+  healthyWeightColor() {
+    if (this.type === 'Personal') {      
+      return this.healthMetrics.healthyWeightMembers[0].isHealthyWeight
+        ? 'green'   // Bien → verde
+        : 'red';    // Mal → rojo
+    }
+    // Modo Hogar: usa un color neutro o proporcional (ej. indigo como antes)
+    return 'indigo';
+  },
+
+  bloodPressureColor() {
+    if (this.type === 'Personal') {
+      return this.healthMetrics.normalBloodPressureMembers[0].isNormalBloodPressure
+        ? 'green'   // Bien → verde
+        : 'red';    // Mal → rojo
+    }
+    return 'red'; // o 'indigo' si prefieres neutro en modo hogar
+  },
+
+  vaccinationColor() {
+    if (this.type === 'Personal') {      
+      const hasPending = this.householdVaccination.data[0]?.hasPendingVaccines;
+      return hasPending
+        ? 'red'     // Pendientes → rojo
+        : 'green';  // Al día → verde
+    }
+    // Modo Hogar: si hay pendientes, usar amarillo/rojo; si no, verde
+    const pending = this.householdVaccination.totalPeopleWithPendingVaccines;
+    const total = this.healthMetrics.totalMembers;
+    if (pending === 0) return 'green';
+    if (pending === total) return 'red';
+    return 'amber'; // mixto
+  },
+
+  consultationColor() {
+    if (this.type === 'Personal') {
+      return this.totalMembersWithConsultations > 0
+        ? 'amber'   // Tiene cita → amarillo (advertencia/acción)
+        : 'green';  // Sin citas → verde (todo en orden)
+    }
+    // Modo Hogar: si hay citas, usar amarillo; si no, verde
+    return this.totalMembersWithConsultations > 0
+      ? 'amber'
+      : 'green';
+  },
+    consultationAlertMessage() {
+    if (this.type === 'Personal') {
+      if (this.totalMembersWithConsultations > 0) {
+        return 'Tienes un control pendiente. Revisa la alerta.';
+      } else {
+        return 'No tienes controles médicos pendientes esta semana.';
+      }
+    } else {
+      // type === 'Home'
+      const members = this.totalMembersWithConsultations;
+      const plural = members !== 1;
+      const memberWord = plural ? 'miembros' : 'miembro';
+      const controlWord = plural ? 'controles' : 'control';
+      const pendingWord = plural ? 'pendientes' : 'pendiente';
+      
+      return `${members} ${memberWord} con ${controlWord} ${pendingWord}. Revisa la alerta.`;
+    }
+  },  // --- Peso saludable ---
+  healthyWeightTooltip() {
+    if (this.type === 'Personal') {
+      const person = this.healthMetrics.healthyWeightMembers[0];
+      return person?.isHealthyWeight
+        ? 'Tienes un peso saludable.'
+        : 'Tu peso no está en el rango saludable.';
+    } else {
+      return `${this.healthMetrics.countHealthyWeight} de ${this.healthMetrics.totalMembers} miembros tienen peso saludable.`;
+    }
+  },
+  healthyWeightDisplay() {
+  if (this.type === 'Personal') {
+    return this.healthMetrics.healthyWeightMembers[0]?.isHealthyWeight ? '0' : '1';
+  } else {
+    return `${this.healthMetrics.countHealthyWeight}/${this.healthMetrics.totalMembers}`;
+  }
+  },
+
+  // --- Presión arterial ---
+  bloodPressureTooltip() {
+    if (this.type === 'Personal') {
+      const person = this.healthMetrics.normalBloodPressureMembers[0];
+      return person?.isNormalBloodPressure
+        ? 'Tu presión arterial está en rango normal.'
+        : 'Tu presión arterial está fuera del rango normal.';
+    } else {
+      return `${this.healthMetrics.countNormalBloodPressure} de ${this.healthMetrics.totalMembers} miembros tienen presión arterial dentro del rango normal.`;
+    }
+  },
+  bloodPressureDisplay() {
+  if (this.type === 'Personal') {
+    return this.healthMetrics.normalBloodPressureMembers[0]?.isNormalBloodPressure ? '0' : '1';
+  } else {
+    return `${this.healthMetrics.countNormalBloodPressure}/${this.healthMetrics.totalMembers}`;
+  }
+  },
+
+  // --- Vacunas ---
+  vaccinationTooltip() {
+    if (this.type === 'Personal') {
+      const person = this.householdVaccination.data[0]; // asumiendo que está en un array
+      const hasPending = person?.hasPendingVaccines;
+      return hasPending
+        ? 'Tienes vacunas pendientes.'
+        : 'Tus vacunas están al día.';
+    } else {
+      return `${this.householdVaccination.totalPeopleWithPendingVaccines} de ${this.healthMetrics.totalMembers} miembros tienen vacunas pendientes.`;
+    }
+  },
+  vaccinationDisplay() {
+  if (this.type === 'Personal') {
+    const hasPending = this.householdVaccination.data[0]?.hasPendingVaccines;
+    // Si quieres mostrar "1" cuando hay pendientes (como el progreso actual), o "0" si está al día
+    return hasPending ? '1' : '0';
+  } else {
+    return `${this.householdVaccination.totalPeopleWithPendingVaccines}/${this.healthMetrics.totalMembers}`;
+  }
+  },
+
+  // --- Consultas médicas ---
+  consultationTooltip() {
+    if (this.type === 'Personal') {
+      return this.totalMembersWithConsultations > 0
+        ? 'Tienes una consulta médica esta semana.'
+        : 'No tienes consultas médicas esta semana.';
+    } else {
+      return `${this.totalMembersWithConsultations} de ${this.healthMetrics.totalMembers} miembros tienen consultas médicas esta semana.`;
+    }
+  },
+  consultationDisplay() {
+  if (this.type === 'Personal') {
+    return this.totalMembersWithConsultations > 0 ? '1' : '0';
+  } else {
+    return `${this.totalMembersWithConsultations}/${this.healthMetrics.totalMembers}`;
+  }
+},
+
+  // --- Valores para el progreso circular (porcentajes) ---
+  healthyWeightProgress() {
+    return this.healthMetrics.totalMembers
+      ? (this.healthMetrics.countHealthyWeight / this.healthMetrics.totalMembers) * 100
+      : 0;
+  },
+  bloodPressureProgress() {
+    return this.healthMetrics.totalMembers
+      ? (this.healthMetrics.countNormalBloodPressure / this.healthMetrics.totalMembers) * 100
+      : 0;
+  },
+  vaccinationProgress() {
+    // Nota: esto muestra % con vacunas PENDIENTES → quizás quieras invertirlo
+    return this.healthMetrics.totalMembers
+      ? (this.householdVaccination.totalPeopleWithPendingVaccines / this.healthMetrics.totalMembers) * 100
+      : 0;
+  },
+  consultationProgress() {
+    return this.healthMetrics.totalMembers
+      ? (this.totalMembersWithConsultations / this.healthMetrics.totalMembers) * 100
+      : 0;
+  },
     tools() {
       return [
         {
@@ -1666,6 +1782,15 @@ export default {
     this.imageUrl = LocalStorageService.getItem("image").replace(/['"]+/g, "");
     this.home_id = JSON.parse(LocalStorageService.getItem("home_id"));
     this.initialize();
+  },
+  watch: {
+    type(newVal) {
+      // Actualiza budget_type según el valor del switch
+      //this.budget_type = newVal === 'Hogar' ? 'Hogar' : 'Personal';
+
+      // Llama al método de inicialización
+      this.initialize();
+    },
   },
   methods: {
     openModal(type) {
@@ -1799,6 +1924,7 @@ export default {
       this.data = {};
       this.data.home_id = this.home_id;
       this.data.person_id = this.selectedPerson.id;
+      this.data.type = this.type;
       try {
         this.loading = true;
         const result = await handleRequest({

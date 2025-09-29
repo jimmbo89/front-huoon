@@ -1406,7 +1406,7 @@ const english = {
       },
     },
     pets: {
-      title: "Associated Pets",
+      title: "Home Pets",
       empty: "No registered pets",
       search: "Search pets...",
       addButton: "Register new pet",

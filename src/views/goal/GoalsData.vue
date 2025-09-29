@@ -125,6 +125,18 @@
               :filteredTask="filteredTask"
               :task_type = "editedItem.task_type"
               @goals-updated="initialize()"
+              @save-form="currentView = 'meta'"
+            />
+            <InitiativeGoal
+              v-if="currentView === 'initiativeMeta'"
+              :key="`initiativeMeta-${editedItem.task_type}-${filteredTask}`"
+              :tasks= "filteredTasksForGoals"
+              :status= "status"
+              :filteredTask="filteredTask"
+              :task_type = "editedItem.task_type"
+              @goals-updated="initialize()"
+              @save-form="currentView = 'meta'"
+              @suggested-tasks="handleSuggestedTasks"
             />
             <!--<ActivityLogs
               v-else-if="currentView === 'activity'"
@@ -527,10 +539,12 @@ import { shallowRef } from "vue";
 import SuggestedTasksList from "@/components/suggested/SuggestedTasksList.vue";
 import { defineAsyncComponent, markRaw } from "vue";
 import Goals from "./Goals.vue";
+import InitiativeGoal from "../initiative/InitiativeGoal.vue";
 export default {
   components: {
     SuggestedTasksList: markRaw(SuggestedTasksList),
-    Goals
+    Goals,
+    InitiativeGoal
   },
   data: () => ({
     currentView: 'meta',
@@ -729,6 +743,7 @@ export default {
     description: "",
     date: "",
     module: "",
+    ignoreTaskTypeWatch: false,
   }),
   computed: {
     currentMonthYear(){
@@ -861,47 +876,85 @@ export default {
       },
       {
         name: this.$t("taskForm.titles.discoverGoals"),
-        action: () => '',
+        action: () => this.selectedCurrent('initiativeMeta'),
       },
     ];
   },
   watch: {
     "editedItem.task_type": {
       handler(newVal) {
-        if (!newVal) return;
+        if (this.ignoreTaskTypeWatch || !newVal) return;
         //this.editedItem.task_type = newVal === 'Hogar' ? 'Hogar' : 'Personal';
         this.initialize();
       },
-      immediate: true
+      //immediate: true
     }
   },
   mounted() {
     this.home_id = JSON.parse(LocalStorageService.getItem("home_id"));
     this.person_id = JSON.parse(LocalStorageService.getItem("person_id"));
-    //this.initialize();
+    this.initialize();
     this.timeSlots = this.generateTimeSlots(); // Genera los horarios al montar el componente
   },
   methods: {
+    async handleSuggestedTasks(suggestedTasks) {
+      this.loadingSuggested = true;
+      this.data = {};
+      this.data.home_id = this.home_id;
+
+      try {
+        const result = await handleRequest({
+          endpoint: "category-status-priority-apk",
+          method: "POST",
+          data: this.data,
+        });
+
+        if (result.success) {
+          // Asignar los datos
+          this.categories = result.data?.taskcategories || [];
+          this.status = result.data?.taskstatus || [];
+          this.priorities = result.data?.taskpriorities || [];
+          this.recurrences = result.data?.taskrecurrences || [];
+          this.people = result.data?.taskpeople || [];
+          this.roles = result.data?.taskroles || [];
+          this.typetasks = result.data?.tasktype || [];
+          this.taskTypes = result.data?.tasktypetask || [];
+
+          // ✅ Solo si todo va bien, asignamos las sugerencias y abrimos el diálogo
+          this.suggestedTasks = suggestedTasks;
+          this.dialogSuggested = true;
+        } else {
+          this.showAlert("info", result.message || "No se pudieron cargar los datos para las sugerencias.", 3000);
+        }
+      } catch (error) {
+        this.showAlert("error", "Error al cargar los datos necesarios para las sugerencias.", 3000);
+      } finally {
+        this.loadingSuggested = false;
+      }
+    },
+    selectedCurrent(select){
+      this.currentView = select;
+    },
    selectCategory(category) {
-  if (this.selectedCategory?.id === category.id) {
-    // Deseleccionar
-    this.selectedCategory = null;
-    this.filteredTask = "";
-  } else {
-    // Seleccionar
-    this.selectedCategory = category;
-    this.filteredTask = category.id;
-  }
-},
+      if (this.selectedCategory?.id === category.id) {
+        // Deseleccionar
+        this.selectedCategory = null;
+        this.filteredTask = "";
+      } else {
+        // Seleccionar
+        this.selectedCategory = category;
+        this.filteredTask = category.id;
+      }
+    },
     getCategoryColor(id) {
-  const colorMap = {
-    active: 'blue-darken-2',     // En progreso → azul
-    completed: 'green-darken-2', // Completado → verde
-    delayed: 'red-darken-2',     // Retrasado → rojo
-    dueSoon: 'amber-darken-2',   // Próximo a vencer → ámbar/advertencia
-  };
-  return colorMap[id] || 'purple'; // fallback por si aparece un id inesperado
-},
+      const colorMap = {
+        active: 'blue-darken-2',     // En progreso → azul
+        completed: 'green-darken-2', // Completado → verde
+        delayed: 'red-darken-2',     // Retrasado → rojo
+        dueSoon: 'amber-darken-2',   // Próximo a vencer → ámbar/advertencia
+      };
+      return colorMap[id] || 'purple'; // fallback por si aparece un id inesperado
+    },
     async handleSkip(){
       this.dialogSuggested = false;
     },
@@ -943,41 +996,41 @@ export default {
       }
     },
      getLocalDate(dateValue) {
-    if (!dateValue) return new Date();
-    
-    // Si es string en formato YYYY-MM-DD
-    if (typeof dateValue === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(dateValue)) {
-      const [year, month, day] = dateValue.split('-');
-      return new Date(year, month - 1, day);
-    }
-    
-    // Si ya es un objeto Date
-    if (dateValue instanceof Date) return dateValue;
-    
-    // Para otros casos (ISO strings, timestamps, etc.)
-    const date = new Date(dateValue);
-    return new Date(date.getFullYear(), date.getMonth(), date.getDate());
-  },
+      if (!dateValue) return new Date();
+      
+      // Si es string en formato YYYY-MM-DD
+      if (typeof dateValue === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(dateValue)) {
+        const [year, month, day] = dateValue.split('-');
+        return new Date(year, month - 1, day);
+      }
+      
+      // Si ya es un objeto Date
+      if (dateValue instanceof Date) return dateValue;
+      
+      // Para otros casos (ISO strings, timestamps, etc.)
+      const date = new Date(dateValue);
+      return new Date(date.getFullYear(), date.getMonth(), date.getDate());
+    },
     isValidDatePartial(dateStr) {
-  const parts = dateStr.split('-');
-  if (parts.length > 3) return false;
-  const day = parts[0];
-  const month = parts[1];
-  const year = parts[2];
-  // Validar día (1-31)
-  if (!/^\d{1,2}$/.test(day) || parseInt(day) < 1 || parseInt(day) > 31) {
-    return false;
-  }
-  // Si hay mes, validar (1-12)
-  if (month && (!/^\d{1,2}$/.test(month) || parseInt(month) < 1 || parseInt(month) > 12)) {
-    return false;
-  }
-  // Si hay año, validar longitud (4 dígitos)
-  if (year && !/^\d{4}$/.test(year)) {
-    return false;
-  }
-  return true;
-},
+    const parts = dateStr.split('-');
+    if (parts.length > 3) return false;
+    const day = parts[0];
+    const month = parts[1];
+    const year = parts[2];
+    // Validar día (1-31)
+    if (!/^\d{1,2}$/.test(day) || parseInt(day) < 1 || parseInt(day) > 31) {
+      return false;
+    }
+    // Si hay mes, validar (1-12)
+    if (month && (!/^\d{1,2}$/.test(month) || parseInt(month) < 1 || parseInt(month) > 12)) {
+      return false;
+    }
+    // Si hay año, validar longitud (4 dígitos)
+    if (year && !/^\d{4}$/.test(year)) {
+      return false;
+    }
+    return true;
+  },
    isValidDate(dateStr) {
     const rule = this.dateRules[0]; // Usamos la misma regla de validación
     const result = rule(dateStr);
@@ -994,17 +1047,17 @@ export default {
     }
   },
   
-  updateSearchDate(value) {
-    if (value) {
-      const day = String(value.getDate()).padStart(2, '0');
-      const month = String(value.getMonth() + 1).padStart(2, '0');
-      const year = value.getFullYear();
-      this.search = `${year}-${month}-${day}`;
-    } else {
-      this.search = '';
-    }
-    this.dateMenu = false;
-  },
+    updateSearchDate(value) {
+      if (value) {
+        const day = String(value.getDate()).padStart(2, '0');
+        const month = String(value.getMonth() + 1).padStart(2, '0');
+        const year = value.getFullYear();
+        this.search = `${year}-${month}-${day}`;
+      } else {
+        this.search = '';
+      }
+      this.dateMenu = false;
+    },
     formatIntuitiveDate(dateString) {
       console.log("formatIntuitiveDate", dateString);
       if (!dateString) return "Sin fecha";
@@ -1425,18 +1478,31 @@ export default {
       } catch (error) {
         this.showAlert("error", "Ocurrió un error inesperado al cargar los datos.", 3000);
       } finally {
-        this.dialog = true;
+        if(this.currentView !== 'meta')
+        {
+          this.initialize();
+          this.currentView = 'meta';
+        }
         this.initializeSelections();
         this.timeSlots = this.generateTimeSlots();
+        this.dialog = true;
       }
     },
     close() {
       this.step = 0;
       this.dialog = false;
+
+      this.ignoreTaskTypeWatch = true; // ← bloquear watcher
+
       this.$nextTick(() => {
+        const preserved = this.editedItem.task_type;
         this.editedItem = Object.assign({}, this.defaultItem);
-        this.originalItem = Object.assign({}, this.defaultItem);
+        this.editedItem.task_type = preserved;
+        this.originalItem = Object.assign({}, this.editedItem);
+
+        this.ignoreTaskTypeWatch = false; // ← desbloquear
       });
+
       this.file = null;
       this.imgMiniatura = "";
       this.editedIndex = -1;

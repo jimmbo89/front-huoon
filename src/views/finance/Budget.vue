@@ -174,7 +174,7 @@
                     </div>
 
                     <!-- Usado - 15% -->
-                    <div style="width: 15%; min-width: 0; text-align: center;" class="text-caption text-grey-darken-1 text-truncate">
+                    <div style="width: 15%; min-width: 0; text-align: center;" class="text-truncate">
                       {{ formatCurrency(slotProps.item.used_amount) }}
                     </div>
 
@@ -196,7 +196,7 @@
                         style="font-size: 10px; margin-right: 4px"
                         icon="mdi-currency-sign"
                       ></v-icon>
-                      <span class="text-grey-darken-1 text-body-2 text-truncate">
+                      <span class=" text-truncate">
                         {{ getCurrencySymbol(slotProps.item.currency) }}
                       </span>
                     </div>

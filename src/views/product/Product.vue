@@ -42,11 +42,10 @@
             <v-card
               class="d-flex align-center pa-2"
               :class="{ 'oscurecer-persistente': tool.id === selectedTool }"
-              elevation="2"
+              elevation="1"
               rounded="lg"
-              density="comfortable"
               @click="tool.action()"
-              style="cursor: pointer; height: 70px; width: 100%"
+              style="cursor: pointer;"
             >
               <v-avatar
                 size="40"
@@ -100,6 +99,9 @@
                 <template v-else>
                   <div class="text-caption text-grey-darken-1">
                     {{ $t("common.no_records") }}
+                  </div>
+                  <div class="text-caption text-grey-darken-1">
+                    {{ formatIntuitiveDate(obtenerFechaLocal()) }}
                   </div>
                 </template>
               </div>
@@ -396,9 +398,14 @@
                     <img v-if="imagenDisponible()" :src="imgedit" height="120" width="210" />
                   </v-card>
                 </v-col>
-                <v-col cols="12" md="12">
+                <v-col cols="12" md="6">
                   <v-textarea v-model="editedItem.additional_notes" :label="$t('product.fields.additional_notes')"
-                    variant="underlined"></v-textarea>
+                    variant="underlined" :rows="3"></v-textarea>
+                </v-col>
+                
+                <v-col cols="12" md="6">
+                  <v-textarea v-model="editedItem.purchase_place" :label="$t('product.fields.purchase_place')"
+                    variant="underlined" :rows="3"></v-textarea>
                 </v-col>
               </v-row>
 
@@ -443,12 +450,10 @@
                         <template v-slot:prepend>
                           <v-avatar size="24">
                             <template v-if="isImage(item.raw.iconCategory)">
-                              <img :src="`${this.$axios.defaults.baseURL}images/${
-                                    item.raw.iconCategory
-                                  }?t=${Date.now()}`" alt="icon" />
+                              <img :src="getImageUrl(item.raw.iconCategory)" alt="icon" />
                             </template>
                             <template v-else>
-                              <v-icon>{{ getIconName(item.raw.iconCategory) }}</v-icon>
+                              <v-icon :color="normalizeHexColor(item.raw.colorCategory)">{{ getIconName(item.raw.iconCategory) }}</v-icon>
                             </template>
                           </v-avatar>
                         </template>
@@ -485,7 +490,7 @@
                 </v-col>
               </v-row>
 
-              <!-- Paso 3: Configuración adicional -->
+              <!-- Paso 3: Configuración adicional 
               <v-row dense v-if="step === 2">
                 <v-col cols="12" md="6">
                   <v-text-field v-model="editedItem.frequency" :label="$t('product.fields.frequency')"
@@ -499,7 +504,7 @@
                   <v-text-field v-model="editedItem.purchase_place" :label="$t('product.fields.purchase_place')"
                     variant="underlined"></v-text-field>
                 </v-col>
-              </v-row>
+              </v-row>-->
 
               <!-- Navegación -->
               <div class="d-flex justify-space-between mt-8">
@@ -682,7 +687,7 @@ export default {
     steps: [
       { title: "basic", subtitle: "basic_information" },
       { title: "purchase", subtitle: "purchase_details" },
-      { title: "additional", subtitle: "additional_configuration" },
+      //{ title: "additional", subtitle: "additional_configuration" },
     ],
     dialogWarehouse: false,
     step: 0,
@@ -1169,6 +1174,10 @@ export default {
     this.selectedTool = "products";
   },
   methods: {
+     normalizeHexColor (color) {
+  if (!color) return 'currentColor'; // fallback seguro
+  return color.startsWith('#') ? color : `#${color}`;
+},
      selectTool(toolId) {
     this.selectedTool = toolId;
     //this.applyFilters();
@@ -1206,9 +1215,6 @@ export default {
           lastDate: this.nextToExpireDate,
         },
       ];
-    },
-    getImageUrl(imagePath) {
-      return `${this.$axios.defaults.baseURL}images/${imagePath}`;
     },
      openModal() {
       this.dialogImg = true;
@@ -1424,6 +1430,15 @@ export default {
       }
       // En otros casos, devolver un ícono por defecto
       return "mdi-help-circle";
+    },
+    getImageUrl(imagePath) {
+      return `${this.$axios.defaults.baseURL}images/${imagePath}?t=${this.getCacheTimestamp()}`;
+    },
+    getCacheTimestamp() {
+      // Usamos medianoche (00:00:00) del día actual
+      const now = new Date();
+      const startOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+      return startOfDay.getTime(); // Ej: 1714003200000 (cambia una vez al día)
     },
     // Cambiar almacén seleccionado
     /*selectStore(warehouse_id) {

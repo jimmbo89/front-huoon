@@ -154,6 +154,14 @@ const routes = [
             /* webpackChunkName: "home" */ "@/views/suggestion/Suggestion.vue"
           ),
       },
+      {
+        path: "/initiatives",
+        name: "Initiatives",
+        component: () =>
+          import(
+            /* webpackChunkName: "home" */ "@/views/initiative/Initiative.vue"
+          ),
+      },
     ],
   },
 ];

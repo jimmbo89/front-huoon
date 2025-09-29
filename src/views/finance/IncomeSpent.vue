@@ -254,11 +254,6 @@
                     <div
                       style="width: 15%; min-width: 0; text-align: center"
                       class="text-body-2 text-truncate"
-                      :class="{
-                        'text-green-darken-1': parseFloat(slotProps.item.available) > 0,
-                        'text-red-darken-1': parseFloat(slotProps.item.available) < 0,
-                        'text-grey': parseFloat(slotProps.item.available) === 0,
-                      }"
                     >
                       {{ formatCurrency(slotProps.item.available) }}
                     </div>
@@ -476,9 +471,9 @@
                     :hint="spentHint"
                     persistent-hint
                     :class="{
-                      'has-negative-hint': availableAmount < 0,
-                      'has-positive-hint': availableAmount > 0,
-                      'has-neutral-hint': availableAmount === 0,
+                      'has-negative-hint': availableAmountDynamic < 0,
+                      'has-positive-hint': availableAmountDynamic > 0,
+                      'has-neutral-hint': availableAmountDynamic === 0,
                     }"
                   />
                 </v-col>
@@ -923,8 +918,32 @@ export default {
         ? this.balance.personal.available
         : this.balance.home?.available || 0;
     },
+    availableAmountDynamic() {
+      if (!this.editedItem.type || !this.balance) return 0;
+
+      const newSpent = parseFloat(this.editedItem.spent) || 0;
+
+      let totalIncome = 0;
+      let alreadySpent = 0;
+
+      if (this.editedItem.type === 'Personal') {
+        totalIncome = this.balance.personal.income || 0;
+        alreadySpent = this.balance.personal.spent || 0;
+      } else {
+        totalIncome = this.balance.home?.income || 0;
+        alreadySpent = this.balance.home?.spent || 0;
+      }
+
+      // Si es edición, restamos el gasto anterior para no contarlo dos veces
+      const currentRecordSpent = this.editedIndex !== -1 ? (parseFloat(this.originalItem.spent) || 0) : 0;
+
+      // Gasto total futuro = (gasto ya hecho - gasto anterior de este registro) + nuevo gasto
+      const futureTotalSpent = (alreadySpent - currentRecordSpent) + newSpent;
+
+      return totalIncome - futureTotalSpent;
+    },
     spentHint() {
-      const amount = this.availableAmount;
+      const amount = this.availableAmountDynamic;
       const formatted = this.formatCurrency(amount);
       return `Disponible: ${formatted}`;
     },
@@ -1440,6 +1459,7 @@ export default {
         const result = await handleRequest({
           endpoint: "get-finances-data",
           method: "POST",
+          data: this.data
         });
 
         if (result.success) {

@@ -51,11 +51,10 @@
     <v-card
       class="d-flex align-center pa-2"
       :class="{ 'oscurecer-persistente': warehouse.id === warehouseData?.id }"
-      elevation="2"
+      elevation="1"
       rounded="lg"
-      density="comfortable"
       @click="selectWarehouse(warehouse)"
-      style="cursor: pointer; height: 70px; width: 100%; position: relative"
+      style="cursor: pointer"
     >
       <v-avatar
         size="40"
