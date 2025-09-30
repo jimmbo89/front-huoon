@@ -388,199 +388,7 @@
         </tr>
       </template>
     </v-data-table>
-   <!--<div class="d-flex flex-wrap align-center gap-2">
-  <v-spacer></v-spacer>
-  <v-text-field
-    v-model="searchDate"
-    label="Buscar por fecha"
-    variant="outlined"
-    placeholder="DD-MM-YYYY"
-    density="compact"
-    style="max-width: 350px"
-    clearable
-    :rules="dateRules"
-  >
-    <template v-slot:append-inner>
-      <v-locale-provider>
-        <v-menu 
-          v-model="dateMenu" 
-          :close-on-content-click="false" 
-          transition="scale-transition" 
-          offset-y 
-          min-width="auto"
-        >
-          <template v-slot:activator="{ props }">
-            <v-icon
-              v-bind="props"
-              color="#03626C"
-              @click="dateMenu = true"
-            >
-              mdi-calendar
-            </v-icon>
-          </template>
-          <v-date-picker 
-            color="#03626C"
-            v-model="pickerDate"
-            @update:model-value="updateSearchDate"
-          ></v-date-picker>
-        </v-menu>
-      </v-locale-provider>
-    </template>
-  </v-text-field>
-</div>
-    <v-row class="no-gutters">
-      <v-col cols="12" style="max-height: 60vh; min-height: 40vh; overflow-y: auto">
-    <template v-if="filteredTasks.length > 0">
-      <v-card v-for="(meeting, index) in filteredTasks" :key="index" class="mb-4 rounded-lg pa-2" density="comfortable" elevation="2"
-        :class="{ 'smooth-hover': true }">
-        <v-row class="align-center">
-          <v-col cols="1" class="d-flex justify-start">
-           <div class="icono-concavo d-flex flex-column justify-center justify-start pa-0"
-              :class="`bg-${getTypeColor(meeting.type)}`">
-            <div class="date-display">
-              {{ formatIntuitiveDate(meeting.start_date) }}
-            </div>
-            <div v-if="meeting.start_time" class="time-display">
-              {{ formatTime(meeting.start_time) }}
-            </div>
-          </div>
-          </v-col>
-
-          <v-col cols="6" class="d-flex align-center justify-start pa-0">
-              <v-row align="center" class="gap-3">
-                <div>
-                  <div class="font-weight-bold text-body-2">{{ meeting.title }}</div>
-                  <div class="text-caption d-flex align-center text-grey-darken-1">
-                    {{ meeting.description }}
-                  </div>
-                  <div class="text-caption d-flex align-center text-grey-darken-1">
-                    {{ meeting.geo_location }}
-                  </div>
-                </div>
-            </v-row>
-          </v-col>
-          <v-col cols="1" class="d-flex align-center justify-start pa-0">
-            <v-row align="center" class="gap-3">
-              <div class="avatar-row d-flex flex-wrap justify-end gap-1">
-                <v-tooltip v-for="person in meeting.people" :key="person.id" bottom :open-delay="300"
-                  :close-delay="100">
-                  <template v-slot:activator="{ props }">
-                    <v-avatar class="avatar-item hover-expand" size="32" v-bind="props">
-                      <v-img :src="`${this.$axios.defaults.baseURL}images/${
-                          person.image
-                        }`" alt="avatar" />
-                    </v-avatar>
-                  </template>
-                  <span>{{ person.name }}<br />{{ person.roleName }}</span>
-                </v-tooltip>
-              </div>
-            </v-row>
-          </v-col>
-          <v-col cols="1" class="d-flex align-center">
-            <div>
-              <v-icon :color="getTypeColor(meeting.type)"
-                style="font-size: 10px; filter: drop-shadow(0 0 2px currentColor)" icon="mdi-circle"
-                class="mr-1"></v-icon>
-              <span class="text-black">{{ meeting.typeName }}</span>
-            </div>
-          </v-col>
-          <v-col cols="1" class="d-flex align-center justify-start pa-0">
-            <div>
-              <span class="text-black">{{ meeting.namePriority }}</span>
-            </div>
-          </v-col>
-          <v-col cols="1" class="d-flex align-center justify-start pa-0">
-            <v-row>
-              <div class="text-end">
-                <v-dialog v-model="meeting.statusDialog" width="400">
-                  <template v-slot:activator="{ props }">
-                    <v-btn v-bind="props" :color="
-                        '#' + (getStatusById(meeting.status_id)?.colorStatus || 'grey')
-                      " variant="text" size="small" :prepend-icon="
-                        getStatusById(meeting.status_id)?.iconStatus || 'mdi-help-circle'
-                      ">
-                      {{ getStatusById(meeting.status_id)?.nameStatus || "Desconocido" }}
-                    </v-btn>
-                  </template>
-                  <v-card>
-                    <v-card-title class="pa-4 text-center">
-                      {{ $t("taskForm.updateStatus") }}
-                    </v-card-title>
-                    <v-divider></v-divider>
-                    <v-card-text class="pa-0">
-                      <v-row class="px-2 pb-1" dense>
-                        <v-col cols="12" v-for="(statusOption, i) in status" :key="i" class="py-1">
-                          <v-card @click="changeTaskStatus(meeting, statusOption.id)" :class="[
-                              'status-option mx-1',
-                              { 'current-status': meeting.status_id === statusOption.id },
-                            ]" :style="
-                              meeting.status_id === statusOption.id
-                                ? {
-                                    'background-color': `#${statusOption.colorStatus}`,
-                                    'border-color': `#${statusOption.colorStatus}`,
-                                    color: 'white',
-                                  }
-                                : {}
-                            " variant="outlined" :elevation="meeting.status_id === statusOption.id ? 2 : 0"
-                            style="border-radius: 12px; cursor: pointer">
-                            <v-card-item class="pa-2">
-                              <div class="d-flex align-center">
-                                <v-icon :color="
-                                    meeting.status_id === statusOption.id
-                                      ? 'white'
-                                      : '#' + statusOption.colorStatus
-                                  " :icon="statusOption.iconStatus" size="large" class="mr-3"></v-icon>
-                                <v-card-title :style="{
-                                    color:
-                                      meeting.status_id === statusOption.id
-                                        ? 'white'
-                                        : 'inherit',
-                                    'font-size': '1rem',
-                                  }">
-                                  {{ statusOption.nameStatus }}
-                                </v-card-title>
-                                <v-spacer></v-spacer>
-                                <v-icon v-if="meeting.status_id === statusOption.id" color="white"
-                                  icon="mdi-check-circle"></v-icon>
-                              </div>
-                            </v-card-item>
-                          </v-card>
-                        </v-col>
-                      </v-row>
-                    </v-card-text>
-                    <v-divider></v-divider>
-                    <v-card-actions>
-                      <v-spacer></v-spacer>
-                      <v-btn variant="flat" color="#03626C" @click="meeting.statusDialog = false">
-                        {{ $t("buttons.cancel") }}
-                      </v-btn>
-                    </v-card-actions>
-                  </v-card>
-                </v-dialog>
-              </div>
-            </v-row>
-          </v-col>
-
-          <v-col cols="1" class="d-flex align-center ml-auto pe-4" style="margin-left: auto !important">
-            <v-btn icon variant="text" color="green-darken-2" size="small" @click="editItem(meeting)">
-              <v-icon>mdi-pencil</v-icon>
-            </v-btn>
-            <v-btn icon variant="text" color="red-darken-2" size="small" @click="deleteItem(meeting)">
-              <v-icon>mdi-delete</v-icon>
-            </v-btn>
-          </v-col>
-        </v-row>
-      </v-card>
-    </template>
-    <template v-else>
-      <v-col cols="12" class="text-center py-8 pa-0">
-        <v-icon size="64" color="grey-lighten-1">mdi-check-circle-outline</v-icon>
-        <div class="text-h6 text-grey mt-4">{{ $t("taskForm.noTasksToday") }}</div>
-      </v-col>
-    </template>
-  </v-col>
-  </v-row>-->
-  </v-card-text>
+    </v-card-text>
   </v-card>
   </v-container>
   <v-dialog v-model="dialog" fullscreen persistent transition="dialog-bottom-transition"
@@ -711,10 +519,10 @@
                   <v-menu v-model="menu" :close-on-content-click="false" :nudge-right="40" transition="scale-transition"
                     offset-y min-width="290px" location="end">
                     <template v-slot:activator="{ props }">
-                      <v-text-field v-bind="props" :modelValue="this.editedItem.start_date" variant="underlined"
+                      <v-text-field v-bind="props" :modelValue="this.input" variant="underlined"
                         :label="$t('taskForm.today')"></v-text-field>
                     </template>
-                      <v-date-picker color="#03626C" :modelValue="parseDateString(this.editedItem.start_date)" @update:model-value="updateDate"
+                      <v-date-picker color="#03626C" :modelValue="this.input" @update:model-value="updateDate"
                         format="yyyy-MM-dd"></v-date-picker>
                   </v-menu>
                     </v-locale-provider>
@@ -1299,6 +1107,13 @@ export default {
     const date = new Date(dateValue);
     return new Date(date.getFullYear(), date.getMonth(), date.getDate());
   },
+  obtenerFechaLocal() {
+      const hoy = new Date();
+      const year = hoy.getFullYear();
+      const month = String(hoy.getMonth() + 1).padStart(2, "0");
+      const day = String(hoy.getDate()).padStart(2, "0");
+      return `${year}-${month}-${day}`;
+    },
     isValidDatePartial(dateStr) {
   const parts = dateStr.split('-');
   if (parts.length > 3) return false;
@@ -1723,6 +1538,8 @@ export default {
         (this.data = {});
       this.editedItem.home_id = this.home_id;
       this.data.home_id = this.editedItem.home_id;
+      this.input = this.obtenerFechaLocal();
+      this.editedItem.start_date = this.input;
       this.editedIndex = -1;
       try {
         const result = await handleRequest({
@@ -2114,6 +1931,7 @@ export default {
       // Asignar a originalItem y editedItem solo las personas seleccionadas
       this.originalItem = _.cloneDeep(item);
       this.editedItem = _.cloneDeep(item);
+      this.input = item.start_date;
       // Asignamos las personas seleccionadas a las propiedades 'people' de los dos objetos
       //this.originalItem.people = _.cloneDeep(selectedPeople); // Aseguramos una copia profunda
       //this.editedItem.people = _.cloneDeep(selectedPeople); // Aseguramos una copia profunda

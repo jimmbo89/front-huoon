@@ -42,7 +42,7 @@
 
        
       <v-btn icon class="text-none" variant="text">
-        <v-badge color="#E53935" :content="cantHome" dot>
+        <v-badge color="#E53935" :content="cantHome">
           <v-icon color="#00796B" icon="mdi-home" @click="openMenu"></v-icon>
         </v-badge>
 
@@ -126,17 +126,13 @@
       </v-btn>
       <!-- Campanita de notificaciones -->
       <v-btn icon class="text-none" variant="text">
-        <template v-if="countNoti">
           <!-- Mostrar badge solo si hay notificaciones -->
-          <v-badge color="#E53935" :content="countNoti" dot>
-            <v-icon color="#00796B" icon="mdi-bell"></v-icon>
+          <v-badge v-if="countNoti" color="#E53935" :content="countNoti">
+            <v-icon color="#00796B" icon="mdi-bell-ring" @click="openNoti()"></v-icon>
           </v-badge>
-        </template>
 
-        <template v-else>
           <!-- Mostrar solo el icono (sin badge) -->
-          <v-icon style="color: #00796b" icon="mdi-bell"></v-icon>
-        </template>
+          <v-icon v-else style="color: #00796b" icon="mdi-bell"></v-icon>
 
         <!-- Componente de menú de notificaciones -->
         <v-menu
@@ -958,6 +954,15 @@ export default {
     this.getNotifications();
   },
   methods: {
+    getImageUrl(imagePath) {
+      return `${this.$axios.defaults.baseURL}images/${imagePath}?t=${this.getCacheTimestamp()}`;
+    },
+    getCacheTimestamp() {
+      // Usamos medianoche (00:00:00) del día actual
+      const now = new Date();
+      const startOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+      return startOfDay.getTime(); // Ej: 1714003200000 (cambia una vez al día)
+    },
     updateDate(val) {
       this.dateInput = val;
       this.editedItem.birth_date = this.dateFormatted;
@@ -1464,8 +1469,8 @@ export default {
 
 /* Estilos principales del menú */
 .rounded-menu {
-  border-radius: 4px !important;
-  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.12) !important;
+  border-radius: 8px !important;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12) !important;
   border: 1px solid #eee !important;
 }
 

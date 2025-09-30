@@ -12,11 +12,10 @@ export async function handleRequest({ endpoint, method = 'GET', data = null, par
     };
 
     const response = await axiosInstance(config);
-
     if (response.status === 200 || response.status === 201) {
-      return { success: true, message: "Operación realizada correctamente", data: response.data  };
+      return { success: true, message: response.message || response.msg, data: response.data  };
     } else if (response.status === 204) {
-      return { success: false, message: 'No encontrado.', data: null  };
+      return { success: false, message: response.message || response.msg, data: null  };
     }
 
   } catch (error) {

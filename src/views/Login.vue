@@ -108,7 +108,7 @@
         </v-btn>
         </v-form>
         <div class="text-center mt-2">
-          <span class="text-body-2 text-decoration-underline" style="cursor: pointer;">
+          <span class="text-body-2 text-decoration-underline" sstyle="cursor: pointer;" @click="openRecovery">
             {{ $t('login.forgotPassword') }}
           </span>
         </div>
@@ -126,6 +126,137 @@
       </v-card>
     </v-col>
     </v-row>
+    <!-- Modal de recuperación de contraseña -->
+    <v-dialog v-model="recoveryDialog" max-width="500" persistent>
+      <v-card>
+        <v-card-title class="text-body-2 font-weight-bold">
+            Recuperar contraseña
+          </v-card-title>
+
+        <v-card-text>
+      <!-- Campo de correo (siempre visible después del paso 1) -->
+      <v-text-field
+        v-model="recoveryEmail"
+        label="Correo electrónico"
+        variant="outlined"
+        density="comfortable"
+        :rules="emailRules"
+        class="mb-4"
+      />
+
+      <!-- Paso 1: Solo el botón para continuar -->
+      <v-btn
+        v-if="recoveryStep === 1"
+        block
+        color="primary"
+        @click="goToOptions"
+        :disabled="!recoveryEmail || !emailRules.every(r => r(recoveryEmail))"
+      >
+        Continuar
+      </v-btn>
+
+      <!-- Paso 2: Opciones y campos condicionales -->
+      <template v-else>
+        <!-- Mensaje de éxito al reenviar -->
+        <v-alert
+          v-if="showResendSuccess"
+          type="success"
+          variant="tonal"
+          class="mb-4"
+        >
+          Código enviado a {{ recoveryEmail }}
+        </v-alert>
+
+        <!-- Selector de opción -->
+        <v-radio-group v-model="selectedRecoveryOption" row class="mb-4" @update:model-value="onRecoveryOptionChange">
+          <v-radio label="Ya tengo un código" value="haveCode"></v-radio>
+          <v-radio label="Enviar código" value="resendCode"></v-radio>
+        </v-radio-group>
+
+        <!-- Campo de código (solo si selecciona "Ya tengo un código") -->
+        <v-text-field
+          v-if="selectedRecoveryOption === 'haveCode'  && recoveryStep === 2"
+          v-model="recoveryCode"
+          label="Código de 6 dígitos"
+          variant="outlined"
+          density="comfortable"
+          :rules="codeRules"
+          @keyup.enter="verifyCode"
+          class="mb-4"
+        />
+
+        <!-- Botones de acción -->
+        <div class="d-flex gap-2">
+          <v-btn
+            v-if="selectedRecoveryOption === 'resendCode'  && recoveryStep === 2"
+            color="success"
+            @click="resendCode"
+            :loading="loadingRecovery"
+            block
+          >
+            Reenviar código
+          </v-btn>
+
+          <v-btn
+            v-if="selectedRecoveryOption === 'haveCode' && recoveryStep === 2"
+            color="primary"
+            @click="verifyCode"
+            :loading="loadingRecovery"
+            block
+          >
+            Verificar código
+          </v-btn>
+        </div>
+
+        <!-- Formulario de nueva contraseña (solo si el código fue verificado) -->
+        <div v-if="recoveryStep === 3" class="mt-4">
+          <v-text-field
+            v-model="newPassword"
+            label="Nueva contraseña"
+            variant="outlined"
+            density="comfortable"
+            :type="showNewPass ? 'text' : 'password'"
+            :append-inner-icon="showNewPass ? 'mdi-eye-off' : 'mdi-eye'"
+            @click:append-inner="showNewPass = !showNewPass"
+            :rules="passwordRules"
+            class="mb-4"
+          />
+          <v-text-field
+            v-model="confirmPassword"
+            label="Confirmar contraseña"
+            variant="outlined"
+            density="comfortable"
+            :type="showConfirmPass ? 'text' : 'password'"
+            :append-inner-icon="showConfirmPass ? 'mdi-eye-off' : 'mdi-eye'"
+            @click:append-inner="showConfirmPass = !showConfirmPass"
+            :rules="confirmPasswordRules()"
+          />
+        </div>
+      </template>
+    </v-card-text>
+
+    <!-- Acciones del modal -->
+    <v-card-actions>
+    <v-spacer></v-spacer>
+      <v-btn
+        variant="flat"
+        @click="closeRecovery"
+        color="grey"
+      >
+        Cancelar
+      </v-btn>
+      <v-btn
+        v-if="recoveryStep === 3"
+        variant="flat"
+        @click="updatePassword"
+        :loading="loadingRecovery"
+        color="#03626C"
+      >
+        Cambiar contraseña
+      </v-btn>
+    </v-card-actions>
+      </v-card>
+    </v-dialog>
   </v-container>
 </template>
 
@@ -139,58 +270,7 @@ export default {
 
     onboardingStep: 0,
     slideKeys: ['welcome', 'shareHome', 'smartTasks', 'controlFromPhone', 'designedForYou'],
-    /*onboardingSlides: [
-      {
-        title: "Administra tu hogar",
-        description: "Organiza tareas, eventos y finanzas en un solo lugar.",
-        icon: "mdi-home-city-outline"
-      },
-      {
-        title: "Comparte con tu familia",
-        description: "Todos los miembros pueden colaborar y mantenerse al tanto.",
-        icon: "mdi-account-group-outline"
-      },
-      {
-        title: "Accede desde cualquier lugar",
-        description: "Tu hogar virtual siempre contigo.",
-        icon: "mdi-cellphone-link"
-      }
-    ],
-    // ...lo demás ya lo tienes
 
-
-    slides: [
-      {
-        title: "Bienvenido a",
-        emphasis: "Huoon",
-        subtitle: "tu hogar organizado",
-        description: "Centraliza tareas, miembros, productos y documentos del hogar en un solo lugar."
-      },
-      {
-        title: "Comparte tu casa",
-        emphasis: "con tu familia",
-        subtitle: "",
-        description: "Crea un hogar colaborativo donde todos participan: pareja, hijos, roomies o cuidadores."
-      },
-      {
-        title: "Tareas y recordatorios",
-        emphasis: "inteligentes",
-        subtitle: "",
-        description: "Automatiza rutinas, recibe alertas importantes y mantén tu hogar al día fácilmente."
-      },
-      {
-        title: "Todo bajo control",
-        emphasis: "desde tu celular",
-        subtitle: "",
-        description: "Consulta información de compras, pagos, recetas, calendarios y más desde cualquier lugar."
-      },
-      {
-        title: "Diseñado para ti",
-        emphasis: "y tu bienestar",
-        subtitle: "",
-        description: "Huoon se adapta a tu estilo de vida: incluye herramientas útiles para todos los miembros del hogar, incluyendo niños y adultos mayores."
-      }
-    ],*/
     loading: false,
     snackbar: false,
     sb_type: '',
@@ -220,6 +300,34 @@ export default {
     showPassword: false,
     data: {},
     valid: true,
+    // Modal de recuperación
+   recoveryDialog: false,
+    recoveryStep: 1, // 1 = ingresar email, 2 = opciones, 3 = nueva contraseña
+    recoveryEmail: '',
+    recoveryCode: '',
+    recoveryUserId: null,
+    newPassword: '',
+    confirmPassword: '',
+    showNewPass: false,
+    showConfirmPass: false,
+    selectedRecoveryOption: 'haveCode', // valor por defecto
+    showResendSuccess: false, // para mostrar mensaje de reenvío exitoso
+    loadingRecovery: false,
+
+// Reglas
+    codeRules: [
+      v => !!v || 'El código es requerido'
+    ],
+    passwordRules: [
+      v => !!v || 'La contraseña es requerida',
+      v => (v && v.length >= 3) || 'Mínimo 3 caracteres'
+    ],
+    confirmPasswordRules() {
+    return [
+        v => !!v || 'Confirma la contraseña',
+        v => v === this.newPassword || 'Las contraseñas no coinciden'
+      ];
+    },
     nameRules: [
       (v) => !!v || "El campo es requerido",
       (v) => (v && v.length <= 50) ||
@@ -266,14 +374,31 @@ export default {
       this.editedItem = Object.assign({}, this.defaultItem);
 
       // Redirigir al Dashboard
-      setTimeout(() => {
-        router.push({ name: 'Dashboard' });
-      }, 1000);
+       if(user.home === null){
+              setTimeout(() => {
+              router.push({ name: 'Onboarding' });
+            }, 1000);
+            }else{
+            // Redirigir al Dashboard
+            setTimeout(() => {
+              router.push({ name: 'Home' });
+            }, 1000);
+          }
     }
 
     this.register = false;
   },
   methods: {
+    onRecoveryOptionChange() {
+    // Si estaba en paso 3, volver a paso 2
+    if (this.recoveryStep === 3) {
+      this.recoveryStep = 2;
+      this.newPassword = '';
+      this.confirmPassword = '';
+      this.showResendSuccess = false;
+      this.recoveryCode = '';
+    }
+  },
     goToLogin() {
       this.$nextTick(() => {
         this.editedItem = Object.assign({}, this.defaultItem);
@@ -285,6 +410,7 @@ export default {
       this.loading = true; // Iniciar loader
       if (!this.register) {
         try {
+          this.data = {};
           // Preparar el payload
           this.data.email = this.editedItem.email;
           this.data.password = this.editedItem.password;
@@ -325,9 +451,16 @@ export default {
             // Reiniciar el formulario
             this.editedItem = Object.assign({}, this.defaultItem);
             // Manejo en caso de éxito
+            if(user.home === null){
+              setTimeout(() => {
+              router.push({ name: 'Onboarding' });
+            }, 1000);
+            }else{
+            // Redirigir al Dashboard
             setTimeout(() => {
               router.push({ name: 'Home' });
             }, 1000);
+          }
           } else {
             // Manejo de errores definidos por la API
             this.showAlert('warning', result.message || 'Error inesperado', 3000);
@@ -340,10 +473,12 @@ export default {
         }
       } else {
         try {
+          this.data = {};
           // Preparar el payload
           this.data.name = this.editedItem.name;
           this.data.email = this.editedItem.email;
           this.data.password = this.editedItem.password;
+          this.data.user = this.editedItem.user;
           // Petición al servidor utilizando handleRequest
           const result = await handleRequest({
             endpoint: 'register',
@@ -382,11 +517,16 @@ export default {
 
             // Reiniciar el formulario
             this.editedItem = Object.assign({}, this.defaultItem);
-
+            if(user.home === null){
+              setTimeout(() => {
+              router.push({ name: 'Home' });
+            }, 1000);
+            }else{
             // Redirigir al Dashboard
             setTimeout(() => {
-              router.push({ name: 'Dashboard' });
+              router.push({ name: 'Home' });
             }, 1000);
+            }
           } else {
             // Manejo de errores definidos por la API
             this.showAlert('warning', result.message || 'Error inesperado', 3000);
@@ -401,7 +541,7 @@ export default {
     },
     loginWithGoogle() {
       // Abrir una nueva ventana emergente
-      window.location.href = "http://huoon.api.wezen.cl/api/login-google";
+      window.location.href = "http://huoon.api.klint.cl/api/login-google";
     },
     loginWithFacebook() {
       this.showAlert('success', 'Aun no esta implementada esta funcionalidad', 1000);
@@ -409,6 +549,117 @@ export default {
     togglePasswordVisibility() {
       this.showPassword = !this.showPassword;
     },
+
+  openRecovery() {
+    this.recoveryDialog = true;
+    this.resetRecovery();
+  },
+
+  resetRecovery() {
+    this.recoveryStep = 1;
+    this.recoveryEmail = '';
+    this.recoveryCode = '';
+    this.newPassword = '';
+    this.confirmPassword = '';
+    this.recoveryUserId = null,
+    this.selectedRecoveryOption = 'haveCode';
+    this.showResendSuccess = false;
+  },
+
+  goToOptions() {
+    if (!this.recoveryEmail || !this.emailRules.every(r => r(this.recoveryEmail))) {
+      this.showAlert('warning', 'Ingresa un correo válido', 2000);
+      return;
+    }
+    this.recoveryStep = 2;
+  },
+
+  async resendCode() {
+    this.loadingRecovery = true;
+    this.showResendSuccess = false;
+    this.data = {};
+    this.data.email = this.recoveryEmail;
+    try {
+      const result = await handleRequest({
+        endpoint: 'forgot-password',
+        method: 'POST',
+         data: this.data,
+         includeToken: false
+      });
+      if (result.success) {
+        this.showResendSuccess = true;
+        // Opcional: limpiar el campo de código si estaba lleno
+        this.recoveryCode = '';
+      } else {
+        this.showAlert('error', result.message || 'Error al reenviar', 2000);
+      }
+    } catch (error) {
+      this.showAlert('error', 'Error de conexión', 2000);
+    } finally {
+      this.loadingRecovery = false;
+    }
+  },
+
+  async verifyCode() {
+    this.data = {};
+    this.data.email = this.recoveryEmail;
+    this.data.code = this.recoveryCode;
+    this.loadingRecovery = true;
+    try {
+      const result = await handleRequest({
+        endpoint: 'verify-code',
+        method: 'POST',
+         data: this.data,
+         includeToken: false
+      });
+      if (result.success) {
+        this.recoveryUserId = result.data.userId;
+        this.selectedRecoveryOption = ''
+        this.recoveryStep = 3; // Avanzar a nueva contraseña
+      } else {
+        this.showAlert('warning', result.message || 'Código incorrecto', 2000);
+      }
+    } catch (error) {
+      this.showAlert('error', 'Error al verificar', 2000);
+    } finally {
+      this.loadingRecovery = false;
+    }
+  },
+
+  async updatePassword() {
+    if (this.newPassword !== this.confirmPassword) {
+      this.showAlert('warning', 'Las contraseñas no coinciden', 2000);
+      return;
+    }
+    this.data = {};
+    this.data.email = this.recoveryEmail;
+    this.data.user_id = this.recoveryUserId;
+    this.data.newPassword = this.newPassword;
+    this.loadingRecovery = true;
+    try {
+      const result = await handleRequest({
+        endpoint: 'reset-password',
+        method: 'POST',
+        data: this.data
+      });
+      if (result.success) {
+        this.showAlert('success', 'Contraseña actualizada correctamente', 2000);
+        this.closeRecovery();
+      } else {
+        this.showAlert('error', result.message || 'Error al cambiar la contraseña', 2000);
+      }
+    } catch (error) {
+      this.showAlert('error', 'Error de conexión', 2000);
+    } finally {
+      this.loadingRecovery = false;
+    }
+  },
+
+  closeRecovery() {
+    this.recoveryDialog = false;
+    this.data = {};
+    this.resetRecovery();
+  },
     showAlert(sb_type, sb_message, sb_timeout) {
       this.sb_type = sb_type
 

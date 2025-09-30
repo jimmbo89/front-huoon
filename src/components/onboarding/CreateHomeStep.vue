@@ -2,8 +2,8 @@
   <v-card class="pa-4 rounded-lg text-body-2">
     <!-- Agrega la clase "w-100" -->
     <v-card-text>
-      <h5 class="text-grey-darken-2 text-body-2">{{ $t("home.create.title") }}</h5>
-      <p class="text-grey-lighten-1">{{ $t("home.create.instructions") }}</p>
+      <h5 class="text-grey-darken-2 text-body-2">{{ $t("home.title") }}</h5>
+      <p class="text-grey-lighten-1">{{ $t("home.instructions") }}</p>
       <v-form ref="form" v-model="valid" class="mt-3 text-body-2">
         <v-row>
           <!-- Contenido dinámico según paso -->
@@ -12,7 +12,7 @@
               <v-col cols="12">
                 <v-text-field
                   v-model="homeData.name"
-                  :label="$t('home.create.fields.name')"
+                  :label="$t('home.fields.name')"
                   variant="underlined"
                   :rules="nameRules"
                 />
@@ -20,7 +20,7 @@
               <v-col cols="12">
                 <v-text-field
                   v-model="homeData.address"
-                  :label="$t('home.create.fields.address')"
+                  :label="$t('home.fields.address')"
                   variant="underlined"
                 />
               </v-col>
@@ -30,7 +30,7 @@
                   :items="hometypes"
                   item-title="name"
                   item-value="id"
-                  :label="$t('home.create.fields.type')"
+                  :label="$t('home.fields.type')"
                   variant="underlined"
                 >
                   <template v-slot:item="{ props, item }">
@@ -46,7 +46,7 @@
               <v-col cols="12">
                 <v-text-field
                   v-model="homeData.residents"
-                  :label="$t('home.create.fields.residents')"
+                  :label="$t('home.fields.residents')"
                   type="number"
                   variant="underlined"
                 />
@@ -61,8 +61,8 @@
               >
                 {{
                   currentStep === 0
-                    ? $t("home.create.actions.cancel")
-                    : $t("home.create.actions.previous")
+                    ? $t("home.actions.cancel")
+                    : $t("home.actions.previous")
                 }}
               </v-btn>
               <v-btn
@@ -73,8 +73,8 @@
               >
                 {{
                   currentStep === steps.length - 1
-                    ? $t("home.create.actions.create")
-                    : $t("home.create.actions.next")
+                    ? $t("home.actions.create")
+                    : $t("home.actions.next")
                 }}
               </v-btn>
             </div>
@@ -129,12 +129,12 @@ export default {
       file: null,
       imgMiniatura: "",
       nameRules: [
-        (v) => !!v || this.$t("home.create.validation.nameRequired"),
-        (v) => (v && v.length >= 3) || this.$t("home.create.validation.nameMinLength"),
+        (v) => !!v || this.$t("home.validation.nameRequired"),
+        (v) => (v && v.length >= 3) || this.$t("home.validation.nameMinLength"),
       ],
       codeRules: [
-        (v) => !!v || this.$t("home.create.validation.codeRequired"),
-        (v) => (v && v.length >= 8) || this.$t("home.create.validation.codeMinLength"),
+        (v) => !!v || this.$t("home.validation.codeRequired"),
+        (v) => (v && v.length >= 8) || this.$t("home.validation.codeMinLength"),
       ],
       selectRules: [(v) => !!v || "Seleccionar al menos un elemento"],
     };
