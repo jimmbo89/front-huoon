@@ -123,11 +123,11 @@
               {{ $t("taskForm.fields.priority") }}
             </div>
 
-            <div style="width: 10%; min-width: 0" class="d-flex justify-center">
+            <div style="width: 10%; min-width: 0" class="d-flex justify-left">
               {{ $t("taskForm.fields.status") }}
             </div>
 
-            <div style="width: 13%; min-width: 0" class="d-flex justify-center">
+            <div style="width: 13%; min-width: 0" class="d-flex justify-left">
               Tipo
             </div>
 
@@ -183,7 +183,7 @@
                   </span>
                 </div>
 
-                <div style="width: 10%; min-width: 0; text-align: center">
+                <div style="width: 10%; min-width: 0; text-align: left">
                 <v-avatar size="24" :color="'#' + getTaskTypeColor(slotProps.item.status)" class="mr-1">
                     <v-icon size="16" color="white">
                       {{ getTaskTypeIcon(slotProps.item.status)  }}
@@ -194,7 +194,7 @@
                   </span>
                 </div>
 
-                <div style="width: 12%; min-width: 0; text-align: center">
+                <div style="width: 12%; min-width: 0; text-align: left">
                   <v-avatar size="24" :color="'#' + getTaskTypeColor(slotProps.item.task_type)" class="mr-1">
                     <v-icon size="16" color="white">
                       {{ getTaskTypeIcon(slotProps.item.task_type)  }}

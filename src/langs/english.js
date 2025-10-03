@@ -286,7 +286,9 @@ const english = {
         editGoal: "Edit Goal",
         discoverGoals: "Descubre metas",
         discoverTasks: "Descubre tareas",
-        homeGoalsTitle: "Home goals"
+        homeGoalsTitle: "Home goals",
+        newGoals: "New Goals",
+        newTasks: "New Tasks",
       },
     },
     taskTypes: {

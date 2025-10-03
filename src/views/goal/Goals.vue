@@ -11,11 +11,12 @@
       </v-col>
     </v-row>
   </v-snackbar>
+  <v-container class="pa-4">
   <v-card  elevation="2" rounded="lg" flat>
       <!-- Encabezado con foto y datos -->
       <v-card-text>
-      <!--<v-row class="mb-4" align="center" no-gutters>
-        <v-col cols="12" sm="9" md="9" class="d-flex align-center">
+      <v-row class="mb-4" align="center" no-gutters>
+        <v-col cols="12" sm="10" md="9" class="d-flex align-center">
           <v-avatar size="48" class="me-3" color="grey-lighten-4" variant="tonal">
             <v-icon color="purple">mdi-flag-checkered</v-icon>
           </v-avatar>
@@ -26,9 +27,21 @@
             <div class="text-body-2 text-grey-darken-1"></div>
           </div>
         </v-col>
+        <v-col cols="12" sm="2" md="2">
+            <div class="d-flex align-right justify-end">
+              <v-switch v-model="editedItem.task_type" true-value="Personal" false-value="Hogar" :base-color="switchColor"
+                :color="switchColor" hide-details inset class="mb-4 font-weight-bold">
+                <template v-slot:label>
+                  <span class="text-body-1" :style="{ color: switchColor }">
+                    {{ getCurrentName }}
+                  </span>
+                </template>
+              </v-switch>
+            </div>
+          </v-col>
         </v-row>
-        <v-divider />-->
-        <!--<v-card-actions class="pa-3 bg-grey-lighten-5 tools-bar">
+        <v-divider />
+        <v-card-actions class="pa-3 bg-grey-lighten-5 tools-bar">
           <v-btn
             v-for="tool in tools"
             :key="tool.name"
@@ -41,7 +54,38 @@
           >
             {{ tool.name }}
           </v-btn>
-        </v-card-actions>-->
+        </v-card-actions>
+       <v-row dense class="mb-4 align-center mt-4">
+          <div class="d-flex justify-space-between align-center mb-4">
+            <div
+              v-for="category in sumaryData.summary"
+              :key="category.id"
+              class="flex-grow-1 px-1"
+            >
+              <v-tooltip top>
+                <template v-slot:activator="{ props }">
+                  <v-chip
+                    v-bind="props"
+                    :variant="selectedCategory?.id === category.id ? 'elevated' : 'elevated'"
+                    :color="selectedCategory?.id === category.id ? 'grey-lighten-3' : getCategoryColor(category.id)"
+                    class="font-weight-medium w-100 d-flex align-center justify-start"
+                    style="cursor: pointer; height: auto; min-height: 36px;"
+                    @click="selectCategory(category)"
+                    size="large"
+                  >
+                    <v-icon size="25" start>{{ category.icon }}</v-icon>
+                    <span class="text-truncate">{{ category.name }}</span>
+                    <span class="font-weight-bold ms-1">{{ category.totalQuantity }}</span>
+                  </v-chip>
+                </template>
+                <span>
+                  {{ category.totalQuantity }} de {{ sumaryData.totalTasks }} tareas están en estado "{{ category.name }}"
+                  ({{ category.percentage }}%)
+                </span>
+              </v-tooltip>
+            </div>
+          </div>
+        </v-row>
     <!-- Título y búsqueda -->
     <v-card-title class="d-flex flex-wrap align-center gap-4 pb-0">
       <!-- Spacer (solo visible en md+) -->
@@ -392,6 +436,7 @@
     </v-data-table>
   </v-card-text>
   </v-card>
+  </v-container>
   <v-dialog v-model="dialog" fullscreen persistent transition="dialog-bottom-transition"
     content-class="fullscreen-dialog">
     <v-form ref="form" v-model="valid" class="h-100">
@@ -775,30 +820,21 @@
 </template>
 
 <script>
-import { ref } from "vue";
 import LocalStorageService from "@/LocalStorageService";
 import { handleRequest } from "@/utils/api"; // Ruta al archivo
 import _ from "lodash";
 import { shallowRef } from "vue";
 import SuggestedTasksList from "@/components/suggested/SuggestedTasksList.vue";
-import { defineAsyncComponent, markRaw } from "vue";
+import { markRaw } from "vue";
 export default {
-   props: {
-    tasks: {
-      type: Array,
-      default: () => [],
-    },
-    status: {
-      type: Array,
-      default: () => [],
-    },
-    filteredTask: {
-      type: String,
-      default: "",
-    },
+  props: {
     task_type: {
       type: String,
       default: "Personal",
+    },
+     types: {
+      type: Array,
+      default: () => [],
     },
   },
   components: {
@@ -807,6 +843,8 @@ export default {
   data: () => ({
     selected: shallowRef([2]),
     selected2: null,
+    selectedCategory: null,
+    filteredTask: 'all',
     dialogSuggested: false,
     suggestedTasks: null,
     step: 0,
@@ -846,9 +884,12 @@ export default {
     persons: [],
     recurrences: [],
     typetasks: [],
+    tasks: [],
+    status: [],
     home_id: "",
     roles: [],
     data: {},
+    sumaryData: {},
     dialogAddPeople: false,
     person_id: "",
     role_id: "",
@@ -865,6 +906,7 @@ export default {
         { title: "Tipo", key: "typeName", sortable: false },
         { title: "Recurrencia", key: "recurrence", sortable: false },
         { title: "Prioridad", key: "namePriority", sortable: false },
+        { title: "Miembros", key: "peopleNames", sortable: false },
         { title: "Estado", key: "status_id", sortable: false },
         { title: "Acciones", key: "actions", sortable: false },
       ],
@@ -887,7 +929,7 @@ export default {
       parent_id: "",
       status_id: "",
       category_id: "",
-      task_type: "Personal",
+      task_type: null,
       person_id: null,
       home_id: "",
       recurrence: "",
@@ -906,7 +948,7 @@ export default {
       start_time: null,
       end_time: null,
       module: "Meta",
-      task_type: "Personal",
+      task_type: null,
       type: "Meta",
       parent_id: "",
       status_id: "",
@@ -1050,49 +1092,52 @@ export default {
       return this.$t("steps") || defaultSteps;
     },
     filteredTasks() {
-  return this.tasks.filter((task) => {
-    // Si no hay búsqueda, mostrar todo
-    if (!this.searchDate || this.searchDate.trim() === '') {
-      return true;
-    }
-    const search = this.searchDate.trim();
-    // Intentar interpretar como búsqueda de fecha parcial
+  // 1. Filtrar por categoría si hay una seleccionada
+  let tasksToFilter = this.tasks;
+
+  if (this.selectedCategory) {
+    const taskIds = new Set(this.selectedCategory.taskIds);
+    tasksToFilter = this.tasks.filter(task => 
+      this.taskBelongsToCategory(task, taskIds)
+    );
+  }
+
+  // 2. Aplicar búsqueda (fecha o texto) sobre el resultado anterior
+  if (!this.searchDate || this.searchDate.trim() === '') {
+    return tasksToFilter;
+  }
+
+  const search = this.searchDate.trim().toLowerCase();
+  return tasksToFilter.filter(task => {
+    // Búsqueda por fecha parcial
     if (this.isValidDatePartial(search)) {
-      // Formato esperado en task.start_date: 'YYYY-MM-DD'
-      const taskDate = task.start_date; // ej: '2025-04-15'
-      // Convertir búsqueda dd[-mm[-yyyy]] a patrón comparable con YYYY-MM-DD
+      const taskDate = task.start_date; // 'YYYY-MM-DD'
       const parts = search.split('-');
       let pattern = '';
+
       if (parts.length === 1) {
-        // Solo día: '15' → buscar cualquier fecha que termine en '-15' o '-15'
         const day = parts[0].padStart(2, '0');
-        pattern = `-${day}`; // Coincide con cualquier mes que termine en -15
+        pattern = `-${day}`;
       } else if (parts.length === 2) {
-        // Día y mes: '15-04' → convertir a '-04-15'
         const day = parts[0].padStart(2, '0');
         const month = parts[1].padStart(2, '0');
         pattern = `-${month}-${day}`;
-      } else if (parts.length === 3) {
-        // Completo: '15-04-2025' → convertir a '2025-04-15'
+      } else if (parts.length === 3 && parts[2].length === 4) {
         const day = parts[0].padStart(2, '0');
         const month = parts[1].padStart(2, '0');
         const year = parts[2];
-        if (year.length === 4) {
-          pattern = `${year}-${month}-${day}`;
-        } else {
-          pattern = search; // fallback
-        }
+        pattern = `${year}-${month}-${day}`;
       }
-      // Verificar si la fecha de la tarea incluye el patrón
+
       if (pattern && taskDate.includes(pattern)) {
         return true;
       }
     }
-    // Búsqueda de texto general en otros campos (opcional)
-    const matchesText = Object.values(task).some(val =>
-      String(val).toLowerCase().includes(search.toLowerCase())
+
+    // Búsqueda general en campos
+    return Object.values(task).some(val =>
+      String(val).toLowerCase().includes(search)
     );
-    return matchesText;
   });
 },
 
@@ -1103,8 +1148,22 @@ export default {
       const type = this.taskTypes.find(t => t.id === this.editedItem.task_type);
       return type ? type.name : this.editedItem.task_type;
     },
+    filteredTasksForGoals() {
+    if (!this.selectedCategory) {
+      return this.tasks;
+    }
+
+    const filtered = this.tasks.filter(task => 
+      this.selectedCategory.taskIds.includes(task.id)
+    );
+    return filtered;
+  }
   },
   created() {
+    this.home_id = JSON.parse(LocalStorageService.getItem("home_id"));
+    this.person_id = JSON.parse(LocalStorageService.getItem("person_id"));
+    this.editedItem.task_type = this.task_type;
+    this.taskTypes = this.types; // Asignar tipos
     this.tools = [
       {
         name: this.$t("taskForm.titles.newGoal"),
@@ -1112,14 +1171,65 @@ export default {
       },
     ];
   },
+   watch: {
+    // Observar cambios en la PROP (no en editedItem)
+    "editedItem.task_type": {
+      handler(newVal) {
+        if (newVal) {
+          //this.editedItem.task_type = newVal;
+          if(this.editedItem.task_type !== null & this.home_id !== null){
+          this.initialize(); // Recargar cuando cambie desde el padre
+          }
+        }
+      },
+      immediate: true // 👈 ¡IMPORTANTE! Se ejecuta al montar
+    }
+  },
   mounted() {
-    this.home_id = JSON.parse(LocalStorageService.getItem("home_id"));
-    this.person_id = JSON.parse(LocalStorageService.getItem("person_id"));
-    //this.initialize();
-    this.timeSlots = this.generateTimeSlots(); // Genera los horarios al montar el componente
-    this.editedItem.task_type = this.task_type;
+    this.timeSlots = this.generateTimeSlots();
+
+    // NO asignes editedItem.task_type aquí → ya lo hace el watcher con `immediate: true`
   },
   methods: {
+    taskBelongsToCategory(task, taskIdsSet) {
+    // Caso 1: la tarea raíz está en la lista
+    if (taskIdsSet.has(task.id)) {
+      return true;
+    }
+
+    // Caso 2: algún hijo (o descendiente) está en la lista
+    const checkChildren = (children) => {
+      if (!children || !Array.isArray(children)) return false;
+      for (const child of children) {
+        if (taskIdsSet.has(child.id)) return true;
+        if (checkChildren(child.children)) return true;
+      }
+      return false;
+    };
+
+    return checkChildren(task.children);
+  },
+    selectCategory(category) {
+      if (this.selectedCategory?.id === category.id) {
+        // Deseleccionar
+        this.selectedCategory = null;
+        this.filteredTask = "all";
+      } else {
+        // Seleccionar
+        this.selectedCategory = category;
+        this.filteredTask = category.id;
+      }
+    },
+    getCategoryColor(id) {
+  const colorMap = {
+    active: 'blue',
+    completed: 'green',
+    delayed: 'red',
+    dueSoon: 'orange',
+    ownPending: 'purple'
+  };
+  return colorMap[id] || 'grey';
+},
     async handleSkip(){
       this.dialogSuggested = false;
     },
@@ -1299,8 +1409,8 @@ export default {
         // Manejo de la respuesta según el resultado
         if (result.success) {
           this.showAlert("success", result.message, 3000);
-          //this.initialize();
-          this.$emit('goals-updated');
+          this.initialize();
+          //this.$emit('goals-updated');
         } else {
           this.showAlert("warning", result.message, 3000);
         }
@@ -1500,8 +1610,8 @@ export default {
         // Manejo de la respuesta según el resultado
         if (result.success) {
           this.showAlert("success", result.message, 3000);
-          this.$emit('goals-updated');
-          //this.initialize();
+          //this.$emit('goals-updated');
+          this.initialize();
         } else {
           this.showAlert("warning", result.message, 3000);
           this.closeAddPeople();
@@ -1721,15 +1831,15 @@ export default {
         this.editedItem.people.splice(index, 1);
       }
     },
-    /*async initialize() {
-      /*this.data = {};
+    async initialize() {
+      this.data = {};
       this.data.home_id = this.home_id;
       const today = new Date();
       const year = today.getFullYear();
       const month = String(today.getMonth() + 1).padStart(2, "0"); // Meses son 0-11
       const day = String(today.getDate()).padStart(2, "0");
       const formattedDate = `${year}-${month}-${day}`; // Formato "YYYY-MM-DD"
-      this.data.task_type = this.task_type;
+      this.data.task_type = this.editedItem.task_type;
       this.data.type = 'Meta';
       //this.data.start_date = formattedDate;
       try {
@@ -1741,14 +1851,24 @@ export default {
         });
         if (result.success) {
           // Si la solicitud es exitosa, asignamos las sucursales
-          this.tasks = (result.data?.tasks || []).filter(task => 
-            task.type === 'Meta'
-          );
+          const tasks = result.data?.tasks || [];
           this.status = result.data?.status || []; // Si no hay roles, asigna un arreglo vacío
+          this.sumaryData = result.data?.sumaryData || {};
+          this.taskPriorityTasks = result.data?.topPriorityTasks || [];
+          //this.goalAlerts = result.data?.alerts || {};
+          const tasksWithPeopleNames = tasks.map(task => ({
+      ...task,
+      peopleNames: task.people?.map(p => p.name).join(' ') || ''
+    }));
+
+    this.tasks = tasksWithPeopleNames;
         } else {
           // Si no hay datos, asignamos un array vacío
           this.tasks = [];
           this.status = [];
+          this.sumaryData = {};
+          this.taskPriorityTasks = [];
+          this.goalAlerts = {};
           //this.showAlert('success', result.message || 'No hay tareas disponibles.', 3000);
         }
       } catch (error) {
@@ -1761,9 +1881,8 @@ export default {
         );
       } finally {
         this.loading = false;
-      }*/
-     /*this.$emit('goals-updated');
-    },*/
+      }
+    },
     getTypeIcon(type) {
       switch (type) {
         case "Task":
@@ -1878,8 +1997,8 @@ export default {
                 this.suggestedTasks = result.data.suggestedTasks;
                 this.dialogSuggested = true;
               }
-              this.$emit('goals-updated');
-              //this.initialize();
+              //this.$emit('goals-updated');
+              this.initialize();
             } else {
               this.loading = false;
               this.showAlert("warning", result.message, 3000);
@@ -1971,8 +2090,8 @@ export default {
             if (result.success) {
               this.loading = false;
               this.showAlert("success", result.message, 3000);
-              this.$emit('goals-updated');
-              //this.initialize();
+              //this.$emit('goals-updated');
+              this.initialize();
             } else {
               this.loading = false;
               this.editedIndex = -1;
@@ -2089,8 +2208,8 @@ export default {
         // Manejo de la respuesta según el resultado
         if (result.success) {
           this.showAlert("success", result.message, 3000);
-          this.$emit('goals-updated');
-          //this.initialize();
+          //this.$emit('goals-updated');
+          this.initialize();
         } else {
           this.showAlert("warning", result.message, 3000);
         }
@@ -2223,36 +2342,7 @@ export default {
   padding: 4px 8px;
   /* Padding para que no peguen a los bordes */
 }
-.person-card {
-  cursor: pointer;
-  transition: all 0.3s ease;
-  width: 220px;
-  /* Ancho fijo */
-  flex-shrink: 0;
-  /* Evita que se reduzcan */
-  border-radius: 8px !important;
-  /* Bordes más redondeados */
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05) !important;
-  /* Sombra sutil por defecto */
-}
-.person-card:hover {
-  transform: translateY(-3px);
-  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.1) !important;
-}
-.selected-person {
-  border: 2px solid #03626c;
-  background-color: rgba(3, 98, 108, 0.08) !important;
-  /* Color más suave */
-}
-.current-user {
-  border-left: 3px solid #1976d2;
-  /* Indicador lateral para el usuario actual */
-}
-.person-info {
-  max-width: calc(220px - 60px);
-  /* 220px (card) - 40px (avatar) - 20px (márgenes) */
-  overflow: hidden;
-}
+
 .text-truncate {
   white-space: nowrap;
   overflow: hidden;
@@ -2287,5 +2377,17 @@ table.v-table > thead,
   flex-direction: column;
   justify-content: center;
   align-items: center;
+}
+
+.oscurecer-persistente {
+  color: rgba(0, 0, 0, 0.04) !important; /* Sutil gris claro */
+  border-color: rgba(0, 0, 0, 0.12) !important;     /* Borde más marcado */
+  transform: translateY(-1px) !important;           /* Efecto leve de elevación */
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.12) !important;
+}
+
+/* Si quieres un efecto más fuerte (ej. si usas tema oscuro) */
+.oscurecer-persistente.v-card--light {
+  background-color: rgba(0, 0, 0, 0.08) !important;
 }
 </style>

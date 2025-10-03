@@ -291,7 +291,9 @@ const portuguese = {
         editGoal: "Editar Meta",
         discoverGoals: "Descubra metas",
         discoverTasks: "Descubra tarefas",
-        homeGoalsTitle: "Metas de casa"
+        homeGoalsTitle: "Metas de casa",
+        newGoals: "Novas Metas",
+        newTasks: "Novas Tarefas",
       },
     },
     taskTypes: {

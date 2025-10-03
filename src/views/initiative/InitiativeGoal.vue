@@ -12,23 +12,36 @@
       </v-col>
     </v-row>
   </v-snackbar>
+  <v-container class="pa-4">
   <v-card  elevation="2" rounded="lg" flat>
       <!-- Encabezado con foto y datos -->
       <v-card-text>
-      <!--<v-row class="mb-4" align="center" no-gutters>
-        <v-col cols="12" sm="9" md="9" class="d-flex align-center">
+      <v-row class="mb-4" align="center" no-gutters>
+        <v-col cols="12" sm="10" md="10" class="d-flex align-center">
           <v-avatar size="48" class="me-3" color="grey-lighten-4" variant="tonal">
             <v-icon color="purple">mdi-flag-checkered</v-icon>
           </v-avatar>
           <div>
             <div class="text-body-2 font-weight-bold mb-1">
-              {{ $t("viewTitles.goals") }}
+              {{ $t("taskForm.titles.newGoals") }}
             </div>
             <div class="text-body-2 text-grey-darken-1"></div>
           </div>
         </v-col>
+        <v-col cols="12" sm="2" md="2">
+            <div class="d-flex align-right justify-end">
+              <v-switch v-model="editedItem.task_type" true-value="Personal" false-value="Hogar" :base-color="switchColor"
+                :color="switchColor" hide-details inset class="mb-4 font-weight-bold">
+                <template v-slot:label>
+                  <span class="text-body-1" :style="{ color: switchColor }">
+                    {{ getCurrentName }}
+                  </span>
+                </template>
+              </v-switch>
+            </div>
+          </v-col>
         </v-row>
-        <v-divider />-->
+        <v-divider />
         <!--<v-card-actions class="pa-3 bg-grey-lighten-5 tools-bar">
           <v-btn
             v-for="tool in tools"
@@ -116,21 +129,17 @@
             </div>
 
             <!-- Tipo (10%) -->
-            <div style="width: 15%; min-width: 0" class="text-center">
+            <div style="width: 20%; min-width: 0" class="text-center">
               {{ $t("taskForm.fields.recurrence") }}
             </div>
 
             <!-- Prioridad (10%) -->
-            <div style="width: 15%; min-width: 0" class="text-center">
+            <div style="width: 20%; min-width: 0" class="text-center">
               {{ $t("taskForm.fields.priority") }}
             </div>
 
-            <div style="width: 13%; min-width: 0" class="d-flex justify-center">
-              Tipo
-            </div>
-
             <!-- Acciones (5%) -->
-            <div style="width: 7%; min-width: 0" class="d-flex justify-center">
+            <div style="width: 10%; min-width: 0" class="d-flex justify-center">
               {{ $t("settings.actions") }}
             </div>
           </v-card-text>
@@ -168,20 +177,20 @@
                 </div>
 
                 <!-- Tipo - 10% -->
-                <div style="width: 15%; min-width: 0; text-align: center">
+                <div style="width: 20%; min-width: 0; text-align: center">
                   <span class="text-body-2 text-truncate">
                     {{ slotProps.item.recurrence }}
                   </span>
                 </div>
 
                 <!-- Prioridad - 10% -->
-                <div style="width: 15%; min-width: 0; text-align: center">
+                <div style="width: 20%; min-width: 0; text-align: center">
                   <span class="text-body-2 text-truncate">
                     {{ slotProps.item.namePriority }}
                   </span>
                 </div>
 
-                <div style="width: 12%; min-width: 0; text-align: center">
+                <!--<div style="width: 12%; min-width: 0; text-align: center">
                   <v-avatar size="24" :color="'#' + getTaskTypeColor(slotProps.item.task_type)" class="mr-1">
                     <v-icon size="16" color="white">
                       {{ getTaskTypeIcon(slotProps.item.task_type)  }}
@@ -190,12 +199,12 @@
                   <span class="text-body-2">
                     {{ slotProps.item.task_type }}
                   </span>
-              </div>
+              </div>-->
 
                 <!-- Acciones - 5% -->
                 <div
                   class="d-flex gap-1"
-                  style="width: 7%; justify-content: flex-end; flex-wrap: nowrap"
+                  style="width: 10%; justify-content: flex-end; flex-wrap: nowrap"
                 >
                   <v-btn
                     size="35"
@@ -217,6 +226,7 @@
     </v-data-table>
   </v-card-text>
   </v-card>
+  </v-container>
   <v-dialog v-model="dialog" fullscreen persistent transition="dialog-bottom-transition"
     content-class="fullscreen-dialog">
     <v-form ref="form" v-model="valid" class="h-100">
@@ -610,21 +620,13 @@ import SuggestedTasksList from "@/components/suggested/SuggestedTasksList.vue";
 import { defineAsyncComponent, markRaw } from "vue";
 export default {
    props: {
-    tasks: {
-      type: Array,
-      default: () => [],
-    },
-    status: {
-      type: Array,
-      default: () => [],
-    },
-    filteredTask: {
-      type: String,
-      default: "",
-    },
     task_type: {
       type: String,
       default: "Personal",
+    },
+     types: {
+      type: Array,
+      default: () => [],
     },
   },
   components: {
@@ -711,7 +713,7 @@ export default {
       parent_id: "",
       status_id: "",
       category_id: "",
-      task_type: "Personal",
+      task_type: null,
       person_id: null,
       home_id: "",
       recurrence: "",
@@ -730,7 +732,7 @@ export default {
       start_time: null,
       end_time: null,
       module: "Meta",
-      task_type: "Personal",
+      task_type: null,
       type: "Meta",
       parent_id: "",
       status_id: "",
@@ -855,15 +857,6 @@ export default {
     getDate2() {
       return this.input2 ? new Date(this.input2) : new Date();
     },
-    paginatedTasks() {
-      if (!Array.isArray(this.tasks)) return []; // Verifica que tasks sea un array
-      const start = (this.currentPage - 1) * this.itemsPerPage;
-      const end = start + this.itemsPerPage;
-      return this.tasks.slice(start, end);
-    },
-    pageCount() {
-      return this.tasks?.length ? Math.ceil(this.tasks.length / this.itemsPerPage) : 0;
-    },
     translatedSteps() {
       // Fallback en caso de que la traducción no esté disponible
       const defaultSteps = [
@@ -873,52 +866,6 @@ export default {
       ];
       return this.$t("steps") || defaultSteps;
     },
-    filteredTasks() {
-  return this.tasks.filter((task) => {
-    // Si no hay búsqueda, mostrar todo
-    if (!this.searchDate || this.searchDate.trim() === '') {
-      return true;
-    }
-    const search = this.searchDate.trim();
-    // Intentar interpretar como búsqueda de fecha parcial
-    if (this.isValidDatePartial(search)) {
-      // Formato esperado en task.start_date: 'YYYY-MM-DD'
-      const taskDate = task.start_date; // ej: '2025-04-15'
-      // Convertir búsqueda dd[-mm[-yyyy]] a patrón comparable con YYYY-MM-DD
-      const parts = search.split('-');
-      let pattern = '';
-      if (parts.length === 1) {
-        // Solo día: '15' → buscar cualquier fecha que termine en '-15' o '-15'
-        const day = parts[0].padStart(2, '0');
-        pattern = `-${day}`; // Coincide con cualquier mes que termine en -15
-      } else if (parts.length === 2) {
-        // Día y mes: '15-04' → convertir a '-04-15'
-        const day = parts[0].padStart(2, '0');
-        const month = parts[1].padStart(2, '0');
-        pattern = `-${month}-${day}`;
-      } else if (parts.length === 3) {
-        // Completo: '15-04-2025' → convertir a '2025-04-15'
-        const day = parts[0].padStart(2, '0');
-        const month = parts[1].padStart(2, '0');
-        const year = parts[2];
-        if (year.length === 4) {
-          pattern = `${year}-${month}-${day}`;
-        } else {
-          pattern = search; // fallback
-        }
-      }
-      // Verificar si la fecha de la tarea incluye el patrón
-      if (pattern && taskDate.includes(pattern)) {
-        return true;
-      }
-    }
-    // Búsqueda de texto general en otros campos (opcional)
-    const matchesText = Object.values(task).some(val =>
-      String(val).toLowerCase().includes(search.toLowerCase())
-    );
-    return matchesText;
-  });
-},
 
      switchColor() {
       return this.editedItem.task_type === 'Personal' ? '#03626C' : '#FB8C00';
@@ -929,6 +876,10 @@ export default {
     },
   },
   created() {
+    this.home_id = JSON.parse(LocalStorageService.getItem("home_id"));
+    this.person_id = JSON.parse(LocalStorageService.getItem("person_id"));
+    this.editedItem.task_type = this.task_type;
+    this.taskTypes = this.types; // Asignar tipos
     this.tools = [
       {
         name: this.$t("taskForm.titles.newGoal"),
@@ -936,12 +887,26 @@ export default {
       },
     ];
   },
+   watch: {
+    // Observar cambios en la PROP (no en editedItem)
+    "editedItem.task_type": {
+      handler(newVal) {
+        if (newVal) {
+          //this.editedItem.task_type = newVal;
+          if(this.editedItem.task_type !== null){
+          this.initialize(); // Recargar cuando cambie desde el padre
+          }
+        }
+      },
+      immediate: true // 👈 ¡IMPORTANTE! Se ejecuta al montar
+    }
+  },
   mounted() {
-    this.home_id = JSON.parse(LocalStorageService.getItem("home_id"));
-    this.person_id = JSON.parse(LocalStorageService.getItem("person_id"));
-    this.initialize();
+    //this.home_id = JSON.parse(LocalStorageService.getItem("home_id"));
+    //this.person_id = JSON.parse(LocalStorageService.getItem("person_id"));
+    //this.initialize();
     this.timeSlots = this.generateTimeSlots(); // Genera los horarios al montar el componente
-    this.editedItem.task_type = this.task_type;
+    //this.editedItem.task_type = this.task_type;
   },
   methods: {
     getTaskTypeIcon(type) {
@@ -1562,7 +1527,7 @@ export default {
     async initialize() {
       this.data = {};
       this.data.status = 'Activa';
-      this.data.task_type = this.task_type;
+      this.data.task_type = this.editedItem.task_type;
       //this.data.start_date = formattedDate;
       try {
         this.loading = true;

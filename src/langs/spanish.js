@@ -290,6 +290,8 @@ const spanish = {
         discoverGoals: "Descubre metas",
         discoverTasks: "Descubre tareas",
         homeGoalsTitle: "Metas del hogar",
+        newGoals: "Nuevas Metas",
+        newTasks: "Nuevas Tareas",
       },
     },
     taskTypes: {

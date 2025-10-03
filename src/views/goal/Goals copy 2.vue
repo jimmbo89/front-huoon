@@ -11,37 +11,24 @@
       </v-col>
     </v-row>
   </v-snackbar>
-  <v-container > 
-  <v-card class="pa-4" elevation="2" rounded="lg" flat>
+  <v-card  elevation="2" rounded="lg" flat>
       <!-- Encabezado con foto y datos -->
-      <v-card-text >
-      <v-row align="center" dense>
-        <v-col cols="12" sm="10" md="10" class="d-flex align-center">
+      <v-card-text>
+      <!--<v-row class="mb-4" align="center" no-gutters>
+        <v-col cols="12" sm="9" md="9" class="d-flex align-center">
           <v-avatar size="48" class="me-3" color="grey-lighten-4" variant="tonal">
             <v-icon color="purple">mdi-flag-checkered</v-icon>
           </v-avatar>
           <div>
             <div class="text-body-2 font-weight-bold mb-1">
-              {{ $t("taskForm.titles.homeGoalsTitle") }}
+              {{ $t("viewTitles.goals") }}
             </div>
             <div class="text-body-2 text-grey-darken-1"></div>
           </div>
         </v-col>
-        <v-col cols="12" sm="2" md="2">
-            <div class="d-flex align-right justify-end">
-              <v-switch v-model="editedItem.task_type" true-value="Personal" false-value="Hogar" :base-color="switchColor"
-                :color="switchColor" hide-details inset class="mb-4 font-weight-bold">
-                <template v-slot:label>
-                  <span class="text-body-1" :style="{ color: switchColor }">
-                    {{ getCurrentName }}
-                  </span>
-                </template>
-              </v-switch>
-            </div>
-          </v-col>
-      </v-row>
-        <v-divider />
-        <v-card-actions class="pa-3 bg-grey-lighten-5 tools-bar">
+        </v-row>
+        <v-divider />-->
+        <!--<v-card-actions class="pa-3 bg-grey-lighten-5 tools-bar">
           <v-btn
             v-for="tool in tools"
             :key="tool.name"
@@ -54,170 +41,357 @@
           >
             {{ tool.name }}
           </v-btn>
-        </v-card-actions>
-        <v-row dense class="mt-4">
-          <v-col cols="12" sm="12" md="12">
-                  <v-card elevation="2" rounded="lg" border flat>
-                    <v-list-item height="60">
-                      <template v-slot:prepend>
-                        <v-avatar size="40" color="purple">
-                          <v-icon icon="mdi-chart-donut" color="white"></v-icon>
-                        </v-avatar>
-                      </template>
-
-                      <template v-slot:title>Estado de las Metas</template>
-                      <template v-slot:subtitle>
-                        {{ currentMonthYear }}
-                      </template>
-                      <template v-slot:append>
-                    <v-tooltip location="top">
-                      <template v-slot:activator="{ props }">
-                        <v-chip
-                          v-bind="props"
-                          class="ma-2"
-                          :color="goalStatus.color"
-                          label
-                          rounded="lg"
-                        >
-                          <v-icon :icon="goalStatus.icon" start></v-icon>
-                          <span class="text-subtitle-2">{{ goalStatus.levelLabel }}</span>
-                        </v-chip>
-                      </template>
-                      <span>{{ goalStatus.message }}</span>
-                    </v-tooltip>
-                  </template>
-                    </v-list-item>
-
-                    <v-divider></v-divider>
-
-                    <v-card-text class="pa-4">
-                      <v-row dense justify="space-between">
-                      <v-col
-                        v-for="category in sumaryData.summary"
-                        :key="category.id"
-                        cols="6"
-                        sm="6"
-                        md="2"
-                      >
-                        <v-tooltip top>
-                          <template v-slot:activator="{ props }">
-                            <v-card
-                              class="pa-4 text-center"
-                              rounded="lg"
-                              outlined
-                              v-bind="props"
-                              @click="selectCategory(category)" 
-                              :class="{ 'oscurecer-persistente': selectedCategory?.id === category.id }" 
-                              style="cursor: pointer;"
-                            >
-                              <v-progress-circular
-                                :model-value="category.percentage"
-                                size="80"
-                                width="8"
-                                :color="getCategoryColor(category.id)"
-                              >
-                                <strong>{{ category.totalQuantity }}/{{ sumaryData.totalTasks }}</strong>
-                              </v-progress-circular>
-                              <div class="mt-2 font-weight-medium">{{ category.name }}</div>
-                            </v-card>
-                          </template>
-                          <span>
-                            {{ category.totalQuantity }} de {{ sumaryData.totalTasks }} metas están en estado "{{ category.name }}"
-                            ({{ category.percentage }}%)
-                          </span>
-                        </v-tooltip>
-                      </v-col>
-                    </v-row>
-                    </v-card-text>
-
-                  </v-card>
-                    <v-alert v-if="goalAlerts && goalAlerts.length > 0" color="warning" icon="mdi-alert-circle"  @click="selectCategoryFromAlert(goalAlerts[0])"
-                  variant="outlined" theme="dark" border density="compact" class="py-1 px-4 mt-4" style="cursor: pointer;">
-                  <div class="text-body2 text-black">
-                    {{ goalAlerts[0].message }}
-                  </div>
-                </v-alert>
-          </v-col>
-        </v-row>
-
-    <v-row dense class="mt-4">
-    <v-col cols="12">
-      <span class="text-body-2 font-weight-medium">Metas más importantes</span>
-    </v-col>
-
-    <v-col
-      v-for="task in topPriorityTasks"
-      :key="task.id"
-      cols="12"
-      md="6"
-      class="d-flex"
-    >
-      <v-card
-        class="mx-auto flex-grow-1 d-flex flex-column"
-        elevation="1"
-        rounded="lg"
-        border
-        flat
+        </v-card-actions>-->
+    <!-- Título y búsqueda -->
+    <v-card-title class="d-flex flex-wrap align-center gap-4 pb-0">
+      <!-- Spacer (solo visible en md+) -->
+      <v-spacer class="d-none d-md-block"></v-spacer>
+      <!-- Campo de búsqueda global -->
+      <div class="flex-grow-1" style="max-width: 300px">
+        <v-text-field
+          v-model="search"
+          density="compact"
+          :label="$t('dataTable.search')"
+          prepend-inner-icon="mdi-magnify"
+          variant="solo-filled"
+          hide-details
+          single-line
+          flat
+        >
+        <template v-slot:append-inner>
+        <v-locale-provider>
+      <v-menu
+        v-model="dateMenu"
+        :close-on-content-click="false"
+        transition="scale-transition"
+        offset-y
+        min-width="auto"
       >
-        <!-- Encabezado -->
-        <v-list-item height="60">
-          <template v-slot:prepend>
-            <v-avatar size="40" color="purple">
-              <v-icon icon="mdi-flag"></v-icon>
-            </v-avatar>
-          </template>
-
-          <template v-slot:title>
-            {{ task.title }}
-          </template>
-          <template v-slot:subtitle>
-            Prioridad: {{ task.namePriority }} • Vence: {{ formatIntuitiveDate(task.endDate) }}
-          </template>
-
-          <template v-slot:append>
-            <v-chip
-              :color="getStatusColor(task.status)"
-              label
-              rounded="lg"
-              size="small"
-              class="text-white"
-            >
-              <v-icon :icon="getStatusIcon(task.status)" start size="small"></v-icon>
-              <span class="text-caption">{{ task.nameStatus }}</span>
-            </v-chip>
-          </template>
-        </v-list-item>
-
-        <v-divider></v-divider>
-
-        <!-- Progreso -->
-        <v-card-text class="pa-4">
-          <div class="text-subtitle-2 font-weight-medium mb-2">
-            Progreso de la meta
-          </div>
-
-          <v-progress-linear
-            :model-value="task.completionPercentage === 0 ? 100 : task.completionPercentage"
-    :color="task.completionPercentage === 0 ? 'grey-lighten-2' : getProgressColor(task.completionPercentage)"
-            bg-color="grey-lighten-3"
-            height="16"
-            rounded
-            class="mt-1"
-            style="height: 16px !important;"
+        <template v-slot:activator="{ props }">
+          <v-icon
+            v-bind="props"
+            color="#03626C"
+            style="cursor: pointer"
+            @click.stop="dateMenu = true"
           >
-            <template v-slot:default>
-              <span class="text-caption font-weight-bold">
-                {{ task.completionPercentage || 0 }}%
-              </span>
-            </template>
-          </v-progress-linear>
-        </v-card-text>
-      </v-card>
-    </v-col>
-  </v-row>
+            mdi-calendar
+          </v-icon>
+        </template>
+        <v-date-picker
+          color="#03626C"
+          v-model="pickerDate"
+          @update:model-value="updateSearchDate"
+        ></v-date-picker>
+      </v-menu>
+      </v-locale-provider>
+    </template>
+        </v-text-field>
+      </div>
+    </v-card-title>
+
+    <!-- Tabla de datos -->
+    <v-data-table
+      :headers="headers"
+      :items="filteredTasks"
+      :search="search"
+      :items-per-page-text="$t('dataTable.itemsPerPageText')"
+      :no-data-text="$t('dataTable.noDataText')"
+      :loading-text="$t('dataTable.loadingText')"
+      :loading="loading"
+      :hide-default-header="true"
+      class="mt-1"
+      style="
+        max-height: 68vh;
+        overflow-y: auto;
+        background: transparent;
+        border: none !important;
+        outline: none !important;
+        box-shadow: none !important;
+        padding: 0;
+      "
+    >
+      <!-- Header personalizado (simulado) -->
+      <template v-slot:top>
+        <v-card
+          :elevation="1"
+          :hover="false"
+          flat
+          class="mb-2 mx-1 rounded-lg"
+          style="
+            border: 1px solid #eceff1;
+            height: 40px;
+            min-height: 40px;
+            display: flex;
+            align-items: center;
+            transition: none !important;
+          "
+        >
+          <v-card-text
+            class="d-flex pa-2"
+            style="
+              width: 100%;
+              min-width: 0;
+              height: 100%;
+              padding: 0 16px !important;
+              display: flex;
+              align-items: center;
+            "
+          >
+            <!-- Fecha (7%) -->
+            <div style="width: 7%; min-width: 0" class="text-left">
+              {{ $t("taskForm.fields.date") }}
+            </div>
+
+            <!-- Nombre y descripción (40%) -->
+            <div style="width: 40%; min-width: 0" class="text-left">
+              {{ $t("taskForm.fields.title") }} / {{ $t("taskForm.fields.description") }}
+            </div>
+
+            <!-- Ubicación (15%) -->
+            <div style="width: 15%; min-width: 0" class="text-left">
+              {{ $t("taskForm.fields.participants") }}
+            </div>
+
+            <!-- Tipo (10%) -->
+            <div style="width: 10%; min-width: 0" class="text-center">
+              {{ $t("taskForm.fields.recurrence") }}
+            </div>
+
+            <!-- Prioridad (10%) -->
+            <div style="width: 10%; min-width: 0" class="text-center">
+              {{ $t("taskForm.fields.priority") }}
+            </div>
+
+            <!-- Estado (13%) -->
+            <div style="width: 13%; min-width: 0" class="text-center">
+              {{ $t("taskForm.fields.status") }}
+            </div>
+
+            <!-- Acciones (5%) -->
+            <div style="width: 5%; min-width: 0" class="d-flex justify-end">
+              {{ $t("settings.actions") }}
+            </div>
+          </v-card-text>
+        </v-card>
+      </template>
+
+      <!-- Fila personalizada -->
+      <template v-slot:item="slotProps">
+        <tr>
+          <td colspan="100%" style="padding: 0; border: none">
+            <v-card
+              class="mb-2 mx-1 rounded-lg"
+              elevation="1"
+              density="comfortable"
+              flat
+            >
+              <v-card-text
+                class="d-flex align-center pa-2"
+                style="width: 100%; min-width: 0"
+              >
+                <!-- Fecha con barra lateral de color - 7% -->
+                <div style="width: 7%; min-width: 0" class="d-flex align-center">
+                  <div
+                    class="icono-concavo d-flex flex-column justify-center justify-start mr-2"
+                    :class="`bg-${getTypeColor(slotProps.item.type)}`"
+                    style="min-height: 48px; min-width: 48px; border-radius: 8px;"
+                  >
+                    <div class="date-display text-center" style="font-size: 0.95em">
+                      {{ formatIntuitiveDate(slotProps.item.start_date) }}
+                    </div>
+                    <div
+                      v-if="slotProps.item.start_time"
+                      class="time-display text-center"
+                      style="font-size: 0.80em; margin-top: 2px"
+                    >
+                      {{ formatTime(slotProps.item.start_time) }}
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Nombre + Descripción - 40% -->
+                <div style="width: 40%; min-width: 0" class="d-flex flex-column">
+                  <div class="font-weight-bold text-body-2 text-truncate">
+                    {{ slotProps.item.title }}
+                  </div>
+                  <div class="text-caption text-grey-darken-1 text-truncate">
+                    {{ slotProps.item.description }}
+                  </div>
+                  <v-tooltip activator="parent" location="bottom" max-width="350px">
+                    <span style="white-space: normal; word-break: break-word">
+                      {{ slotProps.item.description }}
+                    </span>
+                  </v-tooltip>
+                </div>
+
+                <!-- Ubicación - 15% -->
+                <div style="width: 15%; min-width: 0" class="text-body-2 text-truncate">
+                <v-tooltip v-for="person in slotProps.item.people" :key="person.id" bottom :open-delay="300"
+                  :close-delay="100">
+                  <template v-slot:activator="{ props }">
+                    <v-avatar class="avatar-item hover-expand" size="32" v-bind="props">
+                      <v-img :src="`${this.$axios.defaults.baseURL}images/${
+                          person.image
+                        }`" alt="avatar" />
+                    </v-avatar>
+                  </template>
+                  <span>{{ person.name }}<br />{{ person.roleName }}</span>
+                </v-tooltip>
+              </div>
+
+                <!-- Tipo - 10% -->
+                <div style="width: 10%; min-width: 0; text-align: center">
+                  <!--<v-icon
+                    :color="getTypeColor(slotProps.item.type)"
+                    style="font-size: 10px; margin-right: 4px"
+                    icon="mdi-circle"
+                  ></v-icon>-->
+                  <span class="text-body-2 text-truncate">
+                    {{ slotProps.item.recurrence }}
+                  </span>
+                </div>
+
+                <!-- Prioridad - 10% -->
+                <div style="width: 10%; min-width: 0; text-align: center">
+                  <span class="text-body-2 text-truncate">
+                    {{ slotProps.item.namePriority }}
+                  </span>
+                </div>
+
+                <!-- Estado - 13% -->
+                <div style="width: 13%; min-width: 0; text-align: center">
+                  <v-dialog v-model="slotProps.item.statusDialog" width="400">
+                    <template v-slot:activator="{ props }">
+                      <v-btn
+                        v-bind="props"
+                        :color="'#' + (getStatusById(slotProps.item.status_id)?.colorStatus || 'grey')"
+                        variant="text"
+                        size="small"
+                        :prepend-icon="getStatusById(slotProps.item.status_id)?.iconStatus || 'mdi-help-circle'"
+                        class="text-body-2"
+                      >
+                        {{ getStatusById(slotProps.item.status_id)?.nameStatus || "Desconocido" }}
+                      </v-btn>
+                    </template>
+                    <v-card>
+                      <v-card-title class="pa-4 text-center">
+                        {{ $t("taskForm.updateStatus") }}
+                      </v-card-title>
+                      <v-divider></v-divider>
+                      <v-card-text class="pa-0">
+                        <v-row class="px-2 pb-1" dense>
+                          <v-col
+                            cols="12"
+                            v-for="(statusOption, i) in status"
+                            :key="i"
+                            class="py-1"
+                          >
+                            <v-card
+                              @click="changeTaskStatus(slotProps.item, statusOption.id)"
+                              :class="[
+                                'status-option mx-1',
+                                { 'current-status': slotProps.item.status_id === statusOption.id },
+                              ]"
+                              :style="
+                                slotProps.item.status_id === statusOption.id
+                                  ? {
+                                      'background-color': `#${statusOption.colorStatus}`,
+                                      'border-color': `#${statusOption.colorStatus}`,
+                                      color: 'white',
+                                    }
+                                  : {}
+                              "
+                              variant="outlined"
+                              :elevation="slotProps.item.status_id === statusOption.id ? 2 : 0"
+                              style="border-radius: 12px; cursor: pointer"
+                            >
+                              <v-card-item class="pa-2">
+                                <div class="d-flex align-center">
+                                  <v-icon
+                                    :color="
+                                      slotProps.item.status_id === statusOption.id
+                                        ? 'white'
+                                        : '#' + statusOption.colorStatus
+                                    "
+                                    :icon="statusOption.iconStatus"
+                                    size="large"
+                                    class="mr-3"
+                                  ></v-icon>
+                                  <v-card-title
+                                    :style="{
+                                      color:
+                                        slotProps.item.status_id === statusOption.id
+                                          ? 'white'
+                                          : 'inherit',
+                                      'font-size': '1rem',
+                                    }"
+                                  >
+                                    {{ statusOption.nameStatus }}
+                                  </v-card-title>
+                                  <v-spacer></v-spacer>
+                                  <v-icon
+                                    v-if="slotProps.item.status_id === statusOption.id"
+                                    color="white"
+                                    icon="mdi-check-circle"
+                                  ></v-icon>
+                                </div>
+                              </v-card-item>
+                            </v-card>
+                          </v-col>
+                        </v-row>
+                      </v-card-text>
+                      <v-divider></v-divider>
+                      <v-card-actions>
+                        <v-spacer></v-spacer>
+                        <v-btn
+                          variant="flat"
+                          color="#03626C"
+                          @click="slotProps.item.statusDialog = false"
+                        >
+                          {{ $t("buttons.cancel") }}
+                        </v-btn>
+                      </v-card-actions>
+                    </v-card>
+                  </v-dialog>
+                </div>
+
+                <!-- Acciones - 5% -->
+                <div
+                  class="d-flex gap-1"
+                  style="width: 5%; justify-content: flex-end; flex-wrap: nowrap"
+                >
+                  <v-btn
+                    size="35"
+                    icon
+                    variant="text"
+                    color="green-darken-2"
+                    @click="editItem(slotProps.item)"
+                    class="flex-shrink-0 mr-1"
+                    :title="$t('buttons.edit')"
+                  >
+                    <v-icon size="20">mdi-pencil</v-icon>
+                  </v-btn>
+
+                  <v-btn
+                    size="35"
+                    icon
+                    variant="text"
+                    color="red-darken-2"
+                    @click="deleteItem(slotProps.item)"
+                    class="flex-shrink-0"
+                    :title="$t('buttons.delete')"
+                  >
+                    <v-icon size="20">mdi-delete</v-icon>
+                  </v-btn>
+                </div>
+              </v-card-text>
+            </v-card>
+          </td>
+        </tr>
+      </template>
+    </v-data-table>
   </v-card-text>
   </v-card>
-  </v-container>
   <v-dialog v-model="dialog" fullscreen persistent transition="dialog-bottom-transition"
     content-class="fullscreen-dialog">
     <v-form ref="form" v-model="valid" class="h-100">
@@ -490,6 +664,93 @@
       </v-card-actions>
     </v-card>
   </v-dialog>
+
+  <v-dialog v-model="dialogAssignedPeople" max-width="400px">
+    <v-form ref="form" v-model="valid" enctype="multipart/form-data">
+      <v-card>
+        <v-toolbar color="#03626C">
+          <span class="text-subtitle-2 ml-4">{{ formTitlePerson }}</span>
+        </v-toolbar>
+        <v-card-text>
+          <v-container>
+            <v-row>
+              <v-col cols="12" md="12">
+                <v-autocomplete :no-data-text="'No hay datos disponibles'" v-model="selectedPerson" :items="people"
+                  label="Personas" prepend-icon="mdi-account" item-title="namePerson" item-value="id"
+                  variant="underlined" :rules="selectRules">
+                  <template v-slot:item="{ props, item }">
+                    <v-list-item v-bind="props"
+                      :prepend-avatar="`${this.$axios.defaults.baseURL}images/${item.raw.imagePerson}`"
+                      :title="item.raw.namePerson">
+                      <v-list-item-subtitle class="d-flex flex-column">
+                        <div>Rol: {{ item.raw.roleName }}</div>
+                      </v-list-item-subtitle>
+                    </v-list-item>
+                  </template>
+                </v-autocomplete>
+                <v-select v-model="selectedRole" :items="roles" item-title="nameRol" item-value="id" label="Rol"
+                  variant="underlined" density="compact" :rules="selectRules" prepend-icon="mdi-briefcase">
+                  <template v-slot:item="{ props, item }">
+                    <v-list-item v-bind="props" :subtitle="item.raw.descriptionRol"></v-list-item>
+                  </template>
+                </v-select>
+              </v-col>
+            </v-row>
+          </v-container>
+        </v-card-text>
+        <v-divider></v-divider>
+        <v-card-actions>
+          <v-spacer></v-spacer>
+          <v-btn color="#DA7171" variant="flat" @click="closeAssignedPeople">Cancelar</v-btn>
+          <v-btn color="#03626C" variant="flat" @click="saveAssignedPeople" :disabled="!valid">Aceptar</v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-form>
+  </v-dialog>
+
+  <v-dialog v-model="dialogAddPeople" max-width="400px">
+    <v-form ref="form" v-model="valid" enctype="multipart/form-data">
+      <v-card>
+        <v-toolbar color="#03626C">
+          <span class="text-subtitle-2 ml-4">Agregar Persona a la tarea</span>
+        </v-toolbar>
+        <v-card-text>
+          <v-container>
+            <v-row>
+              <v-col cols="12" md="12">
+                <v-autocomplete :no-data-text="'No hay datos disponibles'" v-model="person_id" :items="people"
+                  label="Personas" prepend-icon="mdi-account" item-title="namePerson" item-value="id"
+                  variant="underlined" :rules="selectRules">
+                  <template v-slot:item="{ props, item }">
+                    <v-list-item v-bind="props"
+                      :prepend-avatar="`${this.$axios.defaults.baseURL}images/${item.raw.imagePerson}`"
+                      :title="item.raw.namePerson">
+                      <v-list-item-subtitle class="d-flex flex-column">
+                        <div>Rol: {{ item.raw.roleName }}</div>
+                      </v-list-item-subtitle>
+                    </v-list-item>
+                  </template>
+                </v-autocomplete>
+                <v-select v-model="role_id" :items="roles" item-title="nameRol" item-value="id" label="Rol"
+                  variant="underlined" density="compact" :rules="selectRules" prepend-icon="mdi-briefcase">
+                  <template v-slot:item="{ props, item }">
+                    <v-list-item v-bind="props" :subtitle="item.raw.descriptionRol"></v-list-item>
+                  </template>
+                </v-select>
+              </v-col>
+            </v-row>
+          </v-container>
+        </v-card-text>
+        <v-divider></v-divider>
+        <v-card-actions>
+          <v-spacer></v-spacer>
+          <v-btn color="#DA7171" variant="flat" @click="closeAddPeople">Cancelar</v-btn>
+          <v-btn color="#03626C" variant="flat" @click="saveAddPeople" :disabled="!valid"
+            :loading="loading">Aceptar</v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-form>
+  </v-dialog>
    <v-dialog
     v-model="dialogSuggested"
     max-width="900"
@@ -511,42 +772,6 @@
       </v-card-text>
     </v-card>
   </v-dialog>
-  <v-dialog v-model="dialogGoals" fullscreen transition="dialog-bottom-transition">
-    <v-card class="bg-grey-lighten-4">
-      <v-card-text>
-        <!-- Aquí pasamos el 'selectedWorker' al componente dentro del diálogo -->
-        <Goals
-        ref="goalsComponent"
-        :task_type = "editedItem.task_type"
-        :types="taskTypes"/>
-        
-      </v-card-text>
-      <v-divider></v-divider>
-      <v-card-actions>
-        <v-spacer></v-spacer>
-        <v-btn @click="closeShowGoals()">Cerrar</v-btn>
-      </v-card-actions>
-    </v-card>
-  </v-dialog>
-  <v-dialog v-model="dialogInitiativeGoals" fullscreen transition="dialog-bottom-transition">
-    <v-card class="bg-grey-lighten-4">
-      <v-card-text>
-        <!-- Aquí pasamos el 'selectedWorker' al componente dentro del diálogo -->
-        <InitiativeGoal
-        ref="initiativesComponent"
-        :task_type = "editedItem.task_type"
-        :types="taskTypes"
-        @suggested-tasks="handleSuggestedTasks"
-        @save-form="showGoals()"/>
-        
-      </v-card-text>
-      <v-divider></v-divider>
-      <v-card-actions>
-        <v-spacer></v-spacer>
-        <v-btn @click="closeShowInitiatives()">Cerrar</v-btn>
-      </v-card-actions>
-    </v-card>
-  </v-dialog>
 </template>
 
 <script>
@@ -557,18 +782,29 @@ import _ from "lodash";
 import { shallowRef } from "vue";
 import SuggestedTasksList from "@/components/suggested/SuggestedTasksList.vue";
 import { defineAsyncComponent, markRaw } from "vue";
-import Goals from "./Goals.vue";
-import InitiativeGoal from "../initiative/InitiativeGoal.vue";
 export default {
+   props: {
+    tasks: {
+      type: Array,
+      default: () => [],
+    },
+    status: {
+      type: Array,
+      default: () => [],
+    },
+    filteredTask: {
+      type: String,
+      default: "",
+    },
+    task_type: {
+      type: String,
+      default: "Personal",
+    },
+  },
   components: {
     SuggestedTasksList: markRaw(SuggestedTasksList),
-    Goals,
-    InitiativeGoal
   },
   data: () => ({
-    currentView: 'meta',
-    selectedCategory: null,
-    filteredTask: 'all',
     selected: shallowRef([2]),
     selected2: null,
     dialogSuggested: false,
@@ -597,14 +833,12 @@ export default {
     loading: false,
     showDetails: false,
     dialog: false,
+    dialogAssignedPeople: false,
     dialogDelete: false,
     file: null,
     imgMiniatura: "",
-    tasks: [],
     categories: [],
     taskTypes: [],
-    status: [],
-    sumaryData: {},
     priorities: [],
     people: [],
     tittlePerson: -1,
@@ -631,6 +865,7 @@ export default {
         { title: "Tipo", key: "typeName", sortable: false },
         { title: "Recurrencia", key: "recurrence", sortable: false },
         { title: "Prioridad", key: "namePriority", sortable: false },
+        { title: "Miembros", key: "peopleNames", sortable: false },
         { title: "Estado", key: "status_id", sortable: false },
         { title: "Acciones", key: "actions", sortable: false },
       ],
@@ -761,53 +996,9 @@ export default {
     description: "",
     date: "",
     module: "",
-    ignoreTaskTypeWatch: false,
-    goalStatus: {},
-    goalAlerts: {},
-    topPriorityTasks: [],
-    dialogGoals: false,
-    dialogInitiativeGoals: false,
   }),
+  emits: ['goals-updated', 'save-form', 'suggested-tasks'],
   computed: {
-    
-     todayDay() {
-      return this.now.getDate(); // Forma simple y segura
-    },
-
-    // Último día del mes actual
-    lastDayOfMonth() {
-      const year = this.now.getFullYear();
-      const month = this.now.getMonth();
-      // Día 0 del próximo mes = último día del mes actual
-      const lastDay = new Date(year, month + 1, 0);
-      return lastDay.getDate();
-    },
-
-    // Fecha formateada: "lunes, 5 de abril de 2025"
-    fullDate() {
-       const locale = this.$i18n.locale.value;
-    const dateLocale = { es: 'es-ES', en: 'en-US', pt: 'pt-PT' }[locale] || 'es-ES';
-    return this.now.toLocaleDateString(dateLocale, {
-      weekday: 'long',
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric'
-    });
-    },
-    fullMonth() {
-       const locale = this.$i18n.locale.value;
-    const dateLocale = { es: 'es-ES', en: 'en-US', pt: 'pt-PT' }[locale] || 'es-ES';
-    return this.now.toLocaleDateString(dateLocale, {
-      year: 'numeric',
-      month: 'long',
-    });
-    },
-    currentMonthYear(){
-       return new Date().toLocaleDateString('es-ES', {
-        month: 'long',
-        year: 'numeric'
-      });
-    },
     formTitle() {
       return this.editedIndex === -1
         ? this.$t("taskForm.titles.newGoal")
@@ -860,51 +1051,51 @@ export default {
       return this.$t("steps") || defaultSteps;
     },
     filteredTasks() {
-      return this.tasks.filter((task) => {
-        // Si no hay búsqueda, mostrar todo
-        if (!this.searchDate || this.searchDate.trim() === '') {
-          return true;
+  return this.tasks.filter((task) => {
+    // Si no hay búsqueda, mostrar todo
+    if (!this.searchDate || this.searchDate.trim() === '') {
+      return true;
+    }
+    const search = this.searchDate.trim();
+    // Intentar interpretar como búsqueda de fecha parcial
+    if (this.isValidDatePartial(search)) {
+      // Formato esperado en task.start_date: 'YYYY-MM-DD'
+      const taskDate = task.start_date; // ej: '2025-04-15'
+      // Convertir búsqueda dd[-mm[-yyyy]] a patrón comparable con YYYY-MM-DD
+      const parts = search.split('-');
+      let pattern = '';
+      if (parts.length === 1) {
+        // Solo día: '15' → buscar cualquier fecha que termine en '-15' o '-15'
+        const day = parts[0].padStart(2, '0');
+        pattern = `-${day}`; // Coincide con cualquier mes que termine en -15
+      } else if (parts.length === 2) {
+        // Día y mes: '15-04' → convertir a '-04-15'
+        const day = parts[0].padStart(2, '0');
+        const month = parts[1].padStart(2, '0');
+        pattern = `-${month}-${day}`;
+      } else if (parts.length === 3) {
+        // Completo: '15-04-2025' → convertir a '2025-04-15'
+        const day = parts[0].padStart(2, '0');
+        const month = parts[1].padStart(2, '0');
+        const year = parts[2];
+        if (year.length === 4) {
+          pattern = `${year}-${month}-${day}`;
+        } else {
+          pattern = search; // fallback
         }
-        const search = this.searchDate.trim();
-        // Intentar interpretar como búsqueda de fecha parcial
-        if (this.isValidDatePartial(search)) {
-          // Formato esperado en task.start_date: 'YYYY-MM-DD'
-          const taskDate = task.start_date; // ej: '2025-04-15'
-          // Convertir búsqueda dd[-mm[-yyyy]] a patrón comparable con YYYY-MM-DD
-          const parts = search.split('-');
-          let pattern = '';
-          if (parts.length === 1) {
-            // Solo día: '15' → buscar cualquier fecha que termine en '-15' o '-15'
-            const day = parts[0].padStart(2, '0');
-            pattern = `-${day}`; // Coincide con cualquier mes que termine en -15
-          } else if (parts.length === 2) {
-            // Día y mes: '15-04' → convertir a '-04-15'
-            const day = parts[0].padStart(2, '0');
-            const month = parts[1].padStart(2, '0');
-            pattern = `-${month}-${day}`;
-          } else if (parts.length === 3) {
-            // Completo: '15-04-2025' → convertir a '2025-04-15'
-            const day = parts[0].padStart(2, '0');
-            const month = parts[1].padStart(2, '0');
-            const year = parts[2];
-            if (year.length === 4) {
-              pattern = `${year}-${month}-${day}`;
-            } else {
-              pattern = search; // fallback
-            }
-          }
-          // Verificar si la fecha de la tarea incluye el patrón
-          if (pattern && taskDate.includes(pattern)) {
-            return true;
-          }
-        }
-        // Búsqueda de texto general en otros campos (opcional)
-        const matchesText = Object.values(task).some(val =>
-          String(val).toLowerCase().includes(search.toLowerCase())
-        );
-        return matchesText;
-      });
-    },
+      }
+      // Verificar si la fecha de la tarea incluye el patrón
+      if (pattern && taskDate.includes(pattern)) {
+        return true;
+      }
+    }
+    // Búsqueda de texto general en otros campos (opcional)
+    const matchesText = Object.values(task).some(val =>
+      String(val).toLowerCase().includes(search.toLowerCase())
+    );
+    return matchesText;
+  });
+},
 
      switchColor() {
       return this.editedItem.task_type === 'Personal' ? '#03626C' : '#FB8C00';
@@ -913,16 +1104,6 @@ export default {
       const type = this.taskTypes.find(t => t.id === this.editedItem.task_type);
       return type ? type.name : this.editedItem.task_type;
     },
-    filteredTasksForGoals() {
-    if (!this.selectedCategory) {
-      return this.tasks;
-    }
-
-    const filtered = this.tasks.filter(task => 
-      this.selectedCategory.taskIds.includes(task.id)
-    );
-    return filtered;
-  }
   },
   created() {
     this.tools = [
@@ -930,128 +1111,16 @@ export default {
         name: this.$t("taskForm.titles.newGoal"),
         action: () => this.showAdd(),
       },
-      {
-        name: this.$t("menu.goals.title"),
-        action: () => this.showGoals(),
-      },
-      {
-        name: this.$t("taskForm.titles.discoverGoals"),
-        action: () => this.showInitiatives(),
-      },
     ];
-  },
-  watch: {
-    "editedItem.task_type": {
-      handler(newVal) {
-        if (this.ignoreTaskTypeWatch || !newVal) return;
-        //this.editedItem.task_type = newVal === 'Hogar' ? 'Hogar' : 'Personal';
-        this.initialize();
-      },
-      //immediate: true
-    }
   },
   mounted() {
     this.home_id = JSON.parse(LocalStorageService.getItem("home_id"));
     this.person_id = JSON.parse(LocalStorageService.getItem("person_id"));
-    this.initialize();
+    //this.initialize();
     this.timeSlots = this.generateTimeSlots(); // Genera los horarios al montar el componente
+    this.editedItem.task_type = this.task_type;
   },
   methods: {
-    getStatusIcon(statusId) {
-    const map = { 
-      'Pendiente': 'mdi-clock-outline',        // Pendiente
-      'En Progreso': 'mdi-progress-clock',       // En Progreso
-      'Completada': 'mdi-check-circle-outline'  // Completada
-    };
-    return map[statusId] || 'mdi-help-circle';
-  },
-    getStatusColor(statusId) {
-      console.log('statusId');
-      console.log(statusId);
-  // Ajusta según tus IDs reales
-    const colorMap = {
-      'Pendiente': 'orange',      // Pendiente
-      'En Progreso': 'blue',        // En Progreso
-      'Completada': 'green'        // Completada
-    };
-    return colorMap[statusId] || 'grey';
-  },
-  getProgressColor(percentage) {
-    if (percentage >= 80) return 'green';
-    if (percentage >= 50) return 'blue';
-    if (percentage >= 20) return 'orange';
-    return 'red';
-  },
-    async handleSuggestedTasks(suggestedTasks) {
-      this.loadingSuggested = true;
-      this.dialogInitiativeGoals = false;
-      this.data = {};
-      this.data.home_id = this.home_id;
-
-      try {
-        const result = await handleRequest({
-          endpoint: "category-status-priority-apk",
-          method: "POST",
-          data: this.data,
-        });
-
-        if (result.success) {
-          // Asignar los datos
-          this.categories = result.data?.taskcategories || [];
-          this.status = result.data?.taskstatus || [];
-          this.priorities = result.data?.taskpriorities || [];
-          this.recurrences = result.data?.taskrecurrences || [];
-          this.people = result.data?.taskpeople || [];
-          this.roles = result.data?.taskroles || [];
-          this.typetasks = result.data?.tasktype || [];
-          this.taskTypes = result.data?.tasktypetask || [];
-
-          // ✅ Solo si todo va bien, asignamos las sugerencias y abrimos el diálogo
-          this.suggestedTasks = suggestedTasks;
-          this.dialogSuggested = true;
-        } else {
-          this.showAlert("info", result.message || "No se pudieron cargar los datos para las sugerencias.", 3000);
-        }
-      } catch (error) {
-        this.showAlert("error", "Error al cargar los datos necesarios para las sugerencias.", 3000);
-      } finally {
-        this.loadingSuggested = false;
-        this.showGoals();
-      }
-    },
-    selectedCurrent(select){
-      this.currentView = select;
-    },
-    selectCategory(category) {
-      if (this.selectedCategory?.id === category.id) {
-        // Deseleccionar
-        this.selectedCategory = null;
-        this.filteredTask = "all";
-      } else {
-        // Seleccionar
-        this.selectedCategory = category;
-        this.filteredTask = category.id;
-      }
-    },
-    selectCategoryFromAlert(alert) {
-    if (!alert.categoryTarget || !this.sumaryData?.summary) return;
-
-    // Buscar la categoría en el resumen por su id (ej: "completed", "dueSoon", etc.)
-    const category = this.sumaryData.summary.find(cat => cat.id === alert.categoryTarget);
-
-    if (category) {
-      this.selectCategory(category); // 👈 Reutiliza tu lógica existente
-    }
-  },
-    getCategoryColor(id) {
-      const colorMap = {
-        active: 'blue-darken-2',     // En progreso → azul
-        completed: 'green-darken-2', // Completado → verde
-        delayed: 'red-darken-2',     // Retrasado → rojo
-        dueSoon: 'amber-darken-2',   // Próximo a vencer → ámbar/advertencia
-      };
-      return colorMap[id] || 'purple'; // fallback por si aparece un id inesperado
-    },
     async handleSkip(){
       this.dialogSuggested = false;
     },
@@ -1078,7 +1147,8 @@ export default {
         });
         if (result.success) {
           this.showAlert("success", result.message, 3000);
-          this.initialize();
+          this.$emit('goals-updated');
+          //this.initialize();
         } else {
           this.showAlert("warning", result.message, 3000);
         }
@@ -1093,41 +1163,41 @@ export default {
       }
     },
      getLocalDate(dateValue) {
-      if (!dateValue) return new Date();
-      
-      // Si es string en formato YYYY-MM-DD
-      if (typeof dateValue === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(dateValue)) {
-        const [year, month, day] = dateValue.split('-');
-        return new Date(year, month - 1, day);
-      }
-      
-      // Si ya es un objeto Date
-      if (dateValue instanceof Date) return dateValue;
-      
-      // Para otros casos (ISO strings, timestamps, etc.)
-      const date = new Date(dateValue);
-      return new Date(date.getFullYear(), date.getMonth(), date.getDate());
-    },
-    isValidDatePartial(dateStr) {
-    const parts = dateStr.split('-');
-    if (parts.length > 3) return false;
-    const day = parts[0];
-    const month = parts[1];
-    const year = parts[2];
-    // Validar día (1-31)
-    if (!/^\d{1,2}$/.test(day) || parseInt(day) < 1 || parseInt(day) > 31) {
-      return false;
+    if (!dateValue) return new Date();
+    
+    // Si es string en formato YYYY-MM-DD
+    if (typeof dateValue === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(dateValue)) {
+      const [year, month, day] = dateValue.split('-');
+      return new Date(year, month - 1, day);
     }
-    // Si hay mes, validar (1-12)
-    if (month && (!/^\d{1,2}$/.test(month) || parseInt(month) < 1 || parseInt(month) > 12)) {
-      return false;
-    }
-    // Si hay año, validar longitud (4 dígitos)
-    if (year && !/^\d{4}$/.test(year)) {
-      return false;
-    }
-    return true;
+    
+    // Si ya es un objeto Date
+    if (dateValue instanceof Date) return dateValue;
+    
+    // Para otros casos (ISO strings, timestamps, etc.)
+    const date = new Date(dateValue);
+    return new Date(date.getFullYear(), date.getMonth(), date.getDate());
   },
+    isValidDatePartial(dateStr) {
+  const parts = dateStr.split('-');
+  if (parts.length > 3) return false;
+  const day = parts[0];
+  const month = parts[1];
+  const year = parts[2];
+  // Validar día (1-31)
+  if (!/^\d{1,2}$/.test(day) || parseInt(day) < 1 || parseInt(day) > 31) {
+    return false;
+  }
+  // Si hay mes, validar (1-12)
+  if (month && (!/^\d{1,2}$/.test(month) || parseInt(month) < 1 || parseInt(month) > 12)) {
+    return false;
+  }
+  // Si hay año, validar longitud (4 dígitos)
+  if (year && !/^\d{4}$/.test(year)) {
+    return false;
+  }
+  return true;
+},
    isValidDate(dateStr) {
     const rule = this.dateRules[0]; // Usamos la misma regla de validación
     const result = rule(dateStr);
@@ -1144,18 +1214,19 @@ export default {
     }
   },
   
-    updateSearchDate(value) {
-      if (value) {
-        const day = String(value.getDate()).padStart(2, '0');
-        const month = String(value.getMonth() + 1).padStart(2, '0');
-        const year = value.getFullYear();
-        this.search = `${year}-${month}-${day}`;
-      } else {
-        this.search = '';
-      }
-      this.dateMenu = false;
-    },
+  updateSearchDate(value) {
+    if (value) {
+      const day = String(value.getDate()).padStart(2, '0');
+      const month = String(value.getMonth() + 1).padStart(2, '0');
+      const year = value.getFullYear();
+      this.search = `${year}-${month}-${day}`;
+    } else {
+      this.search = '';
+    }
+    this.dateMenu = false;
+  },
     formatIntuitiveDate(dateString) {
+      console.log("formatIntuitiveDate", dateString);
       if (!dateString) return "Sin fecha";
       // 1. Parsear la fecha de entrada (formato YYYY-MM-DD)
       const [year, month, day] = dateString.split("-");
@@ -1186,7 +1257,6 @@ export default {
               weekday: "short",
               day: "numeric",
               month: "short",
-              year: 'numeric'
             })
             .replace(/\./g, "");
       }
@@ -1230,7 +1300,8 @@ export default {
         // Manejo de la respuesta según el resultado
         if (result.success) {
           this.showAlert("success", result.message, 3000);
-          this.initialize();
+          //this.initialize();
+          this.$emit('goals-updated');
         } else {
           this.showAlert("warning", result.message, 3000);
         }
@@ -1338,6 +1409,116 @@ export default {
         this.save();
       }
     },
+    /*isPersonSelected(personId) {
+      return this.editedItem.people.some((p) => p.person_id === personId);
+    },*/
+    togglePersonSelection(personId) {
+      const index = this.editedItem.people.findIndex((p) => p.person_id === personId);
+      if (index === -1) {
+        // Añadir persona seleccionada
+        this.editedItem.people.push({
+          person_id: personId,
+          home_id: this.home_id,
+        });
+      } else {
+        // No permitir deseleccionar al usuario actual
+        if (personId !== this.person_id) {
+          this.editedItem.people.splice(index, 1);
+        }
+      }
+      console.log("this.editedItem.people", this.editedItem.people);
+      this.$emit("update:selected-people", this.editedItem.people);
+    },
+    async addPeople(item) {
+      this.data = {};
+      this.data.home_id = this.home_id;
+      this.task_id = item.id;
+      try {
+        const result = await handleRequest({
+          endpoint: "category-status-priority-apk",
+          method: "POST",
+          data: this.data,
+        });
+        if (result.success) {
+          // Si la solicitud es exitosa, asignamos las sucursales
+          this.categories = result.data?.taskcategories || [];
+          this.priorities = result.data?.taskpriorities || [];
+          this.recurrences = result.data?.taskrecurrences || [];
+          this.people = result.data?.taskpeople || [];
+          this.roles = result.data?.taskroles || [];
+          this.taskTypes = result.data?.tasktypetask || [];
+        } else {
+          // Si no hay datos, asignamos un array vacío
+          this.categories = [];
+          this.priorities = [];
+          this.recurrences = [];
+          this.people = [];
+          this.roles = [];
+          this.taskTypes = [];
+          this.showAlert("info", result.message || "No hay datos disponibles.", 3000);
+        }
+      } catch (error) {
+        this.showAlert("error", "Ocurrió un error inesperado al cargar los datos.", 3000);
+      } finally {
+        // Asignar a originalItem y editedItem solo las personas seleccionadas
+        this.originalItem = _.cloneDeep(item);
+        this.editedItem = _.cloneDeep(item);
+        this.people = this.people.filter((person) => {
+          // Verificar si la persona no está en editedItem.people
+          return !this.editedItem.people.some(
+            (editedPerson) => editedPerson.id === person.id
+          );
+        });
+        this.dialogAddPeople = true;
+      }
+    },
+    closeAddPeople() {
+      this.person_id = "";
+      this.role_id = "";
+      this.task_id = "";
+      this.dialogAddPeople = false;
+    },
+    async saveAddPeople() {
+      this.valid = false;
+      this.data = {};
+      this.data.person_id = this.person_id;
+      this.data.role_id = this.role_id;
+      this.data.home_id = this.home_id;
+      this.data.task_id = this.task_id;
+      const selectedRole = this.roles.find((role) => role.id === this.role_id);
+      // Agregar el nombre del rol a this.data
+      if (selectedRole) {
+        this.data.roleName = selectedRole.nameRol;
+      } else {
+        this.data.roleName = "Rol no encontrado"; // O algún valor por defecto
+      }
+      try {
+        const result = await handleRequest({
+          endpoint: "home-person-task",
+          method: "POST",
+          data: this.data,
+        });
+        // Manejo de la respuesta según el resultado
+        if (result.success) {
+          this.showAlert("success", result.message, 3000);
+          this.$emit('goals-updated');
+          //this.initialize();
+        } else {
+          this.showAlert("warning", result.message, 3000);
+          this.closeAddPeople();
+        }
+      } catch (error) {
+        // Este bloque captura errores inesperados fuera del manejo estándar
+        this.showAlert(
+          "error",
+          "Ocurrió un error inesperado al procesar la solicitud.",
+          3000
+        );
+        this.closeAddPeople();
+      } finally {
+        this.closeAddPeople();
+      }
+    },
     generateTimeSlots() {
       const now = new Date();
       const currentHour = now.getHours();
@@ -1407,6 +1588,22 @@ export default {
       this.editedItem.end_date = this.input2;
       this.menu2 = false;
     },
+    parseDateString(dateString) {
+    if (!dateString) return null;
+    const [year, month, day] = dateString.split('-');
+    return new Date(year, month - 1, day);
+  },
+    async showAssiegnedPeople() {
+      this.tittlePerson = -1;
+      // Filtrar las personas que no están en editedItem.people usando el 'id' para la comparación
+      this.people = this.people.filter((person) => {
+        // Verificar si la persona no está en editedItem.people
+        return !this.editedItem.people.some(
+          (editedPerson) => editedPerson.id === person.id
+        );
+      });
+      this.dialogAssignedPeople = true;
+    },
     async showAdd() {
       (this.file = null),
         (this.imgMiniatura = ""),
@@ -1414,8 +1611,6 @@ export default {
         (this.data = {});
         this.input = this.obtenerFechaLocal();
       this.editedItem.start_date = this.input;
-       this.input2 = this.obtenerFechaLocal();
-      this.editedItem.end_date = this.input2;
       this.editedItem.home_id = this.home_id;
       this.data.home_id = this.editedItem.home_id;
       this.editedIndex = -1;
@@ -1428,7 +1623,6 @@ export default {
         if (result.success) {
           // Si la solicitud es exitosa, asignamos las sucursales
           this.categories = result.data?.taskcategories || [];
-          this.status = result.data?.taskstatus || [];
           this.priorities = result.data?.taskpriorities || [];
           const normalPriority = this.priorities.find(
             (priority) => priority.name === "Normal"
@@ -1452,7 +1646,6 @@ export default {
         } else {
           // Si no hay datos, asignamos un array vacío
           this.categories = [];
-          this.status = [];
           this.priorities = [];
           this.recurrences = [];
           this.people = [];
@@ -1464,44 +1657,80 @@ export default {
       } catch (error) {
         this.showAlert("error", "Ocurrió un error inesperado al cargar los datos.", 3000);
       } finally {
-        if(this.currentView !== 'meta')
-        {
-          this.initialize();
-          this.currentView = 'meta';
-        }
+        this.dialog = true;
         this.initializeSelections();
         this.timeSlots = this.generateTimeSlots();
-        this.dialog = true;
       }
     },
     close() {
       this.step = 0;
       this.dialog = false;
-
-      this.ignoreTaskTypeWatch = true; // ← bloquear watcher
-
       this.$nextTick(() => {
-        const preserved = this.editedItem.task_type;
         this.editedItem = Object.assign({}, this.defaultItem);
-        this.editedItem.task_type = preserved;
-        this.originalItem = Object.assign({}, this.editedItem);
-
-        this.ignoreTaskTypeWatch = false; // ← desbloquear
+        this.originalItem = Object.assign({}, this.defaultItem);
       });
-
       this.file = null;
       this.imgMiniatura = "";
       this.editedIndex = -1;
     },
-    async initialize() {
-      this.data = {};
+    closeAssignedPeople() {
+      this.dialogAssignedPeople = false;
+      this.selectedPerson = null;
+      this.selectedRole = null;
+      this.tittlePerson = -1;
+    },
+    saveAssignedPeople() {
+      if (this.selectedPerson && this.selectedRole) {
+        const person = this.people.find((p) => p.id === this.selectedPerson);
+        const role = this.roles.find((r) => r.id === this.selectedRole);
+        if (!person || !role) {
+          console.error("Persona o rol no encontrado.");
+          return;
+        }
+        // Crear un nuevo objeto con los datos actuales
+        const newPerson = {
+          id: person.id,
+          name: person.namePerson,
+          image: person.imagePerson,
+          roleId: role.id,
+          roleName: role.nameRol,
+        };
+        // Verificar si la relación ya existe en editedItem.people
+        const existingPersonIndex = this.editedItem.people.findIndex(
+          (p) => p.id === newPerson.id
+        );
+        if (existingPersonIndex === -1) {
+          // No existe, por lo tanto, se agrega uno nuevo
+          this.editedItem.people.push(newPerson);
+        } else {
+          // Existe, por lo tanto se edita el existente
+          this.editedItem.people.splice(existingPersonIndex, 1, newPerson); // Actualiza el elemento en el array
+        }
+      }
+      // Reiniciar selección y cerrar diálogo
+      this.closeAssignedPeople();
+    },
+    editItemPeople(item) {
+      this.selectedPerson = item.id;
+      this.selectedRole = item.roleId;
+      this.dialogAssignedPeople = true;
+      this.tittlePerson = 1;
+    },
+    deleteItemPeople(item) {
+      const index = this.editedItem.people.findIndex((p) => p.id === item.id);
+      if (index !== -1) {
+        this.editedItem.people.splice(index, 1);
+      }
+    },
+    /*async initialize() {
+      /*this.data = {};
       this.data.home_id = this.home_id;
       const today = new Date();
       const year = today.getFullYear();
       const month = String(today.getMonth() + 1).padStart(2, "0"); // Meses son 0-11
       const day = String(today.getDate()).padStart(2, "0");
       const formattedDate = `${year}-${month}-${day}`; // Formato "YYYY-MM-DD"
-      this.data.task_type = this.editedItem.task_type;
+      this.data.task_type = this.task_type;
       this.data.type = 'Meta';
       //this.data.start_date = formattedDate;
       try {
@@ -1513,26 +1742,14 @@ export default {
         });
         if (result.success) {
           // Si la solicitud es exitosa, asignamos las sucursales
-          const tasks = result.data?.tasks || [];
+          this.tasks = (result.data?.tasks || []).filter(task => 
+            task.type === 'Meta'
+          );
           this.status = result.data?.status || []; // Si no hay roles, asigna un arreglo vacío
-          this.sumaryData = result.data?.sumaryData || {};
-          this.goalStatus = result.data?.goalStatus || {};
-          this.goalAlerts = result.data?.alerts || {};
-          this.topPriorityTasks = result.data?.topPriorityTasks || [];
-          const tasksWithPeopleNames = tasks.map(task => ({
-      ...task,
-      peopleNames: task.people?.map(p => p.name).join(' ') || ''
-    }));
-
-    this.tasks = tasksWithPeopleNames;
         } else {
           // Si no hay datos, asignamos un array vacío
           this.tasks = [];
           this.status = [];
-          this.sumaryData = {};
-          this.goalStatus = {};
-          this.topPriorityTasks = [];
-          this.goalAlerts = {};
           //this.showAlert('success', result.message || 'No hay tareas disponibles.', 3000);
         }
       } catch (error) {
@@ -1545,8 +1762,9 @@ export default {
         );
       } finally {
         this.loading = false;
-      }
-    },
+      }*/
+     /*this.$emit('goals-updated');
+    },*/
     getTypeIcon(type) {
       switch (type) {
         case "Task":
@@ -1661,7 +1879,8 @@ export default {
                 this.suggestedTasks = result.data.suggestedTasks;
                 this.dialogSuggested = true;
               }
-              this.initialize();
+              this.$emit('goals-updated');
+              //this.initialize();
             } else {
               this.loading = false;
               this.showAlert("warning", result.message, 3000);
@@ -1753,7 +1972,8 @@ export default {
             if (result.success) {
               this.loading = false;
               this.showAlert("success", result.message, 3000);
-              this.initialize();
+              this.$emit('goals-updated');
+              //this.initialize();
             } else {
               this.loading = false;
               this.editedIndex = -1;
@@ -1821,7 +2041,6 @@ export default {
         if (result.success) {
           // Si la solicitud es exitosa, asignamos las sucursales
           this.categories = result.data?.taskcategories || [];
-          this.status = result.data?.taskstatus || [];
           this.priorities = result.data?.taskpriorities || [];
           this.recurrences = result.data?.taskrecurrences || [];
           this.people = result.data?.taskpeople || [];
@@ -1830,7 +2049,6 @@ export default {
         } else {
           // Si no hay datos, asignamos un array vacío
           this.categories = [];
-          this.status = [];
           this.priorities = [];
           this.recurrences = [];
           this.people = [];
@@ -1872,7 +2090,8 @@ export default {
         // Manejo de la respuesta según el resultado
         if (result.success) {
           this.showAlert("success", result.message, 3000);
-          this.initialize();
+          this.$emit('goals-updated');
+          //this.initialize();
         } else {
           this.showAlert("warning", result.message, 3000);
         }
@@ -1934,29 +2153,6 @@ export default {
       };
       reader.readAsDataURL(file);
     },
-    showGoals(){
-      this.dialogInitiativeGoals = false;
-      this.dialogGoals = true;
-    },
-    closeShowGoals(){
-      const childTaskType = this.$refs.goalsComponent?.editedItem?.task_type;
-      if (childTaskType) {
-        this.editedItem.task_type = childTaskType;
-      }
-      this.dialogGoals = false;
-      this.initialize();
-    },
-    showInitiatives(){
-      this.dialogInitiativeGoals = true;
-    },
-    closeShowInitiatives(){
-      const childTaskType = this.$refs.initiativesComponent?.editedItem?.task_type;
-      if (childTaskType) {
-        this.editedItem.task_type = childTaskType;
-      }
-      this.dialogInitiativeGoals = false;
-      this.initialize();
-    }
   },
 };
 </script>
@@ -2092,16 +2288,5 @@ table.v-table > thead,
   flex-direction: column;
   justify-content: center;
   align-items: center;
-}
-.oscurecer-persistente {
-  background-color: rgba(0, 0, 0, 0.04) !important; /* Sutil gris claro */
-  border-color: rgba(0, 0, 0, 0.12) !important;     /* Borde más marcado */
-  transform: translateY(-1px) !important;           /* Efecto leve de elevación */
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.12) !important;
-}
-
-/* Si quieres un efecto más fuerte (ej. si usas tema oscuro) */
-.oscurecer-persistente.v-card--light {
-  background-color: rgba(0, 0, 0, 0.08) !important;
 }
 </style>
