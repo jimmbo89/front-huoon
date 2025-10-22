@@ -1,6 +1,26 @@
 const portuguese = {
   messages: {
     greet: "Olá",
+    auth: {
+      login: {
+        title: "Inicie sessão na sua conta",
+        subtitle: "Bem-vindo de volta! Escolha um método para iniciar sessão:",
+        noAccount: "Não tem uma conta?",
+        signUp: "Cadastre-se",
+        acceptTerms: "Aceito os {terms} e a {privacy}.",
+      },
+      register: {
+        title: "Crie sua conta",
+        subtitle: "Junte-se e comece a usar {appName}.",
+        haveAccount: "Já tem uma conta?",
+        signIn: "Inicie sessão",
+        terms: "Termos e Condições",
+        privacy: "Política de Privacidade",
+        acceptTermsStart: "Li e aceito os",
+        acceptTermsMiddle: "e a",
+        acceptTermsEnd: ".",
+      },
+    },
     login: {
       title: "Faça login na sua conta",
       subtitle: "Bem-vindo de volta! Selecione um método para fazer login:",
@@ -30,6 +50,14 @@ const portuguese = {
       buttons: {
         google: "Google",
         facebook: "Facebook",
+      },
+      rules: {
+        password: {
+          required: "A senha é obrigatória",
+          minLength: "A senha deve ter pelo menos 8 caracteres",
+          uppercase: "A senha deve conter pelo menos uma letra maiúscula",
+          number: "A senha deve conter pelo menos um número",
+        },
       },
     },
     slides: {
@@ -1698,6 +1726,234 @@ const portuguese = {
         max_portion: "O tamanho máximo da porção é {max}",
         future_date: "A data não pode ser futura",
       },
+    },
+    nutrition_profile: {
+      listing: {
+        title: "Perfil Nutricional",
+        noData: "Nenhum perfil nutricional registrado",
+      },
+      formTitle: {
+        create: "Criar perfil nutricional",
+        edit: "Editar perfil nutricional",
+      },
+      formInstructions: "Preencha as metas nutricionais diárias do usuário",
+      fields: {
+        calories: "Calorias diárias",
+        protein: "Proteína (g)",
+        carbs: "Carboidratos (g)",
+        fats: "Gorduras totais (g)",
+        fiber: "Fibra (g)",
+        sugar_limit: "Limite de açúcar (g)",
+        sat_fats_limit: "Limite de gorduras saturadas (g)",
+        water: "Ingestão diária de água (L)",
+      },
+      validation: {
+        required: "{field} é obrigatório",
+        invalid_number: "O valor deve ser um número válido",
+        min_value: "O valor mínimo permitido é {min}",
+        max_value: "O valor máximo permitido é {max}",
+      },
+      steps: {
+        basic: {
+          title: "Metas básicas",
+          subtitle: "Calorias, proteínas, carboidratos e gorduras",
+        },
+        limits: {
+          title: "Limites adicionais",
+          subtitle: "Fibra, açúcar e gorduras saturadas",
+        },
+      },
+    },
+    recipe: {
+      listing: {
+        title: "Receitas",
+        addButton: "Criar receita",
+        noData: "Nenhuma receita",
+      },
+      formTitle: {
+        create: "Nova receita",
+        edit: "Editar receita",
+      },
+      formInstructions: "Complete os detalhes",
+      fields: {
+        name: "Nome",
+        description: "Descrição",
+        is_favorite: "Favorita",
+        image: "Imagem",
+        preparation_time: "Tempo prep. (min)",
+        servings: "Porções",
+        calories: "Calorias",
+        protein: "Proteína (g)",
+        carbs: "Carboidratos (g)",
+        fats: "Gorduras (g)",
+        fiber: "Fibra (g)",
+        sugar: "Açúcar (g)",
+        saturated_fats: "Gord. sat. (g)",
+        is_private: "Privada",
+      },
+      validation: {
+        required: "{field} é obrigatório",
+        invalid_number: "Número inválido",
+        min_servings: "Mínimo 1 porção",
+      },
+      steps: {
+        basic_info: {
+          title: "Informação Básica",
+          subtitle: "Dados principais",
+        },
+        nutrition: { title: "Nutrição", subtitle: "Valores nutricionais" },
+        ingredients: { title: "Ingredientes", subtitle: "Lista de produtos" },
+      },
+    },
+    recipe_product: {
+      listing: {
+        title: "Ingredientes da receita",
+        addButton: "Adicionar ingrediente",
+        noData: "Nenhum ingrediente adicionado",
+      },
+      formTitle: {
+        create: "Adicionar ingrediente",
+        edit: "Editar ingrediente",
+      },
+      formInstructions: "Preencha os dados do ingrediente para a receita.",
+      steps: {
+        basic: {
+          title: "Produto e quantidade",
+          subtitle:
+            "Selecione um produto e defina a quantidade usada na receita",
+        },
+        nutrition: {
+          title: "Nutrição",
+          subtitle: "Valores nutricionais por unidade",
+        },
+      },
+      fields: {
+        product_id: "Produto",
+        quantity_in_recipe: "Quantidade na receita",
+        unit: "Unidade",
+        calories_per_unit: "Calorias",
+        protein_per_unit: "Proteína",
+        carbs_per_unit: "Carboidratos",
+        fats_per_unit: "Gorduras",
+        fiber_per_unit: "Fibra",
+        sugar_per_unit: "Açúcar",
+        saturated_fats_per_unit: "Gorduras saturadas",
+      },
+      validation: {
+        required: "{field} é obrigatório",
+        invalid_quantity: "A quantidade deve ser um número positivo",
+        invalid_nutrient: "O valor deve ser maior ou igual a 0",
+      },
+    },
+    nutrition: {
+      profile: "Perfil nutricional",
+      recipes: "Receitas",
+      dailyLog: "Registro diário",
+      meals: "Refeições do dia",
+    },
+    daily_log: {
+      listing: {
+        title: "Registros Diários",
+        noData: "Não há registros para esta pessoa",
+      },
+      formInstructions: "Preencha as informações do registro diário.",
+      formTitle: {
+        create: "Criar Registro Diário",
+        edit: "Editar Registro Diário",
+      },
+      fields: {
+        date: "Data",
+        water_intake: "Ingestão de Água (L)",
+        sleep_hours: "Horas de Sono",
+        steps: "Passos",
+        notes: "Notas",
+      },
+      steps: {
+        info: {
+          title: "Informações do Registro",
+          subtitle: "Dados básicos do dia",
+        },
+      },
+      validation: {
+        required: "{field} é obrigatório",
+        invalid_date: "Data inválida",
+        positive_number: "{field} deve ser um número positivo ou zero",
+      },
+    },
+    meal_entry: {
+      listing: {
+        title: "Refeições do dia",
+        addButton: "Adicionar refeição",
+        noData: "Nenhuma refeição registrada",
+      },
+      formInstructions: "Preencha os dados da refeição.",
+      steps: {
+        basic: {
+          title: "Tipo de refeição e observações",
+          subtitle:
+            "Selecione o tipo de refeição e adicione observações opcionais",
+        },
+        recipes: {
+          title: "Receitas",
+          subtitle: "Selecione receitas e defina as porções consumidas",
+        },
+      },
+      formTitle: {
+        create: "Adicionar refeição",
+        edit: "Editar refeição",
+      },
+      fields: {
+        type_id: "Tipo de refeição",
+        notes: "Observações",
+      },
+      validation: {
+        required: "{field} é obrigatório",
+      },
+    },
+    meal_recipe: {
+      listing: {
+        title: "Receitas / Ingredientes na refeição",
+        addButton: "Adicionar receita",
+        noData: "Nenhuma receita adicionada",
+      },
+      formInstructions: "Selecione uma receita e defina as porções consumidas.",
+      steps: {
+        basic: {
+          title: "Receita e porções",
+          subtitle: "Escolha uma receita e a quantidade consumida",
+        },
+      },
+      formTitle: {
+        create: "Adicionar receita à refeição",
+        edit: "Editar receita na refeição",
+      },
+      fields: {
+        recipe_id: "Receita",
+        servings: "Porções",
+        servings_unit: "porções",
+      },
+      validation: {
+        required: "{field} é obrigatório",
+        invalid_servings: "As porções devem ser um número positivo",
+      },
+    },
+    shoppingList: {
+      reason: "Motivo",
+      reasons: {
+        Agotado: "Esgotado",
+        "Por agotarse": "Acabando",
+        Vencido: "Vencido",
+        "Por vencer": "Perto de vencer",
+      },
+      noSuggestions: "Nenhum produto precisa ser reabastecido no momento.",
+      loadError: "Erro ao carregar a lista sugerida.",
+      createShoppingTask: "Criar tarefa de compra",
+    },
+    snackbar: {
+      success: { title: "Sucesso" },
+      info: { title: "Informação" },
+      error: { title: "Erro" },
+      warning: { title: "Aviso" },
     },
   },
 };

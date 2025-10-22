@@ -41,7 +41,7 @@
       <v-spacer></v-spacer>
 
        
-      <v-btn icon class="text-none" variant="text">
+      <v-btn icon class="text-none" variant="text" v-if="this.statusOnboarding">
         <v-badge color="#E53935" :content="cantHome">
           <v-icon color="#00796B" icon="mdi-home" @click="openMenu"></v-icon>
         </v-badge>
@@ -125,7 +125,7 @@
         </v-menu>
       </v-btn>
       <!-- Campanita de notificaciones -->
-      <v-btn icon class="text-none" variant="text">
+      <v-btn icon class="text-none" variant="text" v-if="this.statusOnboarding">
           <!-- Mostrar badge solo si hay notificaciones -->
           <v-badge v-if="countNoti" color="#E53935" :content="countNoti">
             <v-icon color="#00796B" icon="mdi-bell-ring" @click="openNoti()"></v-icon>
@@ -211,7 +211,7 @@
         </v-menu>
       </v-btn>
       <!-- Botón de Configuración -->
-      <v-btn icon class="text-none" variant="text">
+      <v-btn icon class="text-none" variant="text" v-if="this.statusOnboarding">
         <v-menu
           v-model="menuSettings"
           offset-y
@@ -253,13 +253,18 @@
 
         <!-- Lista del menú -->
         <v-list>
-          <v-list-item v-for="(item, i) in items" :key="i" @click="handleItemClick(item)">
+        <template v-for="(item, i) in items" :key="i">
+          <v-list-item
+            v-if="isItemVisible(item.title)"
+            @click="handleItemClick(item)"
+          >
             <template v-slot:prepend>
               <v-icon :icon="item.icon"></v-icon>
             </template>
             <v-list-item-title>{{ item.title }}</v-list-item-title>
           </v-list-item>
-        </v-list>
+        </template>
+      </v-list>
       </v-menu>
     </div>
   </v-card>
@@ -698,6 +703,448 @@
       </v-card>
     </v-form>
   </v-dialog>
+  <v-dialog v-model="dialogJoinHome" max-width="500px">
+   <v-card class="bg-grey-lighten-4">
+      <v-card-text>
+    <JoinHomeStep
+      :loading="joiningHome"
+      @home-joined="handleJoinHomeFromDialog"
+      @go-back="closeJoinDialog"
+      @error="closeJoinDialog"
+    />
+    </v-card-text>
+  </v-card>
+  </v-dialog>
+  <v-dialog v-if="showShareHomeCodeDialog" v-model="showShareHomeCodeDialog" max-width="800" persistent>
+    <v-card>
+      <v-card-title class="pa-4">
+      <div class="d-flex flex-column flex-md-row align-center justify-space-between w-100" style="gap: 16px;">
+        <!-- Texto principal -->
+        <div class="text-body-2 font-weight-bold text-center text-md-start">
+          ¿Quieres invitar a {{ approvalData.minorName ?? 'Sin Nombre' }} a un hogar existente?
+        </div>
+
+        <!-- Campo de búsqueda -->
+        <div class="flex-grow-1" style="max-width: 300px;">
+          <v-text-field
+            v-model="search"
+            density="compact"
+            :label="$t('dataTable.search')"
+            prepend-inner-icon="mdi-magnify"
+            variant="solo-filled"
+            hide-details
+            single-line
+            flat
+            clearable
+          ></v-text-field>
+        </div>
+      </div>
+    </v-card-title>
+      <v-card-text class="pa-4">
+        <v-data-table
+      :headers="headers"
+      :items="homes"
+      :search="search"
+      :items-per-page-text="$t('dataTable.itemsPerPageText')"
+      :no-data-text="$t('dataTable.noDataText')"
+      :loading-text="$t('dataTable.loadingText')"
+      :loading="loading"
+      :hide-default-header="true"
+      class="mt-1"
+      style="
+        max-height: 68vh;
+        overflow-y: auto;
+        background: transparent;
+        border: none !important;
+        outline: none !important;
+        box-shadow: none !important;
+        padding: 0;
+      "
+    >
+      <!-- Header personalizado (simulado) -->
+      <template v-slot:top>
+        <v-card
+          :elevation="1"
+          :hover="false"
+          flat
+          class="mb-2 mx-1 rounded-lg"
+          style="
+            border: 1px solid #eceff1;
+            height: 40px;
+            min-height: 40px;
+            display: flex;
+            align-items: center;
+            transition: none !important;
+          "
+        >
+          <v-card-text
+            class="d-flex pa-2"
+            style="
+              width: 100%;
+              min-width: 0;
+              height: 100%;
+              padding: 0 16px !important;
+              display: flex;
+              align-items: center;
+            "
+          >
+            <div style="width: 40%; min-width: 0" class="text-left">
+              {{ $t("home.fields.name") }} / {{ $t("home.fields.address") }}
+            </div>
+            <div style="width: 20%; min-width: 0" class="text-left">
+              {{ $t("home.fields.ranking") }}
+            </div>
+            <div style="width: 20%; min-width: 0" class="text-center">
+              {{ $t("home.fields.type") }}
+            </div>
+            <div style="width: 13%; min-width: 0" class="text-center">
+              {{ $t("home.fields.status") }}
+            </div>
+            <div style="width: 7%; min-width: 0" class="d-flex justify-end">
+              {{ $t("settings.actions") }}
+            </div>
+          </v-card-text>
+        </v-card>
+      </template>
+
+      <!-- Fila personalizada -->
+      <template v-slot:item="slotProps">
+            <v-card
+              class="mb-2 mx-1 rounded-lg"
+              elevation="1"
+              density="comfortable"
+              flat
+            >
+              <v-card-text
+                class="d-flex align-center pa-2"
+                style="width: 100%; min-width: 0"
+              >
+                <div style="width: 40%; min-width: 0" class="d-flex align-center">
+                <!-- Avatar de la vivienda -->
+                  <v-avatar
+                    size="48"
+                    class="mr-3 icono-concavo"
+                    color="grey-lighten-4"
+                    style="flex-shrink: 0"
+                  >
+                    <v-img
+                      :src="getImageUrl(slotProps.item.image)"
+                      cover
+                      class="icono-concavo"
+                    />
+                  </v-avatar>
+
+                  <!-- Contenedor de texto -->
+                  <div class="d-flex flex-column" style="min-width: 0">
+                    <div class="font-weight-bold text-body-2 text-truncate">
+                      {{ slotProps.item.name }}
+                    </div>
+                    <div class="text-caption text-grey-darken-1 text-truncate">
+                      {{ slotProps.item.address }}
+                    </div>
+                    <v-tooltip
+                      activator="parent"
+                      location="bottom"
+                      max-width="350px"
+                    >
+                      <span style="white-space: normal; word-break: break-word">
+                        {{ slotProps.item.address }}
+                      </span>
+                    </v-tooltip>
+                  </div>
+                </div>
+
+                <!-- Rating - 15% -->
+                <div style="width: 20%; min-width: 0" class="d-flex align-center">
+                  <v-rating
+                    :model-value="parseFloat(slotProps.item.percent) || 0"
+                    color="orange-darken-2"
+                    density="compact"
+                    size="small"
+                    readonly
+                  ></v-rating>
+                </div>
+
+                <!-- Tipo - 10% -->
+                <div style="width: 20%; min-width: 0; text-align: center">
+                  <span class="text-body-2 text-truncate">
+                    {{ slotProps.item.nameHomeType }}
+                  </span>
+                </div>
+
+                <!-- Estado - 13% -->
+                <div style="width: 13%; min-width: 0; text-align: center">
+                  <span class="text-body-2 text-truncate">
+                    {{ slotProps.item.nameStatus }}
+                  </span>
+                </div>
+
+                <!-- Acciones - 5% -->
+                <div
+                  class="d-flex gap-1"
+                  style="width: 7%; justify-content: flex-end; flex-wrap: nowrap"
+                >
+                   <v-btn
+                    size="35"
+                    icon
+                    variant="text"
+                    color="blue-darken-2"
+                    class="flex-shrink-0"
+                    title="Generar Código"
+                    @click="openShareCodeDialog(slotProps.item)"
+                  >
+                    <v-icon size="20">mdi-share-variant</v-icon>
+                  </v-btn>
+                </div>
+              </v-card-text>
+            </v-card>
+          </template>
+        </v-data-table>
+      </v-card-text>
+      <v-card-actions>
+        <v-spacer></v-spacer>
+        <v-btn
+        variant="tonal"
+          text="Cerrar"
+          @click="closeShareHomeCodeDialog"
+        ></v-btn>
+      </v-card-actions>
+    </v-card>
+  </v-dialog>
+  <v-dialog v-model="dialogHome" fullscreen persistent transition="dialog-bottom-transition" content-class="fullscreen-dialog">
+  <v-form ref="form" v-model="valid" class="h-100">
+    <v-card class="pa-10">
+      <v-card-text class="pt-12">
+        <h5 class="text-grey-darken-2 font-weight-medium">
+            {{ $t(`home.actions.${editedIndex === -1 ? "create" : "edit"}`) }}
+          </h5>
+        <p class="text-grey-lighten-1">{{ $t('home.instructions') }}</p>
+        
+        <v-row class="mt-12">
+          <!-- Pasos laterales -->
+          <v-col cols="3">
+            <v-timeline align="start" side="end" dense>
+              <v-timeline-item 
+                v-for="(stepKey, index) in ['basic', 'details']" 
+                :key="index" 
+                :dot-color="stepHome > index ? 'green' : stepHome === index ? 'deep-purple' : 'grey-lighten-1'" 
+                :icon="stepHome >= index ? (stepHome === index ? `mdi-numeric-${index + 1}` : 'mdi-check') : null" 
+                size="large">
+                <template #opposite>
+                  <div class="text-end">
+                    <strong>{{ $t(`home.steps.${stepKey}.title`) }}</strong>
+                    <div class="text-caption text-grey">
+                      {{ $t(`home.steps.${stepKey}.subtitle`) }}
+                    </div>
+                  </div>
+                </template>
+              </v-timeline-item>
+            </v-timeline>
+          </v-col>
+
+          <!-- Contenido dinámico según paso -->
+          <v-col cols="9">
+            <h3 class="text-deep-purple-accent-3 mb-8">
+              {{ $t(`home.steps.${['basic', 'details'][stepHome]}.title`) }}
+            </h3>
+
+            <!-- Paso 1: Información Básica -->
+            <v-row dense v-if="stepHome === 0">
+              <v-col cols="12">
+                <v-text-field
+                  v-model="editedItemHome.name"
+                  :label="$t('home.fields.name')"
+                  variant="underlined"
+                  :rules="nameRules"
+                ></v-text-field>
+              </v-col>
+              <v-col cols="12">
+                <v-text-field
+                  v-model="editedItemHome.address"
+                  :label="$t('home.fields.address')"
+                  variant="underlined"
+                ></v-text-field>
+              </v-col>
+              <v-col cols="12" v-if="this.editedIndex != -1">
+                <v-autocomplete
+                  :no-data-text="$t('noData')"
+                  v-model="editedItemHome.status_id"
+                  :items="status"
+                  :label="$t('home.fields.status')"
+                  item-title="nameStatus"
+                  item-value="id"
+                  variant="underlined"
+                  density="compact"
+                  :rules="selectRules"
+                >
+                  <template v-slot:item="{ props, item }">
+                    <v-list-item v-bind="props">
+                      <template v-slot:prepend>
+                        <v-avatar size="24">
+                          <v-icon>{{ item.raw.iconStatus }}</v-icon>
+                        </v-avatar>
+                      </template>
+                    </v-list-item>
+                  </template>
+                </v-autocomplete>
+              </v-col>
+              <v-col cols="12">
+                <v-select
+                  v-model="editedItemHome.home_type_id"
+                  :items="hometypes"
+                  item-title="name"
+                  item-value="id"
+                  :label="$t('home.fields.type')"
+                  variant="underlined"
+                  density="compact"
+                  :rules="selectRules"
+                >
+                  <template v-slot:item="{ props, item }">
+                    <v-list-item
+                      v-bind="props"
+                      :subtitle="item.raw.description"
+                    ></v-list-item>
+                  </template>
+                </v-select>
+              </v-col>
+            </v-row>
+
+            <!-- Paso 2: Detalles Adicionales -->
+            <v-row dense v-if="stepHome === 1">
+              <v-col cols="12">
+                <v-text-field
+                  v-model="editedItemHome.geo_location"
+                  :label="$t('home.fields.geoLocation')"
+                  density="compact"
+                  variant="underlined"
+                ></v-text-field>
+              </v-col>
+              <v-col cols="12" v-if="this.editedIndex != -1">
+                  <v-text-field
+                    v-model="editedItemHome.timezone"
+                    :label="$t('home.fields.timezone')"
+                    variant="underlined"
+                    density="compact"
+                  >
+                  </v-text-field>
+                </v-col>
+              <v-col cols="12">
+                <v-text-field
+                  v-model="editedItemHome.residents"
+                  :label="$t('home.fields.residents')"
+                  type="number"
+                  variant="underlined"
+                  density="compact"
+                ></v-text-field>
+              </v-col>
+              <v-row>
+                <v-col cols="12" md="6">
+                  <v-file-input
+                    v-model="file"
+                    ref="fileInput"
+                    :label="$t('home.fields.image')"
+                    variant="underlined"
+                    density="compact"
+                    name="file"
+                    accept=".png, .jpg, .jpeg"
+                    @change="onFileSelected"
+                    prepend-icon=""
+                  ></v-file-input>
+                </v-col>
+                <v-col cols="12" md="6">
+                  <v-card elevation="6" class="mx-auto" max-width="210" max-height="120">
+                    <img
+                      v-if="imagenDisponible()"
+                      :src="imgedit"
+                      height="120"
+                      width="210"
+                    />
+                  </v-card>
+                </v-col>
+              </v-row>
+            </v-row>
+
+            <!-- Paso 3: Miembros del Hogar -->
+            <!--<v-row :dense="roles.length > 4" v-if="step === 2">
+              <v-col
+                  v-for="role in roles"
+                  :key="role.id"
+                  cols="12"
+                  :sm="roles.length >= 2 ? 6 : 12"
+                  :md="getDynamicColSize(roles.length)"
+                >
+                  <v-card class="mx-auto" max-width="98%">
+                    <v-list v-model:selected="selectedItems[role.id]" @update:selected="updateSelection(role, $event)"
+                      select-strategy="leaf" multiple>
+                      <v-list-subheader>{{ role.nameRol }}</v-list-subheader>
+                      <v-list-item v-for="person in filteredPeople(role.id)" :key="`${role.id}-${person.id}`"
+                        :value="person.id" active-class="text-green"
+                        :prepend-avatar="`${$axios.defaults.baseURL}images/${person.imagePerson}`" class="py-3">
+                        <template v-slot:prepend>
+                          <v-avatar>
+                            <v-img :src="`${$axios.defaults.baseURL}images/${person.imagePerson}`" />
+                          </v-avatar>
+                        </template>
+
+                        <v-list-item-title>{{ person.namePerson }}</v-list-item-title>
+                        <v-list-item-subtitle class="mb-1 text-high-emphasis opacity-100">
+                          {{ person.roleName }}
+                        </v-list-item-subtitle>
+
+
+                        <template v-slot:append>
+                          <v-icon v-if="isPersonSelected(person.id, role.id)" :color="
+                              getRoleIcon(role.id) === 'mdi-star'
+                                ? 'green-darken-3'
+                                : 'green-darken-3'
+                            ">
+                            {{
+                            getRoleIcon(role.id) === "mdi-star"
+                            ? "mdi-star"
+                            : "mdi-circle-slice-8"
+                            }}
+                          </v-icon>
+                          <v-icon v-else class="opacity-30" :color="
+                              getRoleIcon(role.id) === 'mdi-star'
+                                ? 'green-darken-3'
+                                : undefined
+                            ">
+                            {{
+                            getRoleIcon(role.id) === "mdi-star"
+                            ? "mdi-star-outline"
+                            : "mdi-checkbox-blank-circle-outline"
+                            }}
+                          </v-icon>
+                        </template>
+                      </v-list-item>
+                    </v-list>
+                  </v-card>
+                </v-col>
+            </v-row>-->
+
+            <div class="d-flex justify-space-between mt-8">
+              <v-btn variant="text" class="text-grey-darken-1" @click="stepHome > 0 ? stepHome-- : closeHome()">
+                {{ stepHome === 0 ? $t('buttons.close') : $t('buttons.previous') }}
+              </v-btn>
+
+              <v-btn 
+                variant="text" 
+                class="text-deep-purple-accent-3" 
+                @click="nextStepHome" 
+                :disabled="stepHome === 1 && !valid">
+                {{
+                  stepHome === 1 
+                    ? $t('buttons.saveAndClose') 
+                    : $t('buttons.next')
+                }}
+              </v-btn>
+            </div>
+          </v-col>
+        </v-row>
+      </v-card-text>
+    </v-card>
+  </v-form>
+</v-dialog>
   </div>
 </template>
 
@@ -705,14 +1152,33 @@
 import LocalStorageService from "@/LocalStorageService";
 import { handleRequest } from "@/utils/api"; // Ruta al archivo
 import router from "@/router/index";
+import JoinHomeStep from "@/components/onboarding/JoinHomeStep.vue";
 export default {
+  components: {
+    JoinHomeStep
+  },
   data: () => ({
+    search: '',
+    showShareHomeCodeDialog: false,
+    headers: [
+      { title: "Nombre", value: "name", width: "20%" },
+      { title: "Dirección", value: "address", width: "25%" },
+      { title: "Ranking", value: "percent", width: "5%" },
+      { title: "Personas", value: "people", width: "15%" },
+      { title: "Tipo", value: "nameHomeType", width: "10%" },
+      { title: "Estado", value: "nameStatus", width: "10%" },
+      { title: "Acciones", value: "actions", sortable: false, width: "15%" },
+    ],
+    dialogJoinHome: false,
+      joiningHome: false,
     loaded: false,
     drawer: false,
     menu: false,
     menuNoti: false,
+    statusOnboarding: false,
     dateMenu: false,
     dateInput: null,
+    onboarding_status: null,
     file: null,
     imgMiniatura: "",
     isHovered: null,
@@ -776,13 +1242,15 @@ export default {
     notifications: [],
     countNoti: "",
     items: [
-      { title: "Mi Perfil", icon: "mdi-account-tie-outline" },
-      { title: "Cambiar Contraseña", icon: "mdi-form-textbox-password" },
-      { title: "Cerrar Sesión", icon: "mdi-exit-to-app" },
+      { title: "Mi Perfil", icon: "mdi-account-tie-outline", id: "miPerfil" },
+      { title: "Cambiar Contraseña", icon: "mdi-form-textbox-password", id: "cambiarContrasena" },
+      { title: "Unirte a un Hogar", icon: "mdi-home", id: "joinHome" },
+      { title: "Cerrar Sesión", icon: "mdi-exit-to-app", id: "closeSesion" },
     ],
     dialogPerson: false,
     valid: false,
     step: 0,
+    stepHome: 0,
     showPassword: false,
     birthDateMenu: false,
     imageFile: null,
@@ -851,35 +1319,73 @@ export default {
     },
     steps: [
       { title: "basic_info", fields: ["name", "user", "password", "language", "image"] },
-      {
-        title: "personal_info",
-        fields: [
-          "birth_date",
-          "age",
-          "gender",
-          "emergencyContact",
-          "email",
-          "phone",
-          "address",
-        ],
-      },
-      {
-        title: "medical_info",
-        fields: [
-          "medical_record_number",
-          "document_type",
-          "document_number",
-          "health_coverage",
-          "coverage_name",
-          "blood_type",
-        ],
-      },
+      { title: "personal_info", fields: [ "birth_date", "age", "gender", "emergencyContact", "email", "phone", "address", ], },
+      { title: "medical_info", fields: [ "medical_record_number", "document_type", "document_number", "health_coverage", "coverage_name", "blood_type", ], },
     ],
     languages: ["es", "en", "pt"],
     genders: [],
     documentTypes: [],
     healthCoverages: [],
     bloodTypes: ["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-"],
+    approvalData: null,
+    dialogHome: false,
+    status: [],
+    people: [],
+    roles: [],
+    hometypes: [],
+     editedItemHome: {
+      id: "",
+      name: "",
+      address: "",
+      home_type_id: "",
+      status_id: "",
+      person_id: null,
+      residents: "",
+      geo_location: "",
+      timezone: "",
+      image: null,
+      people: [],
+      code: "",
+      approvalData: {}
+    },
+
+    defaultItemHome: {
+      id: "",
+      name: "",
+      address: "",
+      home_type_id: "",
+      status_id: "",
+      person_id: null,
+      residents: "",
+      geo_location: "",
+      timezone: "",
+      image: null,
+      people: [],
+      code: "",
+      approvalData: {}
+    },
+
+    originalItemHome: {
+      id: "",
+      name: "",
+      address: "",
+      home_type_id: "",
+      status_id: "",
+      person_id: null,
+      residents: "",
+      geo_location: "",
+      timezone: "",
+      image: null,
+      people: [],
+      code: "",
+      approvalData: {}
+    },
+    selectRules: [(v) => !!v || "Seleccionar al menos un elemento"],
+    codeRules: [
+      (v) => !v || v.length >= 8 || "El código debe tener al menos 8 caracteres",
+      //v => !v || /^[a-zA-Z0-9]+$/.test(v) || 'Solo se permiten letras y números'
+    ],
+  currentHomeId: null,
   }),
   computed: {
     formTitle() {
@@ -934,26 +1440,155 @@ export default {
       return this.dateInput ? new Date(this.dateInput) : new Date();
     },
   },
-  mounted() {
+   watch: {
+  '$route.query.home_id': {
+    handler(newId) {
+      if (newId && newId !== this.currentHomeId) {
+        this.loadHomeData(newId);
+      }
+    },
+    immediate: true
+  }
+},
+  async mounted() {
     this.name = JSON.parse(LocalStorageService.getItem("name"));
     this.user = JSON.parse(LocalStorageService.getItem("user"));
     this.user_id = JSON.parse(LocalStorageService.getItem("user_id"));
     this.home_id = JSON.parse(LocalStorageService.getItem("home_id"));
+    this.currentHomeId = JSON.parse(LocalStorageService.getItem("home_id"));
     this.person_id = JSON.parse(LocalStorageService.getItem("person_id"));
-    //this.rol_id = LocalStorageService.getItem('role_id');
+    this.onboarding_status = JSON.parse(LocalStorageService.getItem('onboarding_status'));
+    this.approvalData = JSON.parse(LocalStorageService.getItem('approvalData'));
+    
     //this.role = JSON.parse(LocalStorageService.getItem('role'));
     this.imageUrl = LocalStorageService.getItem("image").replace(/['"]+/g, "");
     // Aquí se debe usar una función
-    if (this.home_id) {
+    /*if (this.onboarding_status === 1) {
       this.$router.push({ path: "home" });
     } else {
       this.$router.push({ path: "onboarding" });
-    }
+    }*/
+      const allowedStatuses = [0, 1];
 
-    this.initialize();
-    this.getNotifications();
+      if (allowedStatuses.includes(parseInt(this.onboarding_status, 10))) {
+        this.statusOnboarding = false;
+    }
+    else{
+      this.statusOnboarding = true;
+      await this.initialize();
+      await this.getNotifications();
+    }
   },
   methods: {
+    closeShareHomeCodeDialog(){
+      this.showShareHomeCodeDialog = false;
+              // Opcional: limpiar approvalData ya que ya se usó
+      LocalStorageService.removeItem('approvalData');
+      this.approvalData = null;
+    },
+    async openShareCodeDialog(item){
+      this.data = {};
+      this.data.home_id = item.id;
+      this.data.homeName = item.name;
+      this.data.minorName = this.approvalData.minorName;
+      this.data.minorEmail = this.approvalData.minorEmail;
+      this.data.request_id = this.approvalData.request_id;
+      try {
+        const result = await handleRequest({
+          endpoint: "send-code-home",
+          method: "POST",
+          data: this.data
+        });
+
+        if (result.success) {
+          // Si la solicitud es exitosa, asignamos las sucursales
+           this.showAlert(
+          "success",
+          result.message ?? "Código para unirse al hogar enviado correctamente.",
+          3000
+        );        
+       this.showShareHomeCodeDialog = false;
+        LocalStorageService.removeItem('approvalData');
+        this.approvalData = null;
+        } else {
+          this.showAlert(
+          "warning",
+          "No se pudo enviar el código para unirse al hogar.",
+          3000
+        );
+        }
+      } catch (error) {
+        // Captura de errores no controlados
+        this.showAlert(
+          "error",
+          "Ocurrió un error inesperado.",
+          3000
+        );
+      } finally {
+       this.initialize();
+    }
+    },
+    showDialogJoin(){
+      this.dialogJoinHome = true;
+    },
+    async handleJoinHomeFromDialog({ code }) {
+     try {
+        this.isLoading = true;
+        this.data = {};
+        this.data.code = code;
+        // Hacer la petición al nuevo endpoint
+        const response = await handleRequest({
+          endpoint: "home-verify-code",
+          method: "POST",
+          data: this.data
+        });
+
+        if (response.success) {
+          // Guardar el ID del hogar en localStorage como en ambos ejemplos
+          const homeId = response.data.home.id;
+          LocalStorageService.setItem("home_id", JSON.stringify(homeId));
+          LocalStorageService.setItem("onboarding_status", 3);
+          this.statusOnboarding = true;
+          window.location.href = '/home';
+        } else {          
+          this.dialogJoinHome = false;
+        }
+      } catch (error) {
+        this.showAlert(
+          "error",
+          "Ocurrió un error inesperado al cargar las hogares.",
+          3000
+        );
+         this.dialogJoinHome = false;
+      } finally {
+         this.dialogJoinHome = false;
+      }
+    },
+
+    // ✅ Se llama al dar "Volver" o "Cancelar"
+    closeJoinDialog() {
+      this.dialogJoinHome = false;
+    },
+    isItemVisible(title) {
+      const status = this.statusOnboarding;
+     if (title === "Cerrar Sesión") {
+      return true; // Siempre visible
+    }
+
+    if (title === "Mi Perfil") {
+      return status;
+    }
+
+    if (title === "Unirte a un Hogar") {
+      return !status;
+    }
+
+    if (title === "Cambiar Contraseña") {
+      return status;
+    }
+
+    return false;
+    },
     getImageUrl(imagePath) {
       return `${this.$axios.defaults.baseURL}images/${imagePath}?t=${this.getCacheTimestamp()}`;
     },
@@ -996,6 +1631,77 @@ export default {
           localStorage.setItem("home_id", this.homes[0].id);
           this.home_id = this.homes[0].id;
         }
+
+         // 🔹 NUEVA LÓGICA: Mostrar formulario si se rechazó y tiene hogares
+      if (
+        this.approvalData &&
+        this.approvalData.action === 'reject' &&
+        this.homes.length > 0
+      ) {
+        this.showShareHomeCodeDialog = true;
+      }
+      if (
+        this.approvalData &&
+        this.approvalData.action === 'approve' 
+      ) {
+        console.log(this.approvalData);
+        console.log('this.approvalData');
+        this.showAddHome();
+      }
+      }
+    },
+    async showAddHome() {
+      this.stepHome = 0;
+      this.editedIndex = -1;
+      (this.file = null), (this.editedIndex = -1);
+      (this.imgMiniatura = ""), (this.data = {});
+      try {
+        const result = await handleRequest({
+          endpoint: "hometype-status-people-apk",
+          method: "GET",
+        });
+
+        if (result.success) {
+          // Si la solicitud es exitosa, asignamos las sucursales
+          this.status = result.data?.homestatus || [];
+          this.people = result.data?.homepeople || [];
+          this.roles = result.data?.homeroles || [];
+          this.hometypes = result.data?.hometypes || [];
+        } else {
+          // Si no hay datos, asignamos un array vacío
+          this.status = [];
+          this.people = [];
+          this.roles = [];
+          this.hometypes = [];
+          this.showAlert("info", result.message || "No hay datos disponibles.", 3000);
+        }
+      } catch (error) {
+        this.showAlert("error", "Ocurrió un error inesperado al cargar los datos.", 3000);
+      } finally {
+        const activeStatus = this.status.find(
+            (status) => status.nameStatus === "Activa" || status.nameStatus.toLowerCase() === "activa"
+          );
+
+          if (activeStatus) {
+            this.editedItemHome.status_id = activeStatus.id;
+          }
+           const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+          this.editedItemHome.timezone = timezone;
+          this.editedItemHome.name = this.approvalData.homeName;
+           const adminRole = this.roles.find(
+              (role) => role.name === "Administrador" || role.name.toLowerCase() === "administrador"
+            );
+
+            if (adminRole) {
+              this.editedItemHome.people = [
+                {
+                  person_id: Number(this.person_id),
+                  role_id: Number(adminRole.id),
+                  roleName: adminRole.name,
+                },
+              ];
+            }
+           this.dialogHome = true;
       }
     },
     async getNotifications() {
@@ -1038,6 +1744,10 @@ export default {
       }
     },
     async openMenu() {
+      if (!this.statusOnboarding){
+        this.homes = [];
+        return;
+      }
       try {
         const result = await handleRequest({
           endpoint: "person-homes",
@@ -1070,15 +1780,22 @@ export default {
     },
     selectHome(home) {
       // Lógica para manejar la selección de un hogar
-      localStorage.setItem("home_id", home.id);
+      //localStorage.setItem("home_id", home.id);
 
       // Obtiene la ruta actual
       const currentRoute = this.$route.fullPath;
       console.log("currentRoute:", currentRoute);
       this.home_id = home.id;
       // Redirige a la ruta 'Home'
-      this.$router.push({ path: "home" });
+      this.$router.push({ name: 'Home', query: { home_id: home.id } });
       this.menu = false; // Cierra el menú después de seleccionar
+    },
+    loadHomeData(homeId) {
+      // Aquí usas homeId para cargar datos
+      localStorage.setItem('home_id', homeId);
+      this.currentHomeId = homeId;
+      //window.history.replaceState({}, document.title, window.location.pathname);
+      // ... resto de la lógica
     },
     onClick() {
       this.loading = true;
@@ -1167,6 +1884,9 @@ export default {
           this.editedItemPerson.birth_date = this.person.birth_date;
           this.dialogPerson = true;
         }
+      }
+      if(item.id === 'joinHome'){
+        this.showDialogJoin();
       }
     },
     close() {
@@ -1272,15 +1992,120 @@ export default {
       console.log(currentRoute);
       router.push({ name: "Home" });
     },
-    handleItemClickNotif(item) {
+    /*handleItemClickNotif(item) {
       //alert(item.id);
-    },
+    },*/
     nextStep() {
       if (this.step < this.steps.length - 1) {
         this.step++;
       } else {
         this.savePerson();
       }
+    },
+    nextStepHome() {
+       if (this.stepHome < 1) { // 0=basic, 1=details, 2=members
+        this.stepHome++
+      } else {
+        this.saveHome()
+      }
+    },
+    async saveHome() {
+    this.loading = true;
+    this.valid = false;
+
+    const fieldsToUpdate = [
+      "name",
+      "address",
+      "home_type_id",
+      "status_id",
+      "category_id",
+      "residents",
+      "geo_location",
+      "timezone",
+      "people",
+      "image",
+      "approvalData"
+    ];
+
+    let updatedFields = Object.keys(this.editedItemHome)
+      .filter(
+        (key) =>
+          fieldsToUpdate.includes(key) &&
+          this.editedItemHome[key] !== this.originalItemHome[key]
+      )
+      .reduce((obj, key) => {
+        if (key === "people") {
+          // ✅ Transformar people como en la vista que funciona
+          obj[key] = this.editedItemHome.people.map((person) => ({
+            person_id: Number(person.id || person.person_id),
+            role_id: Number(person.roleId || person.role_id),
+            roleName: person.roleName,
+          }));
+        } else {
+          obj[key] = this.editedItemHome[key];
+        }
+        return obj;
+      }, {});
+
+    if (Object.keys(updatedFields).length > 0) {
+      if (this.file) {
+        updatedFields.image = this.file; // 👈 Asegúrate de usar this.file, no this.editedItemHome.image
+      }
+
+      const formData = new FormData();
+
+      // ✅ Agregar cada campo al FormData
+      for (let key in updatedFields) {
+        if (key === "people") {
+          // ✅ Formato compatible con Express/multer: people[0][person_id], etc.
+          updatedFields[key].forEach((person, index) => {
+            for (const [personKey, value] of Object.entries(person)) {
+              formData.append(`people[${index}][${personKey}]`, value);
+            }
+          });
+        } else if (key === "approvalData") {
+          // ✅ Enviar approvalData como JSON string
+          formData.append("approvalData", JSON.stringify(this.approvalData));
+        } else {
+          formData.append(key, updatedFields[key]);
+        }
+      }
+
+      try {
+        const result = await handleRequest({
+          endpoint: "home-approve",
+          method: "POST",
+          data: formData,
+        });
+
+        if (result.success) {
+          this.loading = false;
+          this.showAlert("success", result.message, 3000);
+          this.initialize();
+        } else {
+          this.loading = false;
+          this.showAlert("warning", result.message, 3000);
+        }
+      } catch (error) {
+        this.loading = false;
+        this.showAlert(
+          "error",
+          "Ocurrió un error inesperado al procesar la solicitud.",
+          3000
+        );
+      }
+    } else {
+      this.loading = false;
+      this.showAlert("info", "No hay cambios para guardar.", 3000);
+    }
+
+    this.closeHome();
+  },
+  closeHome(){
+    this.dialogHome = false;
+              // Opcional: limpiar approvalData ya que ya se usó
+    LocalStorageService.removeItem('approvalData');
+    this.approvalData = null;
     },
     async savePerson() {
       this.valid = false;
@@ -1401,6 +2226,7 @@ export default {
         return; // Detener el proceso si el archivo es demasiado grande
       }
       this.editedItemPerson.image = file;
+      this.editedItemHome.image = file;
       this.cargarImage(file);
     },
     cargarImage(file) {

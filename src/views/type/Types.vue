@@ -239,6 +239,10 @@ export default {
         name: "Presupuesto",
         id: "Presupuesto",
       },
+      {
+        name: "Nutrición",
+        id: "Nutricion",
+      },
     ],
     editedIndex: -1,
     search: "",

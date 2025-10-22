@@ -27,31 +27,17 @@
                             <div style="position: relative; display: inline-block;">
                                 <v-avatar size="60" class="me-4">
                                     <v-img
-                                        :src="`${this.$axios.defaults.baseURL}images/${selectedPet.image}?t=${getCacheTimestamp()}`"
-                                        alt="Foto de la mascota" />
+                                        :src="this.getImageUrl(selectedPerson.image)"
+                                        alt="Foto de la persona" />
                                 </v-avatar>
-                                <!-- Botón de edición superpuesto -->
-                                <v-btn v-if="selectedPet !== null"
-                                    icon 
-                                    variant="text" 
-                                    size="small" 
-                                    color="blue-grey" 
-                                    @click.stop="editItem(selectedPet)" 
-                                    style="position: absolute; bottom: 0; right: 12px;"
-                                >
-                                    <v-icon color="primary" size="20">mdi-pencil</v-icon>
-                                </v-btn>
                             </div>
 
                             <!-- Datos del paciente -->
                             <div>
                                 <div class="text-body-2 font-weight-bold mb-1">
-                                    {{ selectedPet.name }}
+                                    {{ selectedPerson.name }}
                                 </div>
-                                <div class="text-body-2 text-grey-darken-1">
-                                    {{ selectedPet.breed ? $t("petDetails.breed.withValue", { breed: selectedPet.breed
-                                    }) : "" }}
-                                </div>
+                                
                             </div>
                         </div>
                     </v-col>
@@ -71,59 +57,52 @@
                 </v-card-actions>
                 <v-divider />-->
                 <v-row dense class="mt-4">
-                    <v-col v-for="(tool, index) in petTools" :key="index" cols="12" sm="6" md="6" lg="3" class="px-1">
-                        <v-card class="d-flex align-center pa-2" elevation="2" rounded="lg" density="comfortable"  :class="{ 'oscurecer-persistente': selectedView === tool.type }"
-                           @click="abrirModal(tool)" style="cursor: pointer; height: 85px; width: 100%; min-height: 85;">
-                            <v-avatar size="40" class="me-3" :color="colors[index] + ' lighten-4'" variant="tonal">
-                                <v-icon :color="colors[index]">{{ tool.icon }}</v-icon>
-                            </v-avatar>
+                  <v-col 
+                    v-for="(tool, index) in nutritionTools" 
+                    :key="index" 
+                    cols="12" sm="6" md="6" lg="3" 
+                    class="px-1"
+                  >
+                    <v-card 
+                      class="d-flex align-center pa-2" 
+                      elevation="2" 
+                      rounded="lg" 
+                      density="comfortable"
+                      @click="abrirModal(tool)"
+                      style="cursor: pointer; height: 85px; width: 100%; min-height: 85px;"
+                      :class="{ 'oscurecer-persistente': selectedView === tool.type }"
+                    >
+                      <v-avatar size="40" class="me-3" :color="tool.color + ' lighten-4'" variant="tonal">
+                        <v-icon :color="tool.color">{{ tool.icon }}</v-icon>
+                      </v-avatar>
 
-                            <div style="min-width: 0; flex: 1">
-                                <div class="text-body-2 font-weight-medium text-truncate">
-                                    {{ tool.name }}
-                                </div>
+                      <div style="min-width: 0; flex: 1">
+                        <div class="text-body-2 font-weight-medium text-truncate">
+                          {{ tool.name }}
+                        </div>
 
-                                <template v-if="tool.count > 0">
-                                    <!-- Caso 1: Solo 1 registro -->
-                                    <template v-if="tool.count === 1">
-                                        <v-tooltip location="bottom" v-if="tool.lastItemName">
-                                            <template v-slot:activator="{ props }">
-                                                <div v-bind="props"
-                                                    class="text-caption text-grey-darken-1 text-truncate">
-                                                    {{ tool.lastItemName }}
-                                                </div>
-                                            </template>
-                                            <span>{{ tool.lastItemName }}</span>
-                                        </v-tooltip>
-                                        <div v-else class="text-caption text-grey-darken-1">
-                                            {{ $t("common.no_name") }}
-                                        </div>
-
-                                        <div class="text-caption text-grey-lighten-1 mt-1">
-                                            {{ formatIntuitiveDate(tool.lastDate) }}
-                                        </div>
-                                    </template>
-
-                                    <!-- Caso 2: Más de 1 registro -->
-                                    <template v-else>
-                                        <div class="text-caption text-grey-lighten-1">
-                                            <div class="font-weight-medium">
-                                                {{ tool.count }} {{ $t("common.items") }}
-                                            </div>
-                                            <div class="mt-1">
-                                                {{ formatIntuitiveDate(tool.lastDate) }}
-                                            </div>
-                                        </div>
-                                    </template>
-                                </template>
-                                <template v-else>
-                                    <div class="text-caption text-grey-darken-1">
-                                        {{ $t("common.no_records") }}
-                                    </div>
-                                </template>
-                            </div>
-                        </v-card>
-                    </v-col>
+                        <template v-if="tool.count > 0">
+                          <v-tooltip v-if="tool.lastItemName" location="bottom">
+                            <template v-slot:activator="{ props }">
+                              <div v-bind="props" class="text-caption text-grey-darken-1 text-truncate">
+                                {{ tool.lastItemName }}
+                              </div>
+                            </template>
+                            <span>{{ tool.lastItemName }}</span>
+                          </v-tooltip>
+                          
+                          <div v-else class="text-caption text-grey-darken-1">
+                            {{ $t("common.no_name") }}
+                          </div>
+                        </template>
+                        <template v-else>
+                          <div class="text-caption text-grey-darken-1">
+                            {{ $t("common.no_records") }}
+                          </div>
+                        </template>
+                      </div>
+                    </v-card>
+                  </v-col>
                 </v-row>
                 <v-row dense class="mt-4">
                 <v-col cols="12">
@@ -131,7 +110,8 @@
                     :is="getComponentByType(selectedView)"
                     v-if="selectedView"
                     :key="selectedView"
-                    :selected-pet="selectedPet"
+                    :selected-person="selectedPerson"
+                    @update-nutrition-data="initialize"
                   />
                 </v-col>
       </v-row>
@@ -307,32 +287,6 @@
             </v-card>
         </v-form>
     </v-dialog>
-    <v-dialog v-model="dialogMedication" fullscreen transition="dialog-bottom-transition">
-        <v-card>
-            <v-card-text>
-                <!-- Aquí pasamos el 'selectedWorker' al componente dentro del diálogo -->
-                <CurrentMedication :pet="selectedPet" />
-            </v-card-text>
-            <v-divider></v-divider>
-            <v-card-actions>
-                <v-spacer></v-spacer>
-                <v-btn text @click="closeDialogMedication">Cerrar</v-btn>
-            </v-card-actions>
-        </v-card>
-    </v-dialog>
-    <v-dialog v-model="dialogDiet" fullscreen transition="dialog-bottom-transition">
-        <v-card>
-            <v-card-text>
-                <!-- Aquí pasamos el 'selectedWorker' al componente dentro del diálogo -->
-                <PetDiet :pet="selectedPet" />
-            </v-card-text>
-            <v-divider></v-divider>
-            <v-card-actions>
-                <v-spacer></v-spacer>
-                <v-btn text @click="closeDialogDiet">Cerrar</v-btn>
-            </v-card-actions>
-        </v-card>
-    </v-dialog>
 </template>
 
 <script>
@@ -340,30 +294,25 @@ import LocalStorageService from "@/LocalStorageService";
 import { handleRequest } from "@/utils/api"; // Ruta al archivo
 import _ from "lodash";
 
-import Vaccination from "./Vaccination.vue";
-import Deworming from "./Deworming.vue";
-import VetVisit from "./VetVisit.vue";
-import CurrentMedication from "./CurrentMedication.vue";
-import PetDiet from "./PetDiet.vue";
+import NutritionProfile from "./NutritionProfile.vue";
+import Recipe from "./Recipe.vue";
+import DailyLog from "./DailyLog.vue";
+import MealEntry from "./MealEntry.vue";
 export default {
   components: {
-    Vaccination,
-    Deworming,
-    VetVisit,
-    CurrentMedication,
-    PetDiet,
+    NutritionProfile,
+    Recipe,
+    DailyLog,
   },
    props: {
-    selectedPet: {
+    selectedPerson: {
       type: Object,
       required: true
     },
   },
   data: () => ({
-    selectedView: "vaccination",
+    selectedView: "profile",
     currentView: null,
-    dialogMedication: false,
-    dialogDiet: false,
     petTools: [],
     dialog: false,
     nuevoValor: "",
@@ -453,6 +402,8 @@ export default {
       (v) => (v && v.length >= 2) || "El campo debe tener al menos de 2 caracteres",
     ],
     selectRules: [(v) => !!v || "Seleccionar al menos un elemento"],
+     nutritionProfile: null,
+    nutritionTools: []
   }),
   computed: {
     formTitle() {
@@ -474,7 +425,7 @@ export default {
     getDate() {
       return this.input ? new Date(this.input) : new Date();
     },
-    tools() {
+    /*tools() {
       return [
         // 1. Vacunación
         {
@@ -507,7 +458,7 @@ export default {
           icon: "mdi-food",
         },
       ];
-    },
+    },*/
     imgedit() {
       return this.imgMiniatura;
     },
@@ -529,14 +480,18 @@ export default {
         .replace(/[\u0300-\u036f]/g, "");
 
       const map = {
-        vaccination: Vaccination,
-        deworming: Deworming,
-        vetvisits: VetVisit,
-        currentmedications: CurrentMedication,
-        petdiet: PetDiet
+        profile: NutritionProfile,
+        recipes: Recipe,
+        dailylog: DailyLog,
+        mealentry: MealEntry
       };
 
       return map[normalized] || null;
+    },
+    getImageUrl(imagePath) {
+      return `${
+        this.$axios.defaults.baseURL
+      }images/${imagePath}?t=${this.getCacheTimestamp()}`;
     },
     getCacheTimestamp() {
       // Usamos medianoche (00:00:00) del día actual
@@ -580,7 +535,7 @@ export default {
       }
     },
     isSelected(pet) {
-      return this.selectedPet.id === pet.id;
+      return this.selectedPerson.id === pet.id;
     },
     parseDateString(dateString) {
       if (!dateString) return null;
@@ -643,31 +598,6 @@ export default {
     },
     abrirModal(item) {
       this.selectedView = item.type;
-      /*switch (item.type) {
-        case "physicalExam":
-          this.showAddPhysicalExam();
-          break;
-        case "treatment":
-          this.showAddTreatment();
-          break;
-        case "backgroundPerson":
-          this.showAddPerson();
-          break;
-        case "backgroundFamily":
-          this.showAddFamily();
-          break;
-        case "medicalExam":
-          this.showAddExam();
-          break;
-        case "diagnosis":
-          this.showAddDiagnosis();
-          break;
-        case "consultation":
-          this.showAddConsultations();
-          break;
-        default:
-          break;
-      }*/
     },
     // Método para manejar la paginación
     updatePage(page) {
@@ -684,34 +614,7 @@ export default {
       this.editedItem.date_birth = this.input;
       this.menu = false;
     },
-    /*async showAdd() {
-      this.step = 0;
-      (this.file = null), (this.editedIndex = -1);
-      (this.imgMiniatura = ""), (this.data = {});
-      try {
-        const result = await handleRequest({
-          endpoint: "category-pets",
-          method: "POST",
-        });
-
-        if (result.success) {
-          this.categories = result.data.categories || [];
-          this.types = result.data.types || [];
-        } else {
-          this.categories = [];
-          this.types = [];
-        }
-      } catch (error) {
-        this.showAlert(
-          "error",
-          "Ocurrió un error inesperado al cargar las categorías.",
-          3000
-        );
-      } finally {
-        this.dialog = true;
-      }
-    },*/
-    close() {
+   close() {
       this.dialog = false;
       this.loading = false;
       this.$nextTick(() => {
@@ -723,25 +626,25 @@ export default {
     async initialize() {
       this.data = {};
       this.data.home_id = this.home_id;
-      this.data.pet_id = this.selectedPet.id;
+      this.data.person_id = this.selectedPerson.id;
       try {
         this.loading = true;
         const result = await handleRequest({
-          endpoint: "get-pet",
+          endpoint: "nutrition-by-person",
           method: "POST",
           data: this.data,
         });
 
         if (result.success) {
           // Si la solicitud es exitosa, asignamos las sucursale
-          this.pets = result.data?.pet || [];
-          console.log("this.selectedPet");
-          console.log(this.selectedPet);
+          this.nutritionProfile = result.data?? [];
+          console.log("this.selectedPerson");
+          console.log(this.selectedPerson);
           
-          this.updatePetTools();
+          this.updateNutritionTools();
         } else {
           // Si no hay datos, asignamos un array vací
-          this.pets = [];
+          this.nutritionProfile = [];
         }
       } catch (error) {
         this.loading = false;
@@ -751,58 +654,46 @@ export default {
         this.loading = false;
       }
     },
-    updatePetTools() {
-      this.petTools = [
+    updateNutritionTools() {
+      this.nutritionTools = [
         {
-          name: this.$t("petTitles.vaccines"),
-          action: () => this.showVaccines(),
-          icon: "mdi-needle",
-          color: "green",
-          type: "vaccination",
-          count: this.pets?.vaccinations.count,
-          lastDate: this.pets?.vaccinations.date,
-          lastItemName: this.pets?.vaccinations.name || this.$t("common.no_name"),
-        },
-        {
-          name: this.$t("petTitles.deworming"),
-          action: () => this.showDeworming(),
-          icon: "mdi-bug",
-          color: "orange",
-          type: "deworming",
-          count: this.pets?.dewormings.count,
-          lastDate: this.pets?.dewormings.date,
-          lastItemName: this.pets?.dewormings.name || this.$t("common.no_name"),
-        },
-        {
-          name: this.$t("petTitles.vetVisits"),
-          action: () => this.showVetVisits(),
-          icon: "mdi-medical-bag",
+          name: this.$t("nutrition.profile"),
+          action: () => this.showNutritionProfile(),
+          icon: "mdi-account-details",
           color: "blue",
-          type: "vetvisits",
-          count: this.pets?.vetvisits.count,
-          lastDate: this.pets?.vetvisits.date,
-          lastItemName: this.pets?.vetvisits.name || this.$t("common.no_name"),
+          type: "profile",
+          count: this.nutritionProfile?.profile ? 1 : 0,
+          lastItemName: this.nutritionProfile?.profile ? "Metas nutricionales" : null
         },
         {
-          name: this.$t("petTitles.currentMedications"),
-          action: () => this.showMedications(),
-          icon: "mdi-pill",
-          color: "red",
-          type: "currentmedications",
-          count: this.pets?.medications.count,
-          lastDate: this.pets?.medications.date,
-          lastItemName: this.pets?.medications.name || this.$t("common.no_name"),
+          name: this.$t("nutrition.recipes"),
+          action: () => this.showRecipes(),
+          icon: "mdi-book-open-variant",
+          color: "green",
+          type: "recipes",
+          count: this.nutritionProfile?.recipes.count || 0,
+          lastItemName: this.nutritionProfile?.recipes.lastRecipe || this.$t("common.no_name")
         },
         {
-          name: this.$t("petTitles.diet"),
-          action: () => this.showDiet(),
+          name: this.$t("nutrition.dailyLog"),
+          action: () => this.showDailyLog(),
+          icon: "mdi-water",
+          color: "cyan",
+          type: "dailylog",
+          count: this.nutritionProfile?.dailyLog.hasData ? 1 : 0,
+          lastItemName: this.nutritionProfile?.dailyLog.hasData 
+            ? `${this.nutritionProfile.dailyLog.waterIntake}L agua, ${this.nutritionProfile.dailyLog.steps} pasos`
+            : null
+        },
+        {
+          name: this.$t("nutrition.meals"),
+          action: () => this.showMeals(),
           icon: "mdi-food",
-          color: "purple",
-          type: "petdiet",
-          count: this.pets?.diets.count,
-          lastDate: this.pets?.diets.date,
-          lastItemName: this.pets?.diets.name || this.$t("common.no_name"),
-        },
+          color: "orange",
+          type: "mealentry",
+          count: this.nutritionProfile?.meals.count || 0,
+          lastItemName: this.nutritionProfile?.meals.items[0]?.recipes || this.$t("common.no_name")
+        }
       ];
     },
     async save() {

@@ -3,42 +3,76 @@
     <h3 class="text-body-2 mb-4">¿Quieres crear un hogar o unirte a uno existente?</h3>
 
     <v-row class="mb-4">
-      <v-col cols="12" md="6">
-        <v-card
-          class="mx-auto d-flex align-center rounded-lg"
-          @click="$emit('create-home')"
-        >
-          <template v-slot:prepend>
-            <v-icon size="48" color="primary" class="ml-1 mr-1">mdi-home-plus</v-icon>
-          </template>
-
-          <div class="flex-grow-1">
-            <div class="text-body-2">Crear un nuevo hogar</div>
-            <div class="text-caption text-wrap">
-              Ideal si eres el primero en usar la app en tu casa.
-            </div>
+  <v-col cols="12" md="6">
+    <v-card
+      elevation="1"
+      density="comfortable"
+      class="rounded-lg"
+      @click="$emit('create-home')"
+    >
+      <v-card-item class="pa-3">
+        <template v-slot:prepend>
+          <div class="icono-concavo">
+            <v-icon
+              icon="mdi-home-plus"
+              color="primary"
+              size="x-large"
+            ></v-icon>
           </div>
-        </v-card>
-      </v-col>
+        </template>
 
-      <v-col cols="12" md="6">
-        <v-card
-          class="mx-auto d-flex align-center rounded-lg"
-          @click="$emit('join-home')"
-        >
-          <template v-slot:prepend>
-            <v-icon size="48" color="primary" class="ml-1 mr-1">mdi-key</v-icon>
-          </template>
+        <div>
+          <v-card-title class="text-body-2 font-weight-medium pa-0">
+            Crear un nuevo hogar
+          </v-card-title>
+          <v-card-subtitle class="text-caption pa-0 mt-1">
+            <span>Ideal si eres el primero en usar la app en tu casa.</span>
+             <v-tooltip activator="parent" location="bottom">
+                      <span style="white-space: normal; word-break: break-word">
+                       Ideal si eres el primero en usar la app en tu casa.
+                      </span>
+                    </v-tooltip>
+          </v-card-subtitle>
+        </div>
+      </v-card-item>
+    </v-card>
+  </v-col>
 
-          <div class="flex-grow-1">
-            <div class="text-body-2">Unirme a un hogar existente</div>
-            <div class="text-caption text-wrap">
-              Si alguien ya creó tu hogar en la app, puedes unirte con un código.
-            </div>
+  <v-col cols="12" md="6">
+    <v-card
+      elevation="1"
+      density="comfortable"
+      class="rounded-lg"
+      @click="$emit('join-home')"
+    >
+      <v-card-item class="pa-3">
+        <template v-slot:prepend>
+          <div class="icono-concavo">
+            <v-icon
+              icon="mdi-key"
+              color="primary"
+              size="x-large"
+            ></v-icon>
           </div>
-        </v-card>
-      </v-col>
-    </v-row>
+        </template>
+
+        <div>
+          <v-card-title class="text-body-2 font-weight-medium pa-0">
+            Unirme a un hogar existente
+          </v-card-title>
+          <v-card-subtitle class="text-caption pa-0 mt-1">
+            <span> alguien ya creó tu hogar en la app, puedes unirte con un código.</span>
+            <v-tooltip activator="parent" location="bottom">
+                      <span style="white-space: normal; word-break: break-word">
+                       alguien ya creó tu hogar en la app, puedes unirte con un código.
+                      </span>
+                    </v-tooltip>
+          </v-card-subtitle>
+        </div>
+      </v-card-item>
+    </v-card>
+  </v-col>
+</v-row>
   </div>
 </template>
 
@@ -47,3 +81,19 @@ export default {
   emits: ['create-home', 'join-home']
 };
 </script>
+<style scoped>
+.icono-concavo {
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 8px;
+ 
+  color: white;
+  /* Mantenemos solo el efecto cóncavo en el ícono 
+  box-shadow: inset;*/
+  position: relative;
+  overflow: hidden;
+}
+</style>

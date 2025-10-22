@@ -64,13 +64,19 @@
                       :is="message.component"
                       class="w-100"
                       v-bind="message.props"
+                      :loading="isLoading"
                       @next-step="nextStep"
+                      @next-later="nextLater"
+                      @start-flow="startFreshFlow"
                       @join-home="handleJoinHome"
                       @home-created="handleHomeCreated"
                       @create-home="handleCreateHome"
                       @home-joined="handleHomeJoined"
                       @go-back="goBackToOptions"
-                      @complete="handleOnboardingComplete" 
+                      @complete="handleOnboardingComplete"
+                      @birthdate-submitted="handleBirthdateSubmitted"
+                      @invite-adult="handleInviteAdult"
+                      @submit-invite="handleSubmitInvite"
                     />
                   </div>
                   
@@ -96,7 +102,7 @@
                   <v-avatar size="28" class="mr-3">
                     <img src="@/assets/logo-verde.png" alt="Imagen de avatar" class="avatar-image" />
                   </v-avatar>
-                  <div class="chat-bubble px-4 py-3 rounded-xl bg-grey-lighten-2 text-black">
+                  <div class="chat-bubble px-4 py-3 rounded-xl text-black">
                     <div class="typing-container">
                       <span class="typing-dots">•••</span>
                     </div>
@@ -120,6 +126,9 @@ import ConfirmationStep from "@/components/onboarding/ConfirmationStep.vue";
 import LocalStorageService from "@/LocalStorageService";
 import { handleRequest } from "@/utils/api";
 import { markRaw } from 'vue'
+import BirthdateStep from "@/components/onboarding/BirthdateStep.vue";
+import MinorOnboardingCard from "@/components/onboarding/MinorOnboardingCard.vue";
+import InviteAdultForm from "@/components/onboarding/InviteAdultForm.vue";
 
 export default {
   emits: ["onboarding-complete"],
@@ -128,7 +137,10 @@ export default {
     HomeOptionsStep,
     CreateHomeStep,
     JoinHomeStep,
-    ConfirmationStep
+    ConfirmationStep,
+    BirthdateStep,
+    MinorOnboardingCard,
+    InviteAdultForm
   },
   data() {
     return {
@@ -146,6 +158,7 @@ export default {
         type: "house"
       },
       name: "",
+      email: "",
       joinCode: "",
       createdHome: null,
       joinedHome: null,
@@ -170,16 +183,117 @@ export default {
   mounted() {
     this.imageUrl = LocalStorageService.getItem("image")?.replace(/['"]+/g, "") || "";
      this.name = JSON.parse(LocalStorageService.getItem("name"));
+     this.email = JSON.parse(LocalStorageService.getItem("email"));
     this.startOnboarding();
   },
   methods: {
+    handleInviteAdult() {
+    this.addMessage({
+      from: "ai",
+      component: "InviteAdultForm",
+      props: {
+      loading: this.isLoading // 👈 esto es clave
+      },
+      timestamp: new Date().toLocaleTimeString()
+    });
+  },
+  async handleSubmitInvite({ homeName, adultEmail }) {
+      try {
+        this.isLoading = true;
+
+        const response = await handleRequest({
+          endpoint: "invite-create-home",
+          method: "POST",
+          data: {
+            homeName: homeName,
+            minorName: this.name,      // 👈 Nombre del menor
+            guardianEmail: adultEmail,  // 👈 Correo del adulto/tutor
+            minorEmail: this.email,
+          }
+        });
+
+        if (response.success) {
+          // ✅ Mostrar mensaje personalizado en el chat
+          this.addMessage({
+            from: "ai",
+            text: `✉️ Solicitud enviada a ${adultEmail}.\nTu hogar estará disponible una vez que el adulto lo apruebe.`,
+            timestamp: new Date().toLocaleTimeString()
+          });
+          LocalStorageService.setItem('onboarding_status', 1);
+          this.currentStep = 'invitation-sent';
+          setTimeout(() => {
+            this.$router.push({ name: "Home" }); // ← más robusto
+          }, 1000);
+        } else {
+          // ❌ Error del backend
+          this.addMessage({
+            from: "ai",
+            text: response.message || "No se pudo enviar la invitación. Por favor, inténtalo de nuevo.",
+            timestamp: new Date().toLocaleTimeString()
+          });
+
+         setTimeout(() => {
+            this.goBackToOptions(); // ← más robusto
+          }, 1000);
+        }
+      } catch (error) {
+        console.error("Error al enviar invitación:", error);
+        this.addMessage({
+          from: "ai",
+          text: "Ocurrió un error inesperado al procesar la solicitud.",
+          timestamp: new Date().toLocaleTimeString()
+        });
+        setTimeout(() => {
+            this.goBackToOptions(); // ← más robusto
+          }, 1000);
+      } finally {
+        this.isLoading = false;
+      }
+    },
+    handleBirthdateSubmitted(birthdateString) {
+    // birthdateString es como "1990-05-15"
+    const birthDate = new Date(birthdateString);
+    const today = new Date();
+    
+    let age = today.getFullYear() - birthDate.getFullYear();
+    const monthDiff = today.getMonth() - birthDate.getMonth();
+    if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
+      age--;
+    }
+
+    if (age >= 18) {
+      // ✅ Mayor de edad → mostrar formulario para crear hogar
+      this.addMessage({
+        from: "ai",
+        component: "CreateHomeStep",
+        props: {},
+        timestamp: new Date().toLocaleTimeString()
+      });
+      this.currentStep = 3; // o el valor que uses para "crear hogar"
+    } else {
+      // ❌ Menor de edad
+      this.addMessage({
+      from: "ai",
+      component: "MinorOnboardingCard", // ← Nombre del componente que creamos
+      props: {},
+      timestamp: new Date().toLocaleTimeString()
+    });
+    }
+    },
     startOnboarding() {
+      // Reinicia completamente el estado del onboarding
+      this.currentStep = 0;
+      this.selectedOption = null;
+      this.chatMessages = []; // ← ¡Importante!
+      this.createdHome = null;
+      this.joinedHome = null;
+
       this.isTyping = true;
       setTimeout(() => {
         this.addMessage({
           from: "ai",
           component: "WelcomeStep",
-          props: {}, // No necesitamos pasar props especiales
+          props: {},
           timestamp: new Date().toLocaleTimeString()
         });
         this.isTyping = false;
@@ -187,6 +301,23 @@ export default {
     },
     
     addMessage(message) {
+      // Solo evitar duplicados para mensajes de texto (no componentes)
+      if (message.text) {
+        const lastMessage = this.chatMessages.length > 0 
+          ? this.chatMessages[this.chatMessages.length - 1] 
+          : null;
+
+        // Si el último mensaje es idéntico en from + text, no lo agregues
+        if (
+          lastMessage &&
+          lastMessage.text === message.text &&
+          lastMessage.from === message.from
+        ) {
+          return; // Evita duplicado consecutivo
+        }
+      }
+
+      // Agregar el mensaje y hacer scroll
       this.chatMessages.push(message);
       this.scrollToBottom();
     },
@@ -214,12 +345,16 @@ export default {
     
     // Manejo de eventos de los componentes
     handleCreateHome() {
+      this.cleanupAfterHomeOptions();
       this.selectedOption = "create";
+      this.currentStep = 1;
       this.nextStep();
     },
     
     handleJoinHome() {
+      this.cleanupAfterHomeOptions();
       this.selectedOption = "join";
+      this.currentStep = 1;
       this.nextStep();
     },
 
@@ -228,23 +363,33 @@ export default {
     },
     
     goBackToOptions() {
-  this.selectedOption = null;
-  this.currentStep = 1; // Resetear al paso de opciones
-  
-  // Limpiar mensajes relacionados con los pasos siguientes
-  this.chatMessages = this.chatMessages.filter(msg => 
-    msg.component !== "CreateHomeStep" && 
-    msg.component !== "JoinHomeStep"
-  );
-  
-  // Agregar nuevamente el componente de opciones
-  this.addMessage({
-    from: "ai",
-    component: "HomeOptionsStep",
-    props: {},
-    timestamp: new Date().toLocaleTimeString()
-  });
-},
+      this.selectedOption = null;
+      this.currentStep = 1;
+
+      // Encuentra el índice del ÚLTIMO mensaje con HomeOptionsStep
+      const lastHomeOptionsIndex = this.chatMessages
+        .map((msg, i) => (msg.component === 'HomeOptionsStep' ? i : -1))
+        .filter(i => i !== -1)
+        .pop(); // Obtiene el último índice, o undefined si no existe
+
+      if (lastHomeOptionsIndex !== undefined) {
+        // Conserva todos los mensajes HASTA e INCLUYENDO HomeOptionsStep
+        this.chatMessages = this.chatMessages.slice(0, lastHomeOptionsIndex + 1);
+      } else {
+        // Si no existe HomeOptionsStep, limpia todo y lo agregamos
+        this.chatMessages = [];
+        this.addMessage({
+          from: "ai",
+          component: "HomeOptionsStep",
+          props: {},
+          timestamp: new Date().toLocaleTimeString()
+        });
+        return;
+      }
+
+      // Opcional: si quieres asegurarte de que esté visible (aunque ya está),
+      // podrías hacer scroll, pero no es necesario agregarlo de nuevo.
+    },
     
     /*async handleHomeCreated(homeData) {
       try {
@@ -270,214 +415,290 @@ export default {
     },*/
     async handleHomeCreated(homeData) {
        if (!homeData) {
-    console.error('Error: homeData es undefined');
-    this.addMessage({
-      from: "ai",
-      text: "Error interno: no se recibieron datos del formulario",
-      timestamp: new Date().toLocaleTimeString()
-    });
-    this.goBackToOptions(); // Regresar al paso anterior
-    return;
-  }
+        console.error('Error: homeData es undefined');
+        this.addMessage({
+          from: "ai",
+          text: "Error interno: no se recibieron datos del formulario",
+          timestamp: new Date().toLocaleTimeString()
+        });
+        this.goBackToOptions(); // Regresar al paso anterior
+        return;
+      }
 
        console.log('Datos recibidos para crear hogar:', homeData); // Debug
-  try {
-    this.isLoading = true;
-    
-    // Definir los campos que se pueden actualizar
-    const fieldsToUpdate = [
-      'name', 'address', 'home_type_id', 'status_id', 'category_id', 
-      'residents', 'geo_location', 'timezone', 'people', 'image', 'code'
-    ];
-    
-    // Filtrar solo los campos modificados
-    let updatedFields = Object.keys(homeData)
-      .filter((key) => fieldsToUpdate.includes(key) && homeData[key] !== null)
-      .reduce((obj, key) => {
-        if (key === 'people') {
-          // Transformar el campo `people`
-          obj[key] = homeData.people.map(person => ({
-            person_id: Number(person.id),
-            role_id: Number(person.roleId),
-            roleName: person.roleName
-          }));
-        } else {
-          obj[key] = homeData[key];
+      try {
+        this.isLoading = true;
+        
+        // Definir los campos que se pueden actualizar
+        const fieldsToUpdate = [
+          'name', 'address', 'home_type_id', 'status_id', 'category_id', 
+          'residents', 'geo_location', 'timezone', 'people', 'image', 'code'
+        ];
+        
+        // Filtrar solo los campos modificados
+        let updatedFields = Object.keys(homeData)
+          .filter((key) => fieldsToUpdate.includes(key) && homeData[key] !== null)
+          .reduce((obj, key) => {
+            if (key === 'people') {
+              // Transformar el campo `people`
+              obj[key] = homeData.people.map(person => ({
+                person_id: Number(person.id),
+                role_id: Number(person.roleId),
+                roleName: person.roleName
+              }));
+            } else {
+              obj[key] = homeData[key];
+            }
+            return obj;
+          }, {});
+
+        // Verificar si hay campos para actualizar
+        if (Object.keys(updatedFields).length === 0) {
+          this.addMessage({
+            from: "ai",
+            text: "Debe completar los datos del hogar para continuar.",
+            timestamp: new Date().toLocaleTimeString()
+          });
+          return;
         }
-        return obj;
-      }, {});
 
-    // Verificar si hay campos para actualizar
-    if (Object.keys(updatedFields).length === 0) {
-      this.addMessage({
-        from: "ai",
-        text: "Debe completar los datos del hogar para continuar.",
-        timestamp: new Date().toLocaleTimeString()
-      });
-      return;
-    }
-
-    // Crear FormData y agregar los campos
-    const formData = new FormData();
-    for (let key in updatedFields) {
-      if (key === 'people') {
-        updatedFields[key].forEach((person, index) => {
-          for (const [personKey, value] of Object.entries(person)) {
-            formData.append(`people[${index}][${personKey}]`, value);
+        // Crear FormData y agregar los campos
+        const formData = new FormData();
+        for (let key in updatedFields) {
+          if (key === 'people') {
+            updatedFields[key].forEach((person, index) => {
+              for (const [personKey, value] of Object.entries(person)) {
+                formData.append(`people[${index}][${personKey}]`, value);
+              }
+            });
+          } else {
+            // Para la imagen, asegurarse de agregarla correctamente
+            if (key === 'image' && updatedFields[key] instanceof File) {
+              formData.append(key, updatedFields[key], updatedFields[key].name);
+            } else {
+              formData.append(key, updatedFields[key]);
+            }
           }
+        }
+
+        // Hacer la petición al API
+        const result = await handleRequest({
+          endpoint: 'home',
+          method: 'POST',
+          data: formData,
         });
-      } else {
-        // Para la imagen, asegurarse de agregarla correctamente
-        if (key === 'image' && updatedFields[key] instanceof File) {
-          formData.append(key, updatedFields[key], updatedFields[key].name);
+
+        if (result.success) {
+          const homeId = result.data.home.id;
+          const homeName = result.data.home.name;
+          const homeCode = result.data.home.code;
+            LocalStorageService.setItem("home_id", JSON.stringify(homeId));
+          
+            // Mostrar ConfirmationStep
+          this.addMessage({
+            from: "ai",
+            component: "ConfirmationStep",
+            props: {
+              homeName: homeName,
+              homeCode: homeCode,
+              personName: this.name,
+              isAdmin: true,
+              action: "crear"
+            }
+          });
         } else {
-          formData.append(key, updatedFields[key]);
+          // Mostrar error en el chat y volver al paso anterior
+          this.addMessage({
+            from: "ai",
+            text: result.message || "Error al crear el hogar",
+            timestamp: new Date().toLocaleTimeString()
+          });
+          this.goBackToOptions();
         }
+      } catch (error) {
+        console.error("Error en la creación del hogar:", error);
+        this.addMessage({
+          from: "ai",
+          text: "Ocurrió un error inesperado al procesar la solicitud.",
+          timestamp: new Date().toLocaleTimeString()
+        });
+        this.goBackToOptions();
+      } finally {
+        this.isLoading = false;
       }
-    }
-
-    // Hacer la petición al API
-    const result = await handleRequest({
-      endpoint: 'home',
-      method: 'POST',
-      data: formData,
-    });
-
-    if (result.success) {
-      const homeId = result.data.home.id;
-      const homeName = result.data.home.name;
-        LocalStorageService.setItem("home_id", JSON.stringify(homeId));
-      
-        // Mostrar ConfirmationStep
-      this.addMessage({
-        from: "ai",
-        component: "ConfirmationStep",
-        props: {
-          homeName: homeName,
-          personName: this.name,
-          isAdmin: true,
-          action: "crear"
-        }
-      });
-    } else {
-      // Mostrar error en el chat y volver al paso anterior
-      this.addMessage({
-        from: "ai",
-        text: result.message || "Error al crear el hogar",
-        timestamp: new Date().toLocaleTimeString()
-      });
-      this.goBackToOptions();
-    }
-  } catch (error) {
-    console.error("Error en la creación del hogar:", error);
-    this.addMessage({
-      from: "ai",
-      text: "Ocurrió un error inesperado al procesar la solicitud.",
-      timestamp: new Date().toLocaleTimeString()
-    });
-    this.goBackToOptions();
-  } finally {
-    this.isLoading = false;
-  }
-},
+    },
     async handleHomeJoined({ code }) {
       if (!code) {
-    console.error('Error: código no proporcionado');
-    this.addMessage({
-      from: "ai",
-      text: "Debe ingresar un código válido para unirse al hogar",
-      timestamp: new Date().toLocaleTimeString()
-    });
-    this.goBackToOptions();
-    return;
-  }
+        console.error('Error: código no proporcionado');
+        this.addMessage({
+          from: "ai",
+          text: "Debe ingresar un código válido para unirse al hogar",
+          timestamp: new Date().toLocaleTimeString()
+        });
+        this.goBackToOptions();
+        return;
+      }
 
-  console.log('Código recibido para unirse a hogar:', code); // Debug
+      try {
+        this.isLoading = true;
+        this.data = {};
+        this.data.code = code;
+        // Hacer la petición al nuevo endpoint
+        const response = await handleRequest({
+          endpoint: "home-verify-code",
+          method: "POST",
+          data: this.data
+        });
 
-  try {
-    this.isLoading = true;
-    this.data = {};
-    this.data.code = code;
-    // Hacer la petición al nuevo endpoint
-    const response = await handleRequest({
-      endpoint: "home-verify-code",
-      method: "POST",
-      data: this.data
-    });
-
-    if (response.success) {
-      // Guardar el ID del hogar en localStorage como en ambos ejemplos
-      const homeId = response.data.home.id;
-      const homeName = response.data.home.name;
-      LocalStorageService.setItem("home_id", JSON.stringify(homeId));
-      
-      this.addMessage({
-        from: "ai",
-        component: "ConfirmationStep",
-        props: {
-          homeName: homeName,
-          personName: this.name,
-          isAdmin: false,
-          action: "unirse"
+        if (response.success) {
+          // Guardar el ID del hogar en localStorage como en ambos ejemplos
+          const homeId = response.data.home.id;
+          const homeName = response.data.home.name;
+          LocalStorageService.setItem("home_id", JSON.stringify(homeId));
+          LocalStorageService.setItem("onboarding_status", 1);
+          
+          this.addMessage({
+            from: "ai",
+            component: "ConfirmationStep",
+            props: {
+              homeName: homeName,
+              personName: this.name,
+              isAdmin: false,
+              action: "unirse"
+            }
+          });
+          setTimeout(() => {
+            this.handleOnboardingComplete();
+          }, 1000);
+        } else {
+          // Manejo de errores similar a handleHomeCreated
+          this.addMessage({
+            from: "ai",
+            text: response.message || "Código inválido o error al unirse al hogar",
+            timestamp: new Date().toLocaleTimeString()
+          });
+          
+          // Opcional: volver a opciones como en handleHomeCreated
+          //this.goBackToOptions();
         }
-      });
-    } else {
-      // Manejo de errores similar a handleHomeCreated
-      this.addMessage({
-        from: "ai",
-        text: response.message || "Código inválido o error al unirse al hogar",
-        timestamp: new Date().toLocaleTimeString()
-      });
-      
-      // Opcional: volver a opciones como en handleHomeCreated
-      this.goBackToOptions();
-    }
-  } catch (error) {
-    this.addMessage({
-      from: "ai",
-      text: "Ocurrió un error inesperado al procesar la solicitud.",
-      timestamp: new Date().toLocaleTimeString()
-    });
-    this.goBackToOptions();
-  } finally {
-    this.isLoading = false;
-  }
+      } catch (error) {
+        this.addMessage({
+          from: "ai",
+          text: "Ocurrió un error inesperado al procesar la solicitud.",
+          timestamp: new Date().toLocaleTimeString()
+        });
+        this.goBackToOptions();
+      } finally {
+        this.isLoading = false;
+      }
     },
     
     nextStep() {
-  this.isTyping = true;
-  
-  setTimeout(() => {
-    let nextComponent;
-    
-    if (this.currentStep === 0) {
-      nextComponent = "HomeOptionsStep";
-      this.currentStep = 1;
-    } else if (this.currentStep === 1) {
-      if (this.selectedOption === "create") {
-        nextComponent = "CreateHomeStep";
-      } else {
-        nextComponent = "JoinHomeStep";
+      this.isTyping = true;
+
+      setTimeout(() => {
+        let nextComponent;
+
+        if (this.currentStep === 0) {
+          // ✅ Reiniciar flujo: limpiar todo después del WelcomeStep
+          this.selectedOption = null;
+          this.createdHome = null;
+          this.joinedHome = null;
+
+          // Eliminar todos los mensajes excepto el primero (WelcomeStep)
+          // Asumimos que el primer mensaje es WelcomeStep
+          if (this.chatMessages.length > 1) {
+            this.chatMessages = [this.chatMessages[0]]; // Mantener solo WelcomeStep
+          }
+
+          // Verificar si ya existe HomeOptionsStep en los mensajes
+          const hasHomeOptions = this.chatMessages.some(
+            msg => msg.component === "HomeOptionsStep"
+          );
+
+          if (!hasHomeOptions) {
+            nextComponent = "HomeOptionsStep";
+            this.currentStep = 1;
+          } else {
+            // Ya está presente, no avanzamos ni agregamos nada
+            this.isTyping = false;
+            return;
+          }
+        } else if (this.currentStep === 1) {
+          if (this.selectedOption === "create") {
+             nextComponent = "BirthdateStep"; // 👈 Cambiado
+            this.currentStep = 2;
+            //nextComponent = "CreateHomeStep";
+          } else {
+            nextComponent = "JoinHomeStep";
+          }
+          this.currentStep = 2;
+        }
+
+        // Solo agregamos mensaje si hay un componente definido
+        if (nextComponent) {
+          this.addMessage({
+            from: "ai",
+            component: nextComponent,
+            props: {
+              homeName: this.createdHome?.name || this.joinedHome?.name || "",
+              homeType: this.homeData.type,
+              ...(nextComponent === "ConfirmationStep" ? {
+                isAdmin: this.selectedOption === "create"
+              } : {})
+            },
+            timestamp: new Date().toLocaleTimeString()
+          });
+        }
+
+        this.isTyping = false;
+      }, 800);
+    },
+    nextLater(){
+      console.log('next-later');
+      this.$router.push({ path: "home" });
+    },
+      cleanupAfterHomeOptions() {
+      // Encontrar el índice del último HomeOptionsStep
+      const homeOptionsIndex = this.chatMessages.findIndex(
+        msg => msg.component === "HomeOptionsStep"
+      );
+
+      if (homeOptionsIndex !== -1) {
+        // Mantener todos los mensajes hasta (e incluyendo) HomeOptionsStep
+        this.chatMessages = this.chatMessages.slice(0, homeOptionsIndex + 1);
       }
-      this.currentStep = 2;
-    }  
-    
+      // Si no existe HomeOptionsStep, no hacemos nada (raro, pero seguro)
+    },
+    startFreshFlow() {
+  // Limpiar todo el historial
+  this.chatMessages = [];
+  this.currentStep = 1;
+  this.selectedOption = null;
+  this.createdHome = null;
+  this.joinedHome = null;
+
+  // Mostrar WelcomeStep
+  this.addMessage({
+    from: "ai",
+    component: "WelcomeStep",
+    props: {},
+    timestamp: new Date().toLocaleTimeString()
+  });
+
+  // Simular "comenzar": después de un breve delay, mostrar HomeOptionsStep
+  this.isTyping = true;
+  setTimeout(() => {
+    this.isTyping = false;
     this.addMessage({
       from: "ai",
-      component: nextComponent,
-      props: {
-        homeName: this.createdHome?.name || this.joinedHome?.name || "",
-        homeType: this.homeData.type,
-        ...(nextComponent === "ConfirmationStep" ? {
-          isAdmin: this.selectedOption === "create"
-        } : {})
-      },
+      component: "HomeOptionsStep",
+      props: {},
       timestamp: new Date().toLocaleTimeString()
     });
-    
-    this.isTyping = false;
+    this.currentStep = 1; // ahora estamos en el paso 1
   }, 800);
-}
+},
   }
 };
 </script>
@@ -505,7 +726,7 @@ export default {
 .chat-body {
   flex: 1;
   overflow-y: auto;
-  max-height: 65vh;
+  max-height: 85vh;
   scrollbar-width: thin;
   scrollbar-color: #ddd transparent;
 }
@@ -580,7 +801,6 @@ max-width: 100%;
 
 /* Estilos específicos para componentes de onboarding */
 .onboarding-card {
-  background-color: #f5f5f5;
   border-radius: 0;
   padding: 4px;
   margin: 0 0;

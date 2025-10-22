@@ -1,6 +1,9 @@
 <template>
   <div class="onboarding-card">
-    <v-icon size="64" color="success" class="mb-4">mdi-check-circle</v-icon>
+    ¡Perfecto 🎉! Tu hogar <strong>{{ homeName }}</strong> está listo.
+    Comparte este código con las personas que quieras invitar: 🔢 {{homeCode}}
+
+    <!--<v-icon size="64" color="success" class="mb-4">mdi-check-circle</v-icon>
     <h3 class="text-h5 mb-4">¡Todo listo!</h3>
 
     <p class="mb-4">
@@ -14,14 +17,18 @@
       Ahora puedes comenzar a organizar tus tareas, finanzas y más.
     </p>
 
-    <v-btn
-      color="primary"
-      block
-      @click="handleComplete"
-      :loading="loading"
-    >
-      Ir al inicio
-    </v-btn>
+    <div class="d-flex justify-end">
+      <v-btn
+        color="cyan-darken-3"
+        class="text-white text-subtitle-1"
+        variant="flat"
+        style="text-transform: none;"
+        @click="handleComplete"
+        :loading="loading"
+      >
+        Ir al inicio
+      </v-btn>
+    </div>-->
   </div>
 </template>
 
@@ -33,6 +40,10 @@ export default {
       required: true
     },
     personName: {
+      type: String,
+      required: true
+    }, 
+    homeCode: {
       type: String,
       required: true
     },

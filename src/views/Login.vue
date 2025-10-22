@@ -69,25 +69,46 @@
 
           <span class="text-h5 font-weight-bold mt-4 ml-3 text-cyan-darken-3">huoon</span>
         </v-row>
+        <p class="text-h5 font-weight-bold">
+          {{ $t(this.register ? 'auth.register.title' : 'auth.login.title') }}
+        </p>
+
+        <p class="text-subtitle-2 mb-6 font-weight-light">
+          {{ $t(this.register ? 'auth.register.subtitle' : 'auth.login.subtitle', { appName: 'huoon' }) }}
+        </p>
+
+        <v-row justify="center" class="mb-4">
+          <v-col cols="auto">
+            <v-btn
+              size="x-large"
+              prepend-icon="mdi-google"
+              variant="tonal"
+              color="info"
+              style="text-transform: none; ; min-width: 170px;"
+              rounded="lg"
+              @click="loginWithGoogle"
+            >
+              {{ $t('login.buttons.google') }}
+            </v-btn>
+          </v-col>
+          <v-col cols="auto" class="ml-4">
+            <v-btn
+              size="x-large"
+              prepend-icon="mdi-facebook"
+              variant="tonal"
+              color="primary"
+              style="text-transform: none; min-width: 170px;"
+              rounded="lg"
+              @click="loginWithFacebook"
+            >
+              {{ $t('login.buttons.facebook') }}
+            </v-btn>
+          </v-col>
+        </v-row>
 
 
-
-        <p class="text-h5 font-weight-bold ">{{ $t('login.title') }}</p>
-
-        <p class="text-subtitle-2 mb-6 font-weight-light">{{ $t('login.subtitle') }}:</p>
-
-        <v-btn size="x-large" prepend-icon="mdi-google" class="flex-grow-1" variant="tonal" color="info"
-          style="text-transform: none;" rounded="lg" @click="loginWithGoogle">
-          {{ $t('login.buttons.google') }}&nbsp;&nbsp;&nbsp;&nbsp;
-        </v-btn>
-        <v-btn size="x-large" prepend-icon="mdi-facebook" class="flex-grow-1 ml-12" style="text-transform: none;"
-          variant="tonal" color="primary" rounded="lg" @click="loginWithFacebook">
-          {{ $t('login.buttons.facebook') }}&nbsp;&nbsp;
-        </v-btn>
-
-
-         <v-form ref="form" v-model="valid">
-        <div class="text-center mt-6 text-caption my-2">{{ $t('login.or') }}</div>
+         <v-form ref="form" v-model="valid" class="my-2">
+        <div v-if="!this.register" class="text-center mt-6 text-caption">{{ $t('login.or') }}</div>
 
         <v-text-field v-model="editedItem.name" variant="outlined" class="mb-3" v-if="this.register"
           :placeholder="$t('login.placeholders.name')"  :rules="nameRules" density="comfortable"/>
@@ -95,20 +116,59 @@
         <v-text-field v-model="editedItem.email" :label="$t('login.fields.email')" variant="outlined" placeholder="johndoe@mail.com" 
           density="comfortable" class="mb-3" :rules="this.register ? emailRules : []"/>
 
-        <v-text-field v-model="editedItem.password" :label="$t('login.fields.password')" variant="outlined" placeholder="johndoe@mail.com"
+        <v-text-field v-model="editedItem.password" :label="$t('login.fields.password')" variant="outlined"
           :type="showPassword ? 'text' : 'password'" :append-inner-icon="showPassword ? 'mdi-eye-off' : 'mdi-eye'"
-          @click:append-inner="showPassword = !showPassword" density="comfortable" class="mb-5" :rules="reuquiredRules"/>
+          @click:append-inner="showPassword = !showPassword" density="comfortable" class="mb-5" :rules="this.register ? passwordRules1 : passwordRules"/>
 
-        <v-text-field v-model="editedItem.user" density="comfortable" variant="outlined" class="mb-3" v-if="this.register"
-          :placeholder="$t('login.placeholders.user')"  :rules="reuquiredRules"/>
+          <v-text-field
+          v-if="this.register"
+            v-model="confirmPassword"
+            label="Confirmar contraseña"
+            variant="outlined"
+            density="comfortable"
+            :type="showConfirmPass ? 'text' : 'password'"
+            :append-inner-icon="showConfirmPass ? 'mdi-eye-off' : 'mdi-eye'"
+            @click:append-inner="showConfirmPass = !showConfirmPass"
+            :rules="confirmshowPassword()"
+          />
+
+        <!--<v-text-field v-model="editedItem.user" density="comfortable" variant="outlined" class="mb-3" v-if="this.register"
+          :placeholder="$t('login.placeholders.user')"  :rules="reuquiredRules"/>-->
+
+         <v-checkbox
+          v-if="register"
+          v-model="termsAccepted"
+          density="comfortable"
+          class="mt-2 mb-4"
+          hide-details
+          color="cyan-darken-3"
+        >
+          <template v-slot:label>
+            <span class="text-caption">
+              {{ $t('auth.register.acceptTermsStart') }}
+              <a
+                href="#"
+                class="text-primary font-weight-medium"
+                @click.prevent="goToTerms"
+              >{{ $t('auth.login.terms') }}</a>
+              {{ $t('auth.register.acceptTermsMiddle') }}
+              <a
+                href="#"
+                class="text-primary font-weight-medium"
+                @click.prevent="goToPrivacy"
+              >{{ $t('auth.login.privacy') }}</a>
+              {{ $t('auth.register.acceptTermsEnd') }}
+            </span>
+          </template>
+        </v-checkbox>
 
         <v-btn block size="x-large" color="cyan-darken-3" class="text-white text-subtitle-1 mb-3"
-          style="text-transform: none;" rounded="lg" :loading="loading" @click="login()" :disabled="this.register ? !this.valid : false">
+          style="text-transform: none;" rounded="lg" :loading="loading" @click="login()" :disabled="isRegisterModeDisabled">
           {{ this.register ? $t('login.signUp') : $t('login.signInButton') }}
         </v-btn>
         </v-form>
-        <div class="text-center mt-2">
-          <span class="text-body-2 text-decoration-underline" sstyle="cursor: pointer;" @click="openRecovery">
+        <div class="text-center mt-2" v-if="!this.register">
+          <span class="text-body-2 text-decoration-underline" style="cursor: pointer;" @click="openRecovery">
             {{ $t('login.forgotPassword') }}
           </span>
         </div>
@@ -116,26 +176,57 @@
 
 
         <v-row justify="center" class="mb-2 mt-4">
-          <span class="text-caption">{{ $t('login.noAccount') }}
-            <span class="text-primary" style="cursor: pointer;" @click="goToLogin"> {{ $t('login.signUp') }}</span>
+          <span class="text-caption">
+          {{
+            $t(
+              this.register
+                ? 'auth.register.haveAccount'
+                : 'auth.login.noAccount'
+            )
+          }}
+          <span
+            class="text-primary"
+            style="cursor: pointer;"
+            @click="goToLogin()"
+            :class="{ 'opacity-50': loading }"
+          >
+            {{
+              $t(
+                this.register
+                  ? 'auth.register.signIn'
+                  : 'auth.login.signUp'
+              )
+            }}
           </span>
+        </span>
         </v-row>
 
-        <div class="text-caption text-grey text-center mt-10" v-html="$t('login.footer', { privacy: `<a href='#' class='text-primary'>${$t('login.privacy')}</a>`, support: `<a href='#' class='text-primary'>${$t('login.support')}</a>` })"></div>
+        <div class="text-caption text-grey text-center mt-10" v-html="$t('login.footer', { privacy: `¿Necesitas ayuda?`, support: `<a href='#' class='text-primary'>${$t('login.support')}</a>` })"></div>
       </v-card-text>
       </v-card>
     </v-col>
     </v-row>
+  </v-container>
     <!-- Modal de recuperación de contraseña -->
     <v-dialog v-model="recoveryDialog" max-width="500" persistent>
       <v-card>
-        <v-card-title class="text-body-2 font-weight-bold">
-            Recuperar contraseña
-          </v-card-title>
+      <v-card-title class="py-5 font-weight-black"><div v-if="recoveryStep === 1">Recuperar Contraseña</div>
+      <div v-if="recoveryStep === 2">Verificar Código</div>
+      <div v-if="recoveryStep === 3">Nueva Contraseña</div>
+      </v-card-title>
+    <v-card-text>
+    <div v-if="recoveryStep === 1">Ingresa tu correo electrónico registrado y te enviaremos un código para restablecer tu contraseña.</div>
+    <div v-if="recoveryStep === 2">
+      Código de verificación enviado al correo <strong>{{ recoveryEmail }}</strong>,
+      activo por {{ formatTime(secondsRemaining) }}
+    </div> 
+    <div v-if="recoveryStep === 3">Ingresa tu nueva contraseña a continuación.</div>   
+    </v-card-text>
 
         <v-card-text>
       <!-- Campo de correo (siempre visible después del paso 1) -->
       <v-text-field
+        v-if="recoveryStep === 1"
         v-model="recoveryEmail"
         label="Correo electrónico"
         variant="outlined"
@@ -144,69 +235,25 @@
         class="mb-4"
       />
 
-      <!-- Paso 1: Solo el botón para continuar -->
-      <v-btn
-        v-if="recoveryStep === 1"
-        block
-        color="primary"
-        @click="goToOptions"
-        :disabled="!recoveryEmail || !emailRules.every(r => r(recoveryEmail))"
-      >
-        Continuar
-      </v-btn>
-
-      <!-- Paso 2: Opciones y campos condicionales -->
-      <template v-else>
-        <!-- Mensaje de éxito al reenviar -->
-        <v-alert
-          v-if="showResendSuccess"
-          type="success"
-          variant="tonal"
-          class="mb-4"
-        >
-          Código enviado a {{ recoveryEmail }}
-        </v-alert>
-
-        <!-- Selector de opción -->
-        <v-radio-group v-model="selectedRecoveryOption" row class="mb-4" @update:model-value="onRecoveryOptionChange">
-          <v-radio label="Ya tengo un código" value="haveCode"></v-radio>
-          <v-radio label="Enviar código" value="resendCode"></v-radio>
-        </v-radio-group>
-
-        <!-- Campo de código (solo si selecciona "Ya tengo un código") -->
+        <div class="d-flex justify-center mb-6"
+          v-if="recoveryStep === 2">
         <v-text-field
-          v-if="selectedRecoveryOption === 'haveCode'  && recoveryStep === 2"
-          v-model="recoveryCode"
-          label="Código de 6 dígitos"
+          v-for="(digit, index) in code"
+          :key="index"
+          v-model="code[index]"
+          :class="{ 'digit-filled': !!code[index] }"
+          maxlength="1"
           variant="outlined"
-          density="comfortable"
-          :rules="codeRules"
-          @keyup.enter="verifyCode"
-          class="mb-4"
-        />
-
-        <!-- Botones de acción -->
-        <div class="d-flex gap-2">
-          <v-btn
-            v-if="selectedRecoveryOption === 'resendCode'  && recoveryStep === 2"
-            color="success"
-            @click="resendCode"
-            :loading="loadingRecovery"
-            block
-          >
-            Reenviar código
-          </v-btn>
-
-          <v-btn
-            v-if="selectedRecoveryOption === 'haveCode' && recoveryStep === 2"
-            color="primary"
-            @click="verifyCode"
-            :loading="loadingRecovery"
-            block
-          >
-            Verificar código
-          </v-btn>
-        </div>
+          hide-details
+          class="mx-1 large-centered-input"
+          style="width: 48px;"
+          :ref="el => { if (el) this.inputRefs[index] = el; }"
+          @input="handleInput(index)"
+          @keydown="handleKeydown(index, $event)"
+          @focus="selectContent($event)"
+          color="green"
+        ></v-text-field>
+      </div>
 
         <!-- Formulario de nueva contraseña (solo si el código fue verificado) -->
         <div v-if="recoveryStep === 3" class="mt-4">
@@ -218,7 +265,7 @@
             :type="showNewPass ? 'text' : 'password'"
             :append-inner-icon="showNewPass ? 'mdi-eye-off' : 'mdi-eye'"
             @click:append-inner="showNewPass = !showNewPass"
-            :rules="passwordRules"
+            :rules="passwordRules1"
             class="mb-4"
           />
           <v-text-field
@@ -232,32 +279,80 @@
             :rules="confirmPasswordRules()"
           />
         </div>
-      </template>
+      <!--</template>-->
     </v-card-text>
 
     <!-- Acciones del modal -->
     <v-card-actions>
     <v-spacer></v-spacer>
       <v-btn
+        class="text-none"
+        color="grey-lighten-3"
         variant="flat"
-        @click="closeRecovery"
-        color="grey"
+         @click="closeRecovery"
+         :disabled="this.recoveryStep === 1 ? this.loadingRecovery : false"
       >
         Cancelar
       </v-btn>
       <v-btn
+            v-if="recoveryStep === 2 && !isTimerActive"
+             color="cyan-darken-3" class="text-white text-subtitle-1" variant="flat" style="text-transform: none;"
+            @click="resendCode"
+            :disabled="loadingRecovery"
+          >
+            Reenviar código
+          </v-btn>
+          <v-btn
+            v-if="selectedRecoveryOption === 'haveCode' && recoveryStep === 2"
+            color="cyan-darken-3" class="text-white text-subtitle-1" variant="flat" style="text-transform: none;"
+            @click="verifyCode"
+            :disabled="loadingRecovery  || !isCodeComplete"
+          >
+            Verificar código
+          </v-btn>
+      <!--Revisar validación de continuar cone l correo-->
+       <v-btn
+        v-if="recoveryStep === 1" color="cyan-darken-3" class="text-white text-subtitle-1" variant="flat" style="text-transform: none;"
+        @click="resendCode"
+        :disabled="!isRecoveryEmailValid"
+        :loading="this.loadingRecovery"
+      >
+        Continuar
+      </v-btn>
+      <v-btn
         v-if="recoveryStep === 3"
         variant="flat"
+        class="text-white text-subtitle-1"
         @click="updatePassword"
-        :loading="loadingRecovery"
-        color="#03626C"
+        color="cyan-darken-3"
+        style="text-transform: none;"
       >
         Cambiar contraseña
       </v-btn>
     </v-card-actions>
       </v-card>
     </v-dialog>
-  </v-container>
+    <v-dialog v-model="approvalModal" max-width="500" persistent>
+  <v-card>
+    <v-card-title class="text-h6 font-weight-bold text-center pa-6">
+      {{ approvalTitle }}
+    </v-card-title>
+    <v-card-text class="text-body-1 text-center pa-4" v-html="approvalMessage">
+    </v-card-text>
+    <v-card-actions>
+      <v-spacer></v-spacer>
+      <v-btn
+        color="cyan-darken-3"
+        text-color="white"
+        variant="flat"
+        @click="closeApprovalModal"
+        style="text-transform: none;"
+      >
+        Aceptar
+      </v-btn>
+    </v-card-actions>
+  </v-card>
+</v-dialog>
 </template>
 
 
@@ -267,10 +362,19 @@ import { handleRequest } from "@/utils/api";
 import router from '@/router/index';
 export default {
   data: () => ({
-
+    termsAccepted: false,
+     recoveryTimer: null,        // ID del intervalo
+    secondsRemaining: 180,      // 3 minutos en segundos
+    approvalModal: false,
+    approvalMessage: '',
+    approvalTitle: '',
+    approvalData: null, // para guardar los datos y usar register/action después
+    isTimerActive: false ,
+     showDialog: false,
+     code: ['', '', '', '', '', ''],
+     inputRefs: [],
     onboardingStep: 0,
     slideKeys: ['welcome', 'shareHome', 'smartTasks', 'controlFromPhone', 'designedForYou'],
-
     loading: false,
     snackbar: false,
     sb_type: '',
@@ -309,6 +413,7 @@ export default {
     newPassword: '',
     confirmPassword: '',
     showNewPass: false,
+    showPass: false,
     showConfirmPass: false,
     selectedRecoveryOption: 'haveCode', // valor por defecto
     showResendSuccess: false, // para mostrar mensaje de reenvío exitoso
@@ -320,7 +425,6 @@ export default {
     ],
     passwordRules: [
       v => !!v || 'La contraseña es requerida',
-      v => (v && v.length >= 3) || 'Mínimo 3 caracteres'
     ],
     confirmPasswordRules() {
     return [
@@ -328,16 +432,22 @@ export default {
         v => v === this.newPassword || 'Las contraseñas no coinciden'
       ];
     },
+    confirmshowPassword() {
+    return [
+        v => !!v || 'Confirma la contraseña',
+        v => v === this.editedItem.password || 'Las contraseñas no coinciden'
+      ];
+    },
     nameRules: [
-      (v) => !!v || "El campo es requerido",
+      (v) => !!v || "El nombre no puede estar vacío.",
       (v) => (v && v.length <= 50) ||
         "El campo debe tener menos de 51 caracteres",
       (v) => (v && v.length >= 3) ||
         "El campo debe tener al menos de 3 caracteres",
     ],
     emailRules: [
-      (v) => !!v || "El Correo Electrónico es requerido",
-      (v) => /.+@.+\..+/.test(v) || "El Correo Electrónico no es válido",
+      (v) => !!v || "El correo electrónico es requerido",
+      (v) => /.+@.+\..+/.test(v) || "Ingresa un correo electrónico válido.",
     ],
     reuquiredRules: [
       (v) => !!v || "El campo es requerido",
@@ -345,10 +455,61 @@ export default {
         "El campo debe tener al menos de 3 caracteres",
     ],
   }),
+    computed: {
+      isCodeComplete() {
+        return this.code.every(digit => digit !== '');
+      },
+       passwordRules1() {
+      return [
+        v => !!v || this.$t('login.rules.password.required'),
+        v => (v && v.length >= 8) || this.$t('login.rules.password.minLength'),
+        v => (v && /[A-Z]/.test(v)) || this.$t('login.rules.password.uppercase'),
+        v => (v && /\d/.test(v)) || this.$t('login.rules.password.number')
+      ]
+    },
+      isRegisterModeDisabled() {
+    if (!this.register) return false
+    return !this.valid || !this.termsAccepted
+  },
+    isRecoveryEmailValid() {
+      // Si no hay email, no es válido
+      if (!this.recoveryEmail) return false;
+      // Verifica que todas las reglas devuelvan true (no un string)
+      return this.emailRules.every(rule => rule(this.recoveryEmail) === true);
+    }
+  },
   mounted() {
     // Obtiene los datos de la URL
     const queryString = window.location.search;
     const urlParams = new URLSearchParams(queryString);
+     const approvalParam = urlParams.get('approval');
+  if (approvalParam) {
+      const approvalData = JSON.parse(decodeURIComponent(approvalParam));
+      console.log('Datos de aprobación recibidos:', approvalData);
+      // Eliminar el parámetro de la URL para evitar reejecución al refrescar
+      window.history.replaceState({}, document.title, window.location.pathname);
+
+      // Guardar datos temporalmente
+      this.approvalData = approvalData;
+      LocalStorageService.setItem('approvalData', approvalData);
+
+      // Generar mensaje amigable
+      const { action, register, homeName } = approvalData;
+      if (action === 'approve') {
+        this.approvalTitle = '✅ ¡Solicitud aceptada!';
+        this.approvalMessage = register
+          ? `Has aceptado la solicitud para crear el hogar <strong>${homeName}</strong>.<br>Para completar, <strong>debes registrarte</strong> en Huoon.`
+          : `Has aceptado la solicitud para crear el hogar <strong>${homeName}</strong>.<br><strong>Inicia sesión</strong> para finalizar la creación del hogar.`;
+      } else {
+        this.approvalTitle = '❌ Solicitud rechazada';
+        this.approvalMessage = register
+          ? `Has rechazado la solicitud para crear el hogar <strong>${homeName}</strong>.<br>Si cambias de opinión, puedes <strong>registrarte</strong> más tarde para crear un hogar y compartir su código.`
+          : `Has rechazado la solicitud para crear el hogar <strong>${homeName}</strong>.<br>Si cambias de opinión, <strong>inicia sesión</strong> y comparte el código de tu hogar para que tu hijo(a) pueda unirse.`;
+      }
+
+      // Mostrar modal
+      this.approvalModal = true;
+  }
     const userData = urlParams.get('user');
 
     if (userData) {
@@ -366,29 +527,123 @@ export default {
       LocalStorageService.setItem('user', user.userName);
       LocalStorageService.setItem('image', user.personImage);
       LocalStorageService.setItem('name', user.personName);
+      LocalStorageService.setItem('email', user.email);
       LocalStorageService.setItem('person_id', user.personId);
       LocalStorageService.setItem('home_id', user.home);
+      LocalStorageService.setItem('home_id', user.email);
       LocalStorageService.setItem('userLocale', user.language);
+      LocalStorageService.setItem('onboarding_status', user.onboarding_status);
 
       // Reiniciar el formulario
       this.editedItem = Object.assign({}, this.defaultItem);
 
       // Redirigir al Dashboard
-       if(user.home === null){
+       const allowedStatuses = [0];
+
+          if (allowedStatuses.includes(parseInt(this.onboarding_status, 10))){
               setTimeout(() => {
               router.push({ name: 'Onboarding' });
-            }, 1000);
+            }, 500);
             }else{
             // Redirigir al Dashboard
             setTimeout(() => {
               router.push({ name: 'Home' });
-            }, 1000);
+            }, 500);
           }
+
+          window.history.replaceState({}, document.title, window.location.pathname);
     }
 
     this.register = false;
   },
   methods: {
+  goToTerms() {
+    const routeData = this.$router.resolve({ name: 'TermsAndConditions' });
+    window.open(routeData.href, '_blank');
+  },
+  goToPrivacy() {
+    const routeData = this.$router.resolve({ name: 'PrivacyPolicy' });
+    window.open(routeData.href, '_blank');
+  },
+  closeApprovalModal() {
+    this.approvalModal = false;
+
+    // Si debe registrarse, activar el modo registro
+    if (this.approvalData?.register) {
+      this.register = true;
+      // Opcional: limpiar el formulario
+      this.editedItem = Object.assign({}, this.defaultItem);
+    }
+
+    // Limpiar datos temporales
+    this.approvalData = null;
+    this.approvalTitle = '';
+    this.approvalMessage = '';
+  },
+  startRecoveryTimer() {
+    // Limpiar temporizador anterior si existe
+    if (this.recoveryTimer) {
+      clearInterval(this.recoveryTimer);
+    }
+
+    this.secondsRemaining = 180;
+    this.isTimerActive = true;
+
+    this.recoveryTimer = setInterval(() => {
+      this.secondsRemaining--;
+      if (this.secondsRemaining <= 0) {
+        clearInterval(this.recoveryTimer);
+        this.isTimerActive = false;
+      }
+    }, 1000);
+  },
+
+  // Formatea segundos a mm:ss
+  formatTime(seconds) {
+    const mins = Math.floor(seconds / 60);
+    const secs = seconds % 60;
+    return `${mins}:${secs < 10 ? '0' : ''}${secs}`;
+  },
+    handleInput(index) {
+      if (this.code[index]?.length === 1 && index < 5) {
+        this.$nextTick(() => {
+          const nextInput = this.inputRefs[index + 1];
+          if (nextInput && nextInput.$el) {
+            const inputEl = nextInput.$el.querySelector('input');
+            if (inputEl) inputEl.focus();
+          }
+        });
+      }
+      // Auto-submit si se llena el último campo
+      /*if (index === 5 && this.code[5]?.length === 1) {
+        this.submitCode();
+      }*/
+    },
+
+    handleKeydown(index, event) {
+      if (event.key === 'Backspace' && !this.code[index] && index > 0) {
+        this.$nextTick(() => {
+          const prevInput = this.inputRefs[index - 1];
+          if (prevInput && prevInput.$el) {
+            const inputEl = prevInput.$el.querySelector('input');
+            if (inputEl) {
+              inputEl.focus();
+              inputEl.select();
+            }
+          }
+        });
+      }
+    },
+
+    selectContent(event) {
+      event.target.select();
+    },
+      submitCode() {
+      const fullCode = this.code.join('')
+      console.log('Código ingresado:', fullCode)
+      // Aquí podrías emitir evento o llamar una API
+      // this.$emit('submit', fullCode)
+  },
     onRecoveryOptionChange() {
     // Si estaba en paso 3, volver a paso 2
     if (this.recoveryStep === 3) {
@@ -424,7 +679,7 @@ export default {
 
           if (result.success) {
             this.user = result.data;
-
+             this.$refs.form.reset();
             // Guardar datos en LocalStorage
             const user = this.user;
             //console.log('Datos recibidos:', user);
@@ -435,10 +690,11 @@ export default {
             LocalStorageService.setItem('user', user.userName);
             LocalStorageService.setItem('image', user.personImage);
             LocalStorageService.setItem('name', user.personName);
-            //LocalStorageService.setItem('role', user.nameRole);
+            LocalStorageService.setItem('email', user.email);
             LocalStorageService.setItem('person_id', user.personId);
             LocalStorageService.setItem('home_id', user.home);
             LocalStorageService.setItem('userLocale', user.language);
+            LocalStorageService.setItem('onboarding_status', parseInt(user.onboarding_status));
             // Puedes descomentar los siguientes si son necesarios
             // LocalStorageService.setItem('branch_id', user.branch_id);
             // LocalStorageService.setItem('charge', user.charge);
@@ -451,26 +707,29 @@ export default {
             // Reiniciar el formulario
             this.editedItem = Object.assign({}, this.defaultItem);
             // Manejo en caso de éxito
-            if(user.home === null){
+            const allowedStatuses = [0];
+          if (allowedStatuses.includes(parseInt(user.onboarding_status))){
               setTimeout(() => {
+          this.loading = false; // Detener el loader
               router.push({ name: 'Onboarding' });
-            }, 1000);
+            }, 500);
             }else{
             // Redirigir al Dashboard
             setTimeout(() => {
+              this.loading = false; // Detener el loader
               router.push({ name: 'Home' });
-            }, 1000);
+            }, 500);
           }
           } else {
+            this.loading = false;
             // Manejo de errores definidos por la API
             this.showAlert('warning', result.message || 'Error inesperado', 3000);
           }
         } catch (error) {
+          this.loading = false;
           // Manejo de errores no controlados
           this.showAlert('error', 'Ocurrió un error inesperado al iniciar sesión.', 3000);
-        } finally {
-          this.loading = false; // Detener el loader
-        }
+        } 
       } else {
         try {
           this.data = {};
@@ -488,6 +747,7 @@ export default {
           });
 
           if (result.success) {
+             this.$refs.form.reset();
             // Manejo en caso de éxito
             this.showAlert('success', 'Registrado correctamente', 1000);
             this.user = result.data;
@@ -501,10 +761,11 @@ export default {
             LocalStorageService.setItem('user', user.userName);
             LocalStorageService.setItem('image', user.personImage);
             LocalStorageService.setItem('name', user.personName);
-            //LocalStorageService.setItem('role', user.nameRole);
+            LocalStorageService.setItem('email', user.email);
             LocalStorageService.setItem('person_id', user.personId);
             LocalStorageService.setItem('home_id', user.home);
             LocalStorageService.setItem('userLocale', user.language);
+            LocalStorageService.setItem('onboarding_status', user.onboarding_status);
             // Puedes descomentar los siguientes si son necesarios
             // LocalStorageService.setItem('branch_id', user.branch_id);
             // LocalStorageService.setItem('charge', user.charge);
@@ -517,15 +778,21 @@ export default {
 
             // Reiniciar el formulario
             this.editedItem = Object.assign({}, this.defaultItem);
-            if(user.home === null){
+            const allowedStatuses = [0];
+            console.log('NAVIGATING TO ONBOARDING');
+            console.log(user.onboarding_status);
+            console.log(allowedStatuses.includes(parseInt(user.onboarding_status)));
+          if (allowedStatuses.includes(parseInt(user.onboarding_status))){
               setTimeout(() => {
-              router.push({ name: 'Home' });
-            }, 1000);
+              this.loading = false; // Detener el loader
+              router.push({ name: 'Onboarding' });
+            }, 500);
             }else{
             // Redirigir al Dashboard
             setTimeout(() => {
+          this.loading = false; // Detener el loader
               router.push({ name: 'Home' });
-            }, 1000);
+            }, 500);
             }
           } else {
             // Manejo de errores definidos por la API
@@ -551,6 +818,7 @@ export default {
     },
 
   openRecovery() {
+    //this.showDialog = true;
     this.recoveryDialog = true;
     this.resetRecovery();
   },
@@ -564,6 +832,7 @@ export default {
     this.recoveryUserId = null,
     this.selectedRecoveryOption = 'haveCode';
     this.showResendSuccess = false;
+    this.code = ['', '', '', '', '', ''];
   },
 
   goToOptions() {
@@ -587,13 +856,17 @@ export default {
          includeToken: false
       });
       if (result.success) {
-        this.showResendSuccess = true;
+        this.showResendSuccess = true;        
+        this.recoveryStep = 2;
+        this.startRecoveryTimer();
         // Opcional: limpiar el campo de código si estaba lleno
         this.recoveryCode = '';
       } else {
-        this.showAlert('error', result.message || 'Error al reenviar', 2000);
+        this.recoveryStep = 1;
+        this.showAlert('warning', result.message || 'Error al reenviar', 2000);
       }
     } catch (error) {
+      this.recoveryStep = 1;
       this.showAlert('error', 'Error de conexión', 2000);
     } finally {
       this.loadingRecovery = false;
@@ -601,13 +874,14 @@ export default {
   },
 
   async verifyCode() {
+    const fullCode = this.code.join('');
     this.data = {};
     this.data.email = this.recoveryEmail;
-    this.data.code = this.recoveryCode;
+    this.data.code = fullCode;
     this.loadingRecovery = true;
     try {
       const result = await handleRequest({
-        endpoint: 'verify-code',
+        endpoint: 'verify-code-password',
         method: 'POST',
          data: this.data,
          includeToken: false
@@ -617,9 +891,13 @@ export default {
         this.selectedRecoveryOption = ''
         this.recoveryStep = 3; // Avanzar a nueva contraseña
       } else {
+        this.code = ['', '', '', '', '', ''];
+        this.recoveryStep = 2;
         this.showAlert('warning', result.message || 'Código incorrecto', 2000);
       }
     } catch (error) {
+      this.recoveryStep = 2;
+      this.code = ['', '', '', '', '', ''];
       this.showAlert('error', 'Error al verificar', 2000);
     } finally {
       this.loadingRecovery = false;
@@ -643,6 +921,7 @@ export default {
         data: this.data
       });
       if (result.success) {
+        this.$refs.form.reset();
         this.showAlert('success', 'Contraseña actualizada correctamente', 2000);
         this.closeRecovery();
       } else {
@@ -656,6 +935,10 @@ export default {
   },
 
   closeRecovery() {
+     if (this.recoveryTimer) {
+      clearInterval(this.recoveryTimer);
+      this.recoveryTimer = null;
+    }
     this.recoveryDialog = false;
     this.data = {};
     this.resetRecovery();
@@ -686,7 +969,25 @@ export default {
 </script>
 
 <style scoped>
+:deep(.digit-filled .v-field__outline__border) {
+  border-color: rgb(var(--v-theme-green)) !important;
+}
 
+/* También aplica a las partes del notch (aunque hide-details lo oculta, por consistencia) */
+:deep(.digit-filled .v-field__outline__notch::before),
+:deep(.digit-filled .v-field__outline__notch::after) {
+  border-color: rgb(var(--v-theme-green)) !important;
+}
+
+/* Estilo del input */
+:deep(.large-centered-input input) {
+  font-size: 24px !important;
+  text-align: center !important;
+  font-weight: 500;
+}
+.v-card {
+  background-color: #F9FCFF;
+}
 .background-img {
   height: 100%;
   /* Ocupa toda la altura */

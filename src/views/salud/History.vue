@@ -264,10 +264,13 @@
                   {{ new Date().toLocaleDateString() }}
                 </template>
                 <template v-slot:append>
-                  <v-chip class="ma-2" color="teal" label rounded="lg">
-                    <v-icon icon="mdi-emoticon" start></v-icon>
-                    <div class="text-subtitle-2">Estable</div>
+                  <v-chip :color="healthStatusColor" label rounded="lg">
+                    <v-icon :icon="healthStatusIcon" start></v-icon>
+                    {{ healthStatus.level }}
                   </v-chip>
+                  <v-tooltip activator="parent" location="bottom">
+                <span>{{ healthStatus.message }}</span>
+              </v-tooltip>
                 </template>
               </v-list-item>
 
@@ -1570,8 +1573,18 @@ export default {
     expandedConsultationRows: [],
     dialogVaccination: false,
     vaccinationData: [],
+    healthStatusData: {},
   }),
   computed: {
+    healthStatus() {
+      return this.healthStatusData || { level: 'Crítico', message: 'Sin datos', icon: 'mdi-alert', color: 'grey' };
+    },
+    healthStatusIcon() {
+      return this.healthStatus.icon;
+    },
+    healthStatusColor() {
+      return this.healthStatus.color;
+    },
       // --- Colores dinámicos ---
   healthyWeightColor() {
     if (this.type === 'Personal') {      
@@ -1942,6 +1955,7 @@ export default {
           this.membersConsultation = result.data?.membersConsultation || [];
           this.healthMetrics = result.data?.healthMetrics || {};
           this.householdVaccination = result.data?.householdVaccination || {};
+          this.healthStatusData = result.data?.healthStatus || {};
           this.selectedPerson = this.person;
           this.types = result.data?.types || [];
         } else {

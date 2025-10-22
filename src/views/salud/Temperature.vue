@@ -504,7 +504,7 @@ export default {
     this.initialize();
   },
   methods: {
-      obtenerFechaLocal() {
+    obtenerFechaLocal() {
     const hoy = new Date();
     const year = hoy.getFullYear();
     const month = String(hoy.getMonth() + 1).padStart(2, '0');

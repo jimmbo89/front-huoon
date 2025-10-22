@@ -25,12 +25,13 @@ const LocalStorageService = {
     LocalStorageService.removeItem("authenticateUser");
     LocalStorageService.removeItem("usre_id");
     LocalStorageService.removeItem("user");
-    //LocalStorageService.removeItem("role");
+    LocalStorageService.removeItem("email");
     LocalStorageService.removeItem("name");
     LocalStorageService.removeItem("image");
     LocalStorageService.removeItem("person_id");
     LocalStorageService.removeItem("userLocale");
-    //LocalStorageService.removeItem("role_id");
+    LocalStorageService.removeItem("onboarding_status");
+    LocalStorageService.removeItem("approvalData");
   },
 
   // Nuevo método para manejar el estado de bloqueo

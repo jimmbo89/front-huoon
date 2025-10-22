@@ -50,24 +50,24 @@
             {{ tool.name }}
           </v-btn>
         </v-card-actions>
-        <v-card-title class="d-flex flex-wrap align-center gap-4 pb-0">
-      <!-- Spacer (solo visible en md+) -->
-      <v-spacer class="d-none d-md-block"></v-spacer>
-      <!-- Campo de búsqueda global -->
-      <div class="flex-grow-1" style="max-width: 300px">
-        <v-text-field
-          v-model="search"
-          density="compact"
-          :label="$t('dataTable.search')"
-          prepend-inner-icon="mdi-magnify"
-          variant="solo-filled"
-          hide-details
-          single-line
-          flat
-          clearable
-        ></v-text-field>
-      </div>
-    </v-card-title>
+      <v-card-title class="d-flex flex-wrap align-center gap-4 pb-0">
+        <!-- Spacer (solo visible en md+) -->
+        <v-spacer class="d-none d-md-block"></v-spacer>
+        <!-- Campo de búsqueda global -->
+        <div class="flex-grow-1" style="max-width: 300px">
+          <v-text-field
+            v-model="search"
+            density="compact"
+            :label="$t('dataTable.search')"
+            prepend-inner-icon="mdi-magnify"
+            variant="solo-filled"
+            hide-details
+            single-line
+            flat
+            clearable
+          ></v-text-field>
+        </div>
+      </v-card-title>
 
     <!-- Tabla de datos -->
     <v-data-table
@@ -798,9 +798,9 @@ export default {
             this.editedItem.status_id = activeStatus.id;
           }
            const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
-      this.editedItem.timezone = timezone;
-      this.initializeSelections();
-        this.dialog = true;
+          this.editedItem.timezone = timezone;
+          this.initializeSelections();
+            this.dialog = true;
       }
     },
     close() {

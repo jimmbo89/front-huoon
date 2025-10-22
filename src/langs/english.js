@@ -1,6 +1,26 @@
 const english = {
   messages: {
     greet: "Hello', {user}",
+    auth: {
+      login: {
+        title: "Sign in to your account",
+        subtitle: "Welcome back! Choose a method to sign in:",
+        noAccount: "Don't have an account?",
+        signUp: "Sign up",
+        terms: "Terms and Conditions",
+        privacy: "Privacy Policy",
+      },
+      register: {
+        title: "Create your account",
+        subtitle: "Join and start using {appName}.",
+        haveAccount: "Already have an account?",
+        signIn: "Sign in",
+        acceptTerms: "I accept the {terms} and the {privacy}.",
+        acceptTermsStart: "I have read and accept the",
+        acceptTermsMiddle: "and the",
+        acceptTermsEnd: ".",
+      },
+    },
     login: {
       title: "Log in to Your Account",
       subtitle: "Welcome Back! Select method to log in:",
@@ -30,6 +50,14 @@ const english = {
       buttons: {
         google: "Google",
         facebook: "Facebook",
+      },
+      rules: {
+        password: {
+          required: "Password is required",
+          minLength: "Password must be at least 8 characters long",
+          uppercase: "Password must contain at least one uppercase letter",
+          number: "Password must contain at least one number",
+        },
       },
     },
     slides: {
@@ -1690,6 +1718,230 @@ const english = {
         max_portion: "Maximum portion size is {max}",
         future_date: "Date cannot be in the future",
       },
+    },
+    nutrition_profile: {
+      listing: {
+        title: "Nutrition Profile",
+        noData: "No nutrition profile registered",
+      },
+      formTitle: {
+        create: "Create nutrition profile",
+        edit: "Edit nutrition profile",
+      },
+      formInstructions: "Fill in the user's daily nutritional goals",
+      fields: {
+        calories: "Daily calories",
+        protein: "Protein (g)",
+        carbs: "Carbohydrates (g)",
+        fats: "Total fats (g)",
+        fiber: "Fiber (g)",
+        sugar_limit: "Sugar limit (g)",
+        sat_fats_limit: "Saturated fats limit (g)",
+        water: "Daily water intake (L)",
+      },
+      validation: {
+        required: "{field} is required",
+        invalid_number: "Value must be a valid number",
+        min_value: "Minimum allowed value is {min}",
+        max_value: "Maximum allowed value is {max}",
+      },
+      steps: {
+        basic: {
+          title: "Basic goals",
+          subtitle: "Calories, protein, carbs and fats",
+        },
+        limits: {
+          title: "Additional limits",
+          subtitle: "Fiber, sugar and saturated fats",
+        },
+      },
+    },
+    recipe: {
+      listing: {
+        title: "Recipes",
+        addButton: "Create recipe",
+        noData: "No recipes available",
+      },
+      formTitle: {
+        create: "New recipe",
+        edit: "Edit recipe",
+      },
+      formInstructions: "Complete the details",
+      fields: {
+        name: "Name",
+        description: "Description",
+        is_favorite: "Favorite",
+        image: "Image",
+        preparation_time: "Prep time (min)",
+        servings: "Servings",
+        calories: "Calories",
+        protein: "Protein (g)",
+        carbs: "Carbs (g)",
+        fats: "Fats (g)",
+        fiber: "Fiber (g)",
+        sugar: "Sugar (g)",
+        saturated_fats: "Sat. fats (g)",
+        is_private: "Private",
+      },
+      validation: {
+        required: "{field} is required",
+        invalid_number: "Invalid number",
+        min_servings: "Minimum 1 serving",
+      },
+      steps: {
+        basic_info: { title: "Basic Info", subtitle: "Main details" },
+        nutrition: { title: "Nutrition", subtitle: "Nutritional values" },
+        ingredients: { title: "Ingredients", subtitle: "Product list" },
+      },
+    },
+    recipe_product: {
+      listing: {
+        title: "Recipe Ingredients",
+        addButton: "Add Ingredient",
+        noData: "No ingredients added",
+      },
+      formTitle: {
+        create: "Add Ingredient",
+        edit: "Edit Ingredient",
+      },
+      formInstructions: "Complete the ingredient data for the recipe.",
+      steps: {
+        basic: {
+          title: "Product and quantity",
+          subtitle:
+            "Select a product and define the quantity used in the recipe",
+        },
+        nutrition: {
+          title: "Nutrition",
+          subtitle: "Nutritional values per unit",
+        },
+      },
+      fields: {
+        product_id: "Product",
+        quantity_in_recipe: "Quantity in recipe",
+        unit: "Unit",
+        calories_per_unit: "Calories",
+        protein_per_unit: "Protein",
+        carbs_per_unit: "Carbs",
+        fats_per_unit: "Fats",
+        fiber_per_unit: "Fiber",
+        sugar_per_unit: "Sugar",
+        saturated_fats_per_unit: "Saturated fats",
+      },
+      validation: {
+        required: "{field} is required",
+        invalid_quantity: "Quantity must be a positive number",
+        invalid_nutrient: "Value must be greater than or equal to 0",
+      },
+    },
+    nutrition: {
+      profile: "Nutrition profile",
+      recipes: "Recipes",
+      dailyLog: "Daily log",
+      meals: "Meals of the day",
+    },
+    daily_log: {
+      listing: {
+        title: "Daily Logs",
+        noData: "No records for this person",
+      },
+      formInstructions: "Fill in the daily log information.",
+      formTitle: {
+        create: "Create Daily Log",
+        edit: "Edit Daily Log",
+      },
+      fields: {
+        date: "Date",
+        water_intake: "Water Intake (L)",
+        sleep_hours: "Sleep Hours",
+        steps: "Steps",
+        notes: "Notes",
+      },
+      steps: {
+        info: {
+          title: "Log Information",
+          subtitle: "Basic daily data",
+        },
+      },
+      validation: {
+        required: "{field} is required",
+        invalid_date: "Invalid date",
+        positive_number: "{field} must be a positive number or zero",
+      },
+    },
+    meal_entry: {
+      listing: {
+        title: "Meals of the day",
+        addButton: "Add meal",
+        noData: "No meals registered",
+      },
+      formInstructions: "Complete the meal details.",
+      steps: {
+        basic: {
+          title: "Meal type and notes",
+          subtitle: "Select the meal type and add optional notes",
+        },
+        recipes: {
+          title: "Recipes",
+          subtitle: "Select recipes and define the servings consumed",
+        },
+      },
+      formTitle: {
+        create: "Add meal",
+        edit: "Edit meal",
+      },
+      fields: {
+        type_id: "Meal type",
+        notes: "Notes",
+      },
+      validation: {
+        required: "{field} is required",
+      },
+    },
+    meal_recipe: {
+      listing: {
+        title: "Recipes / Ingredients in the meal",
+        addButton: "Add recipe",
+        noData: "No recipes added",
+      },
+      formInstructions: "Select a recipe and define the servings consumed.",
+      steps: {
+        basic: {
+          title: "Recipe and servings",
+          subtitle: "Choose a recipe and the amount consumed",
+        },
+      },
+      formTitle: {
+        create: "Add recipe to meal",
+        edit: "Edit recipe in meal",
+      },
+      fields: {
+        recipe_id: "Recipe",
+        servings: "Servings",
+        servings_unit: "servings",
+      },
+      validation: {
+        required: "{field} is required",
+        invalid_servings: "Servings must be a positive number",
+      },
+    },
+    shoppingList: {
+      reason: "Reason",
+      reasons: {
+        Agotado: "Out of stock",
+        "Por agotarse": "Running low",
+        Vencido: "Expired",
+        "Por vencer": "Expiring soon",
+      },
+      noSuggestions: "No products need restocking at the moment.",
+      loadError: "Failed to load suggested list.",
+      createShoppingTask: "Create shopping task",
+    },
+    snackbar: {
+      success: { title: "Success" },
+      info: { title: "Info" },
+      error: { title: "Error" },
+      warning: { title: "Warning" },
     },
   },
 };

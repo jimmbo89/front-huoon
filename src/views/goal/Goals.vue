@@ -220,8 +220,8 @@
       </template>
 
       <!-- Fila personalizada -->
-      <template v-slot:item="slotProps">
-        <tr>
+      <template v-slot:item="{ item }">
+        <tr style="display: table; width: 100%; table-layout: fixed;">
           <td colspan="100%" style="padding: 0; border: none">
             <v-card
               class="mb-2 mx-1 rounded-lg"
@@ -237,18 +237,18 @@
                 <div style="width: 7%; min-width: 0" class="d-flex align-center">
                   <div
                     class="icono-concavo d-flex flex-column justify-center justify-start mr-2"
-                    :class="`bg-${getTypeColor(slotProps.item.type)}`"
+                    :class="`bg-${getTypeColor(item.type)}`"
                     style="min-height: 48px; min-width: 48px; border-radius: 8px;"
                   >
                     <div class="date-display text-center" style="font-size: 0.95em">
-                      {{ formatIntuitiveDate(slotProps.item.start_date) }}
+                      {{ formatIntuitiveDate(item.start_date) }}
                     </div>
                     <div
-                      v-if="slotProps.item.start_time"
+                      v-if="item.start_time"
                       class="time-display text-center"
                       style="font-size: 0.80em; margin-top: 2px"
                     >
-                      {{ formatTime(slotProps.item.start_time) }}
+                      {{ formatTime(item.start_time) }}
                     </div>
                   </div>
                 </div>
@@ -256,27 +256,25 @@
                 <!-- Nombre + Descripción - 40% -->
                 <div style="width: 40%; min-width: 0" class="d-flex flex-column">
                   <div class="font-weight-bold text-body-2 text-truncate">
-                    {{ slotProps.item.title }}
+                    {{ item.title }}
                   </div>
                   <div class="text-caption text-grey-darken-1 text-truncate">
-                    {{ slotProps.item.description }}
+                    {{ item.description }}
                   </div>
                   <v-tooltip activator="parent" location="bottom" max-width="350px">
                     <span style="white-space: normal; word-break: break-word">
-                      {{ slotProps.item.description }}
+                      {{ item.description }}
                     </span>
                   </v-tooltip>
                 </div>
 
                 <!-- Ubicación - 15% -->
                 <div style="width: 15%; min-width: 0" class="text-body-2 text-truncate">
-                <v-tooltip v-for="person in slotProps.item.people" :key="person.id" bottom :open-delay="300"
+                <v-tooltip v-for="person in item.people" :key="person.id" bottom :open-delay="300"
                   :close-delay="100">
                   <template v-slot:activator="{ props }">
                     <v-avatar class="avatar-item hover-expand" size="32" v-bind="props">
-                      <v-img :src="`${this.$axios.defaults.baseURL}images/${
-                          person.image
-                        }`" alt="avatar" />
+                      <v-img :src="getImageUrl(person.image)" alt="avatar" />
                     </v-avatar>
                   </template>
                   <span>{{ person.name }}<br />{{ person.roleName }}</span>
@@ -286,35 +284,35 @@
                 <!-- Tipo - 10% -->
                 <div style="width: 10%; min-width: 0; text-align: center">
                   <!--<v-icon
-                    :color="getTypeColor(slotProps.item.type)"
+                    :color="getTypeColor(item.type)"
                     style="font-size: 10px; margin-right: 4px"
                     icon="mdi-circle"
                   ></v-icon>-->
                   <span class="text-body-2 text-truncate">
-                    {{ slotProps.item.recurrence }}
+                    {{ item.recurrence }}
                   </span>
                 </div>
 
                 <!-- Prioridad - 10% -->
                 <div style="width: 10%; min-width: 0; text-align: center">
                   <span class="text-body-2 text-truncate">
-                    {{ slotProps.item.namePriority }}
+                    {{ item.namePriority }}
                   </span>
                 </div>
 
                 <!-- Estado - 13% -->
                 <div style="width: 13%; min-width: 0; text-align: center">
-                  <v-dialog v-model="slotProps.item.statusDialog" width="400">
+                  <v-dialog v-model="item.statusDialog" width="400">
                     <template v-slot:activator="{ props }">
                       <v-btn
                         v-bind="props"
-                        :color="'#' + (getStatusById(slotProps.item.status_id)?.colorStatus || 'grey')"
+                        :color="'#' + (getStatusById(item.status_id)?.colorStatus || 'grey')"
                         variant="text"
                         size="small"
-                        :prepend-icon="getStatusById(slotProps.item.status_id)?.iconStatus || 'mdi-help-circle'"
+                        :prepend-icon="getStatusById(item.status_id)?.iconStatus || 'mdi-help-circle'"
                         class="text-body-2"
                       >
-                        {{ getStatusById(slotProps.item.status_id)?.nameStatus || "Desconocido" }}
+                        {{ getStatusById(item.status_id)?.nameStatus || "Desconocido" }}
                       </v-btn>
                     </template>
                     <v-card>
@@ -331,13 +329,13 @@
                             class="py-1"
                           >
                             <v-card
-                              @click="changeTaskStatus(slotProps.item, statusOption.id)"
+                              @click="changeTaskStatus(item, statusOption.id)"
                               :class="[
                                 'status-option mx-1',
-                                { 'current-status': slotProps.item.status_id === statusOption.id },
+                                { 'current-status': item.status_id === statusOption.id },
                               ]"
                               :style="
-                                slotProps.item.status_id === statusOption.id
+                                item.status_id === statusOption.id
                                   ? {
                                       'background-color': `#${statusOption.colorStatus}`,
                                       'border-color': `#${statusOption.colorStatus}`,
@@ -346,14 +344,14 @@
                                   : {}
                               "
                               variant="outlined"
-                              :elevation="slotProps.item.status_id === statusOption.id ? 2 : 0"
+                              :elevation="item.status_id === statusOption.id ? 2 : 0"
                               style="border-radius: 12px; cursor: pointer"
                             >
                               <v-card-item class="pa-2">
                                 <div class="d-flex align-center">
                                   <v-icon
                                     :color="
-                                      slotProps.item.status_id === statusOption.id
+                                      item.status_id === statusOption.id
                                         ? 'white'
                                         : '#' + statusOption.colorStatus
                                     "
@@ -364,7 +362,7 @@
                                   <v-card-title
                                     :style="{
                                       color:
-                                        slotProps.item.status_id === statusOption.id
+                                        item.status_id === statusOption.id
                                           ? 'white'
                                           : 'inherit',
                                       'font-size': '1rem',
@@ -374,7 +372,7 @@
                                   </v-card-title>
                                   <v-spacer></v-spacer>
                                   <v-icon
-                                    v-if="slotProps.item.status_id === statusOption.id"
+                                    v-if="item.status_id === statusOption.id"
                                     color="white"
                                     icon="mdi-check-circle"
                                   ></v-icon>
@@ -390,7 +388,7 @@
                         <v-btn
                           variant="flat"
                           color="#03626C"
-                          @click="slotProps.item.statusDialog = false"
+                          @click="item.statusDialog = false"
                         >
                           {{ $t("buttons.cancel") }}
                         </v-btn>
@@ -409,7 +407,7 @@
                     icon
                     variant="text"
                     color="green-darken-2"
-                    @click="editItem(slotProps.item)"
+                    @click="editItem(item)"
                     class="flex-shrink-0 mr-1"
                     :title="$t('buttons.edit')"
                   >
@@ -421,7 +419,7 @@
                     icon
                     variant="text"
                     color="red-darken-2"
-                    @click="deleteItem(slotProps.item)"
+                    @click="deleteItem(item)"
                     class="flex-shrink-0"
                     :title="$t('buttons.delete')"
                   >
@@ -1191,6 +1189,15 @@ export default {
     // NO asignes editedItem.task_type aquí → ya lo hace el watcher con `immediate: true`
   },
   methods: {
+     getImageUrl(imagePath) {
+      return `${this.$axios.defaults.baseURL}images/${imagePath}?t=${this.getCacheTimestamp()}`;
+    },
+    getCacheTimestamp() {
+      // Usamos medianoche (00:00:00) del día actual
+      const now = new Date();
+      const startOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+      return startOfDay.getTime(); // Ej: 1714003200000 (cambia una vez al día)
+    },
     taskBelongsToCategory(task, taskIdsSet) {
     // Caso 1: la tarea raíz está en la lista
     if (taskIdsSet.has(task.id)) {

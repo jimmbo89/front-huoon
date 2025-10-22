@@ -102,6 +102,7 @@
       style="
         max-height: 68vh;
         overflow-y: auto;
+        overflow-x: hidden;
         background: transparent;
         border: none !important;
         outline: none !important;
@@ -151,7 +152,7 @@
             </div>
 
             <!-- Tipo (10%) -->
-            <div style="width: 10%; min-width: 0" class="text-center">
+            <div style="width: 10%; min-width: 0" class="text-left">
               {{ $t("taskForm.fields.recurrence") }}
             </div>
 
@@ -175,7 +176,7 @@
 
       <!-- Fila personalizada -->
       <template v-slot:item="slotProps">
-        <tr>
+        <tr style="display: table; width: 100%; table-layout: fixed;">
           <td colspan="100%" style="padding: 0; border: none">
             <v-card
               class="mb-2 mx-1 rounded-lg"
@@ -185,7 +186,7 @@
             >
               <v-card-text
                 class="d-flex align-center pa-2"
-                style="width: 100%; min-width: 0"
+                style="width: 100%; min-width: 0;"
               >
                 <!-- Fecha con barra lateral de color - 7% -->
                 <div style="width: 7%; min-width: 0" class="d-flex align-center">
@@ -228,9 +229,7 @@
                   :close-delay="100">
                   <template v-slot:activator="{ props }">
                     <v-avatar class="avatar-item hover-expand" size="32" v-bind="props">
-                      <v-img :src="`${$axios.defaults.baseURL}images/${
-                          person.image
-                        }`" alt="avatar" />
+                      <v-img :src="getImageUrl(person.image)" alt="avatar" />
                     </v-avatar>
                   </template>
                   <span>{{ person.name }}<br />{{ person.roleName }}</span>
@@ -238,7 +237,7 @@
               </div>
 
                 <!-- Tipo - 10% -->
-                <div style="width: 10%; min-width: 0; text-align: center">
+                <div style="width: 10%; min-width: 0; text-align: left">
                   <!--<v-icon
                     :color="getTypeColor(slotProps.item.type)"
                     style="font-size: 10px; margin-right: 4px"
@@ -354,10 +353,7 @@
                 </div>
 
                 <!-- Acciones - 5% -->
-                <div
-                  class="d-flex gap-1"
-                  style="width: 5%; justify-content: flex-end; flex-wrap: nowrap"
-                >
+                <div class="d-flex gap-1" style="width: 5%; justify-content: flex-end; flex-wrap: nowrap">
                   <v-btn
                     size="35"
                     icon
@@ -1051,6 +1047,15 @@ export default {
     this.timeSlots = this.generateTimeSlots(); // Genera los horarios al montar el componente
   },
   methods: {
+    getImageUrl(imagePath) {
+      return `${this.$axios.defaults.baseURL}images/${imagePath}?t=${this.getCacheTimestamp()}`;
+    },
+    getCacheTimestamp() {
+      // Usamos medianoche (00:00:00) del día actual
+      const now = new Date();
+      const startOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+      return startOfDay.getTime(); // Ej: 1714003200000 (cambia una vez al día)
+    },
     async handleSkip(){
       this.dialogSuggested = false;
     },

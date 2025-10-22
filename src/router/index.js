@@ -5,6 +5,18 @@ const routes = [
     path: "/",
     component: () => import("@/views/Login.vue"),
   },
+   {
+    path: '/privacy',
+    name: 'PrivacyPolicy',
+    component: () => import("@/views/PrivacyPolicy.vue"),
+    meta: { public: true } // si usas guards de autenticación
+  },
+  {
+    path: '/terms',
+    name: 'TermsAndConditions',
+    component: () => import("@/views/TermAndConditions.vue"), // crea este archivo si lo necesitas
+    meta: { public: true }
+  },
   {
     path: "/login",
     name: "Login",
@@ -165,6 +177,14 @@ const routes = [
         component: () =>
           import(
             /* webpackChunkName: "home" */ "@/views/initiative/Initiative.vue"
+          ),
+      },
+      {
+        path: "/nutrition",
+        name: "Nutritions",
+        component: () =>
+          import(
+            /* webpackChunkName: "home" */ "@/views/nutrition/Nutrition.vue"
           ),
       },
     ],

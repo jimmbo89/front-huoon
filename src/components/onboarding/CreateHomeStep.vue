@@ -53,10 +53,11 @@
               </v-col>
             </v-row>
             <!-- Navegación entre pasos -->
-            <div class="d-flex justify-space-between mt-8">
+            <div class="d-flex justify-end mt-8">
               <v-btn
                 variant="tonal"
-                class="text-grey-darken-1"
+                class="text-grey-darken-1 mr-1 text-subtitle-1"
+                style="text-transform: none;"
                 @click="currentStep > 0 ? currentStep-- : $emit('go-back')"
               >
                 {{
@@ -66,8 +67,7 @@
                 }}
               </v-btn>
               <v-btn
-                variant="tonal"
-                class="text-deep-purple-accent-3"
+                 color="cyan-darken-3" class="text-white text-subtitle-1" variant="flat" style="text-transform: none;"
                 @click="nextStep"
                 :disabled="!valid"
               >
