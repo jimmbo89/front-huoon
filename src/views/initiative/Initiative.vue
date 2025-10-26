@@ -1,6 +1,14 @@
 <template>
-  <v-snackbar class="mt-12" location="right top" :timeout="sb_timeout" :color="sb_type" elevation="24"
-    :multi-line="true" vertical v-model="snackbar">
+  <v-snackbar
+    class="mt-12"
+    location="right top"
+    :timeout="sb_timeout"
+    :color="sb_type"
+    elevation="24"
+    :multi-line="true"
+    vertical
+    v-model="snackbar"
+  >
     <v-row>
       <v-col md="2">
         <v-avatar :icon="sb_icon" color="sb_type" size="40"></v-avatar>
@@ -11,7 +19,8 @@
       </v-col>
     </v-row>
   </v-snackbar>
-  <v-container class="pa-4"> <v-card elevation="2" rounded="lg" flat>
+  <v-container class="pa-4">
+    <v-card elevation="2" rounded="lg" flat>
       <!-- Encabezado con foto y datos -->
       <v-card-text>
         <v-col cols="12" sm="9" md="9" class="d-flex align-center">
@@ -19,9 +28,7 @@
             <v-icon color="warning">mdi-calendar-weekend-outline</v-icon>
           </v-avatar>
           <div>
-            <div class="text-body-2 font-weight-bold mb-1">
-              Iniciativas de metas
-            </div>
+            <div class="text-body-2 font-weight-bold mb-1">Iniciativas de metas</div>
             <div class="text-body-2 text-grey-darken-1"></div>
           </div>
         </v-col>
@@ -41,210 +48,236 @@
             {{ tool.name }}
           </v-btn>
         </v-card-actions>
-    <!-- Título y búsqueda -->
-    <v-card-title class="d-flex flex-wrap align-center gap-4 pb-0">
-      <!-- Spacer (solo visible en md+) -->
-      <v-spacer class="d-none d-md-block"></v-spacer>
-      <!-- Campo de búsqueda global -->
-      <div class="flex-grow-1" style="max-width: 300px">
-        <v-text-field
-          v-model="search"
-          density="compact"
-          :label="$t('dataTable.search')"
-          prepend-inner-icon="mdi-magnify"
-          variant="solo-filled"
-          hide-details
-          single-line
-          flat
-        >
-        </v-text-field>
-      </div>
-    </v-card-title>
-
-    <!-- Tabla de datos -->
-    <v-data-table
-      :headers="headers"
-      :items="initiatives"
-      :search="search"
-      :items-per-page-text="$t('dataTable.itemsPerPageText')"
-      :no-data-text="$t('dataTable.noDataText')"
-      :loading-text="$t('dataTable.loadingText')"
-      :loading="loading"
-      :hide-default-header="true"
-      class="mt-1"
-      style="
-        max-height: 68vh;
-        overflow-y: auto;
-        background: transparent;
-        border: none !important;
-        outline: none !important;
-        box-shadow: none !important;
-      "
-    >
-      <!-- Header personalizado (simulado) -->
-      <template v-slot:top>
-        <v-card
-          :elevation="1"
-          :hover="false"
-          flat
-          class="mb-2 mx-1 rounded-lg"
-          style="
-            border: 1px solid #eceff1;
-            height: 40px;
-            min-height: 40px;
-            display: flex;
-            align-items: center;
-            transition: none !important;
-          "
-        >
-          <v-card-text
-            class="d-flex pa-2"
-            style="
-              width: 100%;
-              min-width: 0;
-              height: 100%;
-              padding: 0 16px !important;
-              display: flex;
-              align-items: center;
-            "
-          >
-            <!-- Nombre y descripción (40%) -->
-            <div style="width: 40%; min-width: 0" class="text-left">
-              {{ $t("taskForm.fields.title") }} / {{ $t("taskForm.fields.description") }}
-            </div>
-
-            <!-- Tipo (10%) -->
-            <div style="width: 15%; min-width: 0" class="text-center">
-              {{ $t("taskForm.fields.recurrence") }}
-            </div>
-
-            <!-- Prioridad (10%) -->
-            <div style="width: 15%; min-width: 0" class="text-center">
-              {{ $t("taskForm.fields.priority") }}
-            </div>
-
-            <div style="width: 10%; min-width: 0" class="d-flex justify-left">
-              {{ $t("taskForm.fields.status") }}
-            </div>
-
-            <div style="width: 13%; min-width: 0" class="d-flex justify-left">
-              Tipo
-            </div>
-
-            <!-- Acciones (5%) -->
-            <div style="width: 7%; min-width: 0" class="d-flex justify-center">
-              {{ $t("settings.actions") }}
-            </div>
-          </v-card-text>
-        </v-card>
-      </template>
-
-      <!-- Fila personalizada -->
-      <template v-slot:item="slotProps">
-        <tr>
-          <td colspan="100%" style="padding: 0; border: none">
-            <v-card
-              class="mb-2 mx-1 rounded-lg"
-              elevation="1"
-              density="comfortable"
+        <!-- Título y búsqueda -->
+        <v-card-title class="d-flex flex-wrap align-center gap-4 pb-0">
+          <!-- Spacer (solo visible en md+) -->
+          <v-spacer class="d-none d-md-block"></v-spacer>
+          <!-- Campo de búsqueda global -->
+          <div class="flex-grow-1" style="max-width: 300px">
+            <v-text-field
+              v-model="search"
+              density="compact"
+              :label="$t('dataTable.search')"
+              prepend-inner-icon="mdi-magnify"
+              variant="solo-filled"
+              hide-details
+              single-line
               flat
             >
-              <v-card-text
-                class="d-flex align-center pa-2"
-                style="width: 100%; min-width: 0"
+            </v-text-field>
+          </div>
+        </v-card-title>
+
+        <!-- Tabla de datos -->
+        <div
+          class="ma-0 pa-0 responsive-data-table-wrapper"
+          :class="{ 'mobile-scroll': $vuetify.display.xs || $vuetify.display.sm }"
+        >
+          <v-data-table
+            :headers="headers"
+            :items="initiatives"
+            :search="search"
+            :items-per-page-text="$t('dataTable.itemsPerPageText')"
+            :no-data-text="$t('dataTable.noDataText')"
+            :loading-text="$t('dataTable.loadingText')"
+            :loading="loading"
+            :hide-default-header="true"
+            class="mt-1"
+            style="
+              max-height: 68vh;
+              overflow-y: auto;
+              overflow-x: hidden;
+              background: transparent;
+              border: none !important;
+              outline: none !important;
+              box-shadow: none !important;
+            "
+          >
+            <!-- Header personalizado (simulado) -->
+            <template v-slot:top>
+              <v-card
+                :elevation="1"
+                :hover="false"
+                flat
+                class="mb-2 mx-1 rounded-lg"
+                style="
+                  border: 1px solid #eceff1;
+                  height: 40px;
+                  min-height: 40px;
+                  display: flex;
+                  align-items: center;
+                  transition: none !important;
+                "
               >
-
-                <!-- Nombre + Descripción - 40% -->
-                <div style="width: 40%; min-width: 0" class="d-flex flex-column">
-                  <div class="font-weight-bold text-body-2 text-truncate">
-                    {{ slotProps.item.title }}
-                  </div>
-                  <div class="text-caption text-grey-darken-1 text-truncate">
-                    {{ slotProps.item.description }}
-                  </div>
-                  <v-tooltip activator="parent" location="bottom" max-width="350px">
-                    <span style="white-space: normal; word-break: break-word">
-                      {{ slotProps.item.description }}
-                    </span>
-                  </v-tooltip>
-                </div>
-
-                <!-- Tipo - 10% -->
-                <div style="width: 15%; min-width: 0; text-align: center">
-                  <span class="text-body-2 text-truncate">
-                    {{ slotProps.item.recurrence }}
-                  </span>
-                </div>
-
-                <!-- Prioridad - 10% -->
-                <div style="width: 15%; min-width: 0; text-align: center">
-                  <span class="text-body-2 text-truncate">
-                    {{ slotProps.item.namePriority }}
-                  </span>
-                </div>
-
-                <div style="width: 10%; min-width: 0; text-align: left">
-                <v-avatar size="24" :color="'#' + getTaskTypeColor(slotProps.item.status)" class="mr-1">
-                    <v-icon size="16" color="white">
-                      {{ getTaskTypeIcon(slotProps.item.status)  }}
-                    </v-icon>
-                  </v-avatar>
-                  <span class="text-body-2">
-                    {{ slotProps.item.status }}
-                  </span>
-                </div>
-
-                <div style="width: 12%; min-width: 0; text-align: left">
-                  <v-avatar size="24" :color="'#' + getTaskTypeColor(slotProps.item.task_type)" class="mr-1">
-                    <v-icon size="16" color="white">
-                      {{ getTaskTypeIcon(slotProps.item.task_type)  }}
-                    </v-icon>
-                  </v-avatar>
-                  <span class="text-body-2">
-                    {{ slotProps.item.task_type }}
-                  </span>
-              </div>
-
-                <!-- Acciones - 5% -->
-                <div
-                  class="d-flex gap-1"
-                  style="width: 7%; justify-content: flex-end; flex-wrap: nowrap"
+                <v-card-text
+                  class="d-flex pa-2"
+                  style="
+                    width: 100%;
+                    min-width: 0;
+                    height: 100%;
+                    padding: 0 16px !important;
+                    display: flex;
+                    align-items: center;
+                  "
                 >
-                  <v-btn
-                    size="35"
-                    icon
-                    variant="text"
-                    color="green-darken-2"
-                    @click="editItem(slotProps.item)"
-                    class="flex-shrink-0 mr-1"
-                    :title="$t('buttons.edit')"
-                  >
-                    <v-icon size="20">mdi-pencil</v-icon>
-                  </v-btn>
+                  <!-- Nombre y descripción (40%) -->
+                  <div style="width: 40%; min-width: 0" class="text-left">
+                    {{ $t("taskForm.fields.title") }} /
+                    {{ $t("taskForm.fields.description") }}
+                  </div>
 
-                  <v-btn
-                    size="35"
-                    icon
-                    variant="text"
-                    color="red-darken-2"
-                    @click="deleteItem(slotProps.item)"
-                    class="flex-shrink-0"
-                    :title="$t('buttons.delete')"
+                  <!-- Tipo (10%) -->
+                  <div style="width: 15%; min-width: 0" class="text-center">
+                    {{ $t("taskForm.fields.recurrence") }}
+                  </div>
+
+                  <!-- Prioridad (10%) -->
+                  <div style="width: 15%; min-width: 0" class="text-center">
+                    {{ $t("taskForm.fields.priority") }}
+                  </div>
+
+                  <div style="width: 10%; min-width: 0" class="d-flex justify-left">
+                    {{ $t("taskForm.fields.status") }}
+                  </div>
+
+                  <div style="width: 13%; min-width: 0" class="d-flex justify-left">
+                    Tipo
+                  </div>
+
+                  <!-- Acciones (5%) -->
+                  <div style="width: 7%; min-width: 0" class="d-flex justify-center">
+                    {{ $t("settings.actions") }}
+                  </div>
+                </v-card-text>
+              </v-card>
+            </template>
+
+            <!-- Fila personalizada -->
+            <template v-slot:item="slotProps">
+              <tr
+                style="display: table; width: 100%"
+                :class="
+                  $vuetify.display.xs || $vuetify.display.sm
+                    ? 'mobile-table'
+                    : 'desktop-table'
+                "
+              >
+                <td colspan="100%" style="padding: 0; border: none">
+                  <v-card
+                    class="mb-2 mx-1 rounded-lg"
+                    elevation="1"
+                    density="comfortable"
+                    flat
                   >
-                    <v-icon size="20">mdi-delete</v-icon>
-                  </v-btn>
-                </div>
-              </v-card-text>
-            </v-card>
-          </td>
-        </tr>
-      </template>
-    </v-data-table>
-   </v-card-text>
-  </v-card>
+                    <v-card-text
+                      class="d-flex align-center pa-2"
+                      style="width: 100%; min-width: 0"
+                    >
+                      <!-- Nombre + Descripción - 40% -->
+                      <div style="width: 40%; min-width: 0" class="d-flex flex-column">
+                        <div class="font-weight-bold text-body-2 text-truncate">
+                          {{ slotProps.item.title }}
+                        </div>
+                        <div class="text-caption text-grey-darken-1 text-truncate">
+                          {{ slotProps.item.description }}
+                        </div>
+                        <v-tooltip activator="parent" location="bottom" max-width="350px">
+                          <span style="white-space: normal; word-break: break-word">
+                            {{ slotProps.item.description }}
+                          </span>
+                        </v-tooltip>
+                      </div>
+
+                      <!-- Tipo - 10% -->
+                      <div style="width: 15%; min-width: 0; text-align: center">
+                        <span class="text-body-2 text-truncate">
+                          {{ slotProps.item.recurrence }}
+                        </span>
+                      </div>
+
+                      <!-- Prioridad - 10% -->
+                      <div style="width: 15%; min-width: 0; text-align: center">
+                        <span class="text-body-2 text-truncate">
+                          {{ slotProps.item.namePriority }}
+                        </span>
+                      </div>
+
+                      <div style="width: 10%; min-width: 0; text-align: left">
+                        <v-avatar
+                          size="24"
+                          :color="'#' + getTaskTypeColor(slotProps.item.status)"
+                          class="mr-1"
+                        >
+                          <v-icon size="16" color="white">
+                            {{ getTaskTypeIcon(slotProps.item.status) }}
+                          </v-icon>
+                        </v-avatar>
+                        <span class="text-body-2">
+                          {{ slotProps.item.status }}
+                        </span>
+                      </div>
+
+                      <div style="width: 12%; min-width: 0; text-align: left">
+                        <v-avatar
+                          size="24"
+                          :color="'#' + getTaskTypeColor(slotProps.item.task_type)"
+                          class="mr-1"
+                        >
+                          <v-icon size="16" color="white">
+                            {{ getTaskTypeIcon(slotProps.item.task_type) }}
+                          </v-icon>
+                        </v-avatar>
+                        <span class="text-body-2">
+                          {{ slotProps.item.task_type }}
+                        </span>
+                      </div>
+
+                      <!-- Acciones - 5% -->
+                      <div
+                        class="d-flex gap-1"
+                        style="width: 7%; justify-content: flex-end; flex-wrap: nowrap"
+                      >
+                        <v-btn
+                          size="35"
+                          icon
+                          variant="text"
+                          color="green-darken-2"
+                          @click="editItem(slotProps.item)"
+                          class="flex-shrink-0 mr-1"
+                          :title="$t('buttons.edit')"
+                        >
+                          <v-icon size="20">mdi-pencil</v-icon>
+                        </v-btn>
+
+                        <v-btn
+                          size="35"
+                          icon
+                          variant="text"
+                          color="red-darken-2"
+                          @click="deleteItem(slotProps.item)"
+                          class="flex-shrink-0"
+                          :title="$t('buttons.delete')"
+                        >
+                          <v-icon size="20">mdi-delete</v-icon>
+                        </v-btn>
+                      </div>
+                    </v-card-text>
+                  </v-card>
+                </td>
+              </tr>
+            </template>
+          </v-data-table>
+        </div>
+      </v-card-text>
+    </v-card>
   </v-container>
-  <v-dialog v-model="dialog" fullscreen persistent transition="dialog-bottom-transition"
-    content-class="fullscreen-dialog">
+  <v-dialog
+    v-model="dialog"
+    fullscreen
+    persistent
+    transition="dialog-bottom-transition"
+    content-class="fullscreen-dialog"
+  >
     <v-form ref="form" v-model="valid" class="h-100">
       <v-card class="pa-10">
         <v-card-text class="pt-12">
@@ -255,19 +288,25 @@
           <v-row class="mt-12">
             <v-col cols="3">
               <v-timeline align="start" side="end" dense>
-                <v-timeline-item v-for="(s, index) in steps" :key="index" :dot-color="
+                <v-timeline-item
+                  v-for="(s, index) in steps"
+                  :key="index"
+                  :dot-color="
                     step > index
                       ? 'green'
                       : step === index
                       ? 'deep-purple'
                       : 'grey-lighten-1'
-                  " :icon="
+                  "
+                  :icon="
                     step >= index
                       ? step === index
                         ? `mdi-numeric-${index + 1}`
                         : 'mdi-check'
                       : null
-                  " size="large">
+                  "
+                  size="large"
+                >
                   <template #opposite>
                     <div class="text-end">
                       <strong>{{ s.title }}</strong>
@@ -288,17 +327,31 @@
 
               <v-row dense v-if="step === 0">
                 <v-col cols="12" sm="6">
-                  <v-text-field v-model="editedItem.title" :label="$t('taskForm.fields.title')" variant="underlined"
-                    :rules="nameRules" />
+                  <v-text-field
+                    v-model="editedItem.title"
+                    :label="$t('taskForm.fields.title')"
+                    variant="underlined"
+                    :rules="nameRules"
+                  />
                 </v-col>
 
                 <v-col cols="12" sm="6">
-                  <v-select v-model="editedItem.priority_id" :items="priorities" item-title="namePriority"
-                    item-value="id" :label="$t('taskForm.fields.priority')" variant="underlined" required>
+                  <v-select
+                    v-model="editedItem.priority_id"
+                    :items="priorities"
+                    item-title="namePriority"
+                    item-value="id"
+                    :label="$t('taskForm.fields.priority')"
+                    variant="underlined"
+                    required
+                  >
                     <!-- Cómo se muestra en la lista desplegable -->
                     <template v-slot:item="{ props, item }">
-                      <v-list-item v-bind="props" :title="item.raw.namePriority"
-                        :subtitle="item.raw.descriptionPriority">
+                      <v-list-item
+                        v-bind="props"
+                        :title="item.raw.namePriority"
+                        :subtitle="item.raw.descriptionPriority"
+                      >
                         <template v-slot:prepend>
                           <v-icon :color="'#' + item.raw.colorPriority">
                             mdi-priority-high
@@ -309,47 +362,59 @@
                   </v-select>
                 </v-col>
                 <v-col cols="12" md="12">
-                  <v-textarea v-model="editedItem.description" :label="$t('taskForm.fields.description')"
-                    variant="underlined" rows="3"></v-textarea>
+                  <v-textarea
+                    v-model="editedItem.description"
+                    :label="$t('taskForm.fields.description')"
+                    variant="underlined"
+                    rows="3"
+                  ></v-textarea>
                 </v-col>
               </v-row>
               <v-row dense v-if="step === 1">
-                 <v-col cols="12" md="4">
-                  <v-select v-model="editedItem.recurrence" :items="recurrences" item-title="name" item-value="id"
-                    :label="$t('taskForm.fields.recurrence')" variant="underlined"
-                    :rules="selectRules">
+                <v-col cols="12" md="4">
+                  <v-select
+                    v-model="editedItem.recurrence"
+                    :items="recurrences"
+                    item-title="name"
+                    item-value="id"
+                    :label="$t('taskForm.fields.recurrence')"
+                    variant="underlined"
+                    :rules="selectRules"
+                  >
                   </v-select>
                 </v-col>
                 <v-col cols="12" sm="2" md="4">
-                <v-select
-                  v-model="editedItem.task_type"
-                  :items="taskTypes"
-                  item-title="name"
-                  item-value="id"
-                  label="Tipo"
-                  variant="underlined"
-                  :rules="selectRules"
-                >
-                  <template v-slot:selection="{ item }">
-                    <div class="d-flex align-center">
-                      <v-avatar size="20" :color="'#' + item.raw.color" class="mr-2">
-                        <v-icon size="small" color="white">{{ item.raw.icon }}</v-icon>
-                      </v-avatar>
-                      {{ item.raw.name }}
-                    </div>
-                  </template>
-
-                  <template v-slot:item="{ props, item }">
-                    <v-list-item v-bind="props">
-                      <template v-slot:prepend>
-                        <v-avatar size="20" :color="'#' + item.raw.color">
+                  <v-select
+                    v-model="editedItem.task_type"
+                    :items="taskTypes"
+                    item-title="name"
+                    item-value="id"
+                    label="Tipo"
+                    variant="underlined"
+                    :rules="selectRules"
+                  >
+                    <template v-slot:selection="{ item }">
+                      <div class="d-flex align-center">
+                        <v-avatar size="20" :color="'#' + item.raw.color" class="mr-2">
                           <v-icon size="small" color="white">{{ item.raw.icon }}</v-icon>
                         </v-avatar>
-                      </template>
-                    </v-list-item>
-                  </template>
-                </v-select>
-              </v-col>
+                        {{ item.raw.name }}
+                      </div>
+                    </template>
+
+                    <template v-slot:item="{ props, item }">
+                      <v-list-item v-bind="props">
+                        <template v-slot:prepend>
+                          <v-avatar size="20" :color="'#' + item.raw.color">
+                            <v-icon size="small" color="white">{{
+                              item.raw.icon
+                            }}</v-icon>
+                          </v-avatar>
+                        </template>
+                      </v-list-item>
+                    </template>
+                  </v-select>
+                </v-col>
                 <v-col cols="12" md="4">
                   <v-select
                     v-model="editedItem.status"
@@ -363,8 +428,14 @@
                     <!-- Selección actual -->
                     <template v-slot:selection="{ item }">
                       <div class="d-flex align-center">
-                        <v-avatar size="20" :color="'#' + item.raw.colorStatus" class="mr-2">
-                          <v-icon size="small" color="white">{{ item.raw.iconStatus }}</v-icon>
+                        <v-avatar
+                          size="20"
+                          :color="'#' + item.raw.colorStatus"
+                          class="mr-2"
+                        >
+                          <v-icon size="small" color="white">{{
+                            item.raw.iconStatus
+                          }}</v-icon>
                         </v-avatar>
                         {{ item.raw.nameStatus }}
                       </div>
@@ -375,7 +446,9 @@
                       <v-list-item v-bind="props">
                         <template v-slot:prepend>
                           <v-avatar size="20" :color="'#' + item.raw.colorStatus">
-                            <v-icon size="small" color="white">{{ item.raw.iconStatus }}</v-icon>
+                            <v-icon size="small" color="white">{{
+                              item.raw.iconStatus
+                            }}</v-icon>
                           </v-avatar>
                         </template>
                       </v-list-item>
@@ -385,15 +458,24 @@
               </v-row>
 
               <div class="d-flex justify-space-between mt-8">
-                <v-btn variant="text" class="text-grey-darken-1" @click="step > 0 ? step-- : this.close()">
+                <v-btn
+                  variant="text"
+                  class="text-grey-darken-1"
+                  @click="step > 0 ? step-- : this.close()"
+                >
                   {{ step === 0 ? $t("buttons.close") : $t("buttons.previous") }}
                 </v-btn>
 
-                <v-btn variant="text" class="text-deep-purple-accent-3" @click="nextStep" :disabled="!valid">
+                <v-btn
+                  variant="text"
+                  class="text-deep-purple-accent-3"
+                  @click="nextStep"
+                  :disabled="!valid"
+                >
                   {{
-                  step === steps.length - 1
-                  ? $t("buttons.saveAndClose")
-                  : $t("buttons.next")
+                    step === steps.length - 1
+                      ? $t("buttons.saveAndClose")
+                      : $t("buttons.next")
                   }}
                 </v-btn>
               </div>
@@ -407,7 +489,8 @@
     <v-card>
       <v-toolbar color="#DA7171">
         <span class="text-subtitle-2 ml-4">
-          {{ $t("deleteDialog.title", { item: $t(`deleteDialog.items.task`) }) }}</span>
+          {{ $t("deleteDialog.title", { item: $t(`deleteDialog.items.task`) }) }}</span
+        >
       </v-toolbar>
       <v-card-text class="mt-2 mb-2"> {{ $t("deleteDialog.message") }}</v-card-text>
       <v-divider></v-divider>
@@ -415,9 +498,15 @@
         <v-spacer></v-spacer>
         <v-btn color="grey" variant="flat" @click="closeDelete">{{
           $t("taskForm.buttons.cancel")
-          }}</v-btn>
-        <v-btn color="#03626C" variant="flat" :loading="loading" @click="deleteItemConfirm">
-          {{ $t("taskForm.buttons.confirmDelete") }}</v-btn>
+        }}</v-btn>
+        <v-btn
+          color="#03626C"
+          variant="flat"
+          :loading="loading"
+          @click="deleteItemConfirm"
+        >
+          {{ $t("taskForm.buttons.confirmDelete") }}</v-btn
+        >
       </v-card-actions>
     </v-card>
   </v-dialog>
@@ -442,19 +531,19 @@ export default {
     ],
     statusOptions: [
       {
-        id: 'Activa',
-        nameStatus: 'Activa',
-        descriptionStatus: 'Tarea activa y en seguimiento',
-        colorStatus: '4CAF50', // verde
-        iconStatus: 'mdi-check-circle-outline'
+        id: "Activa",
+        nameStatus: "Activa",
+        descriptionStatus: "Tarea activa y en seguimiento",
+        colorStatus: "4CAF50", // verde
+        iconStatus: "mdi-check-circle-outline",
       },
       {
-        id: 'Inactiva',
-        nameStatus: 'Inactiva',
-        descriptionStatus: 'Tarea pausada o archivada',
-        colorStatus: 'F44336', // rojo
-        iconStatus: 'mdi-cancel'
-      }
+        id: "Inactiva",
+        nameStatus: "Inactiva",
+        descriptionStatus: "Tarea pausada o archivada",
+        colorStatus: "F44336", // rojo
+        iconStatus: "mdi-cancel",
+      },
     ],
     snackbar: false,
     sb_type: "",
@@ -475,16 +564,16 @@ export default {
     home_id: "",
     data: {},
     person_id: "",
-   search: "",
-       headers: [
-        { title: "Título", key: "title", sortable: false },
-        { title: "Descripción", key: "description", sortable: false },
-        { title: "Tipo", key: "task_type", sortable: false },
-        { title: "Recurrencia", key: "recurrence", sortable: false },
-        { title: "Prioridad", key: "namePriority", sortable: false },
-        { title: "Estado", key: "status", sortable: false },
-        { title: "Acciones", key: "actions", sortable: false },
-      ],
+    search: "",
+    headers: [
+      { title: "Título", key: "title", sortable: false },
+      { title: "Descripción", key: "description", sortable: false },
+      { title: "Tipo", key: "task_type", sortable: false },
+      { title: "Recurrencia", key: "recurrence", sortable: false },
+      { title: "Prioridad", key: "namePriority", sortable: false },
+      { title: "Estado", key: "status", sortable: false },
+      { title: "Acciones", key: "actions", sortable: false },
+    ],
     editedItem: {
       id: "",
       title: "",
@@ -544,22 +633,20 @@ export default {
   }),
   computed: {
     formTitle() {
-      return this.editedIndex === -1
-        ? "Agregar nueva iniciativa"
-        : "Editar iniciativa";
+      return this.editedIndex === -1 ? "Agregar nueva iniciativa" : "Editar iniciativa";
     },
     switchColor() {
-      return this.editedItem.task_type === 'Personal' ? '#03626C' : '#FB8C00';
+      return this.editedItem.task_type === "Personal" ? "#03626C" : "#FB8C00";
     },
     getCurrentName() {
-      const type = this.taskTypes.find(t => t.id === this.editedItem.task_type);
+      const type = this.taskTypes.find((t) => t.id === this.editedItem.task_type);
       return type ? type.name : this.editedItem.task_type;
     },
   },
   created() {
     this.tools = [
       {
-        name: 'Agregar iniciativa',
+        name: "Agregar iniciativa",
         action: () => this.showAdd(),
       },
     ];
@@ -612,30 +699,30 @@ export default {
         this.save();
       }
     },
-     getTaskTypeIcon(type) {
-    const icons = {
-      Personal: 'mdi-account-outline',
-      Hogar: 'mdi-home-outline',
-      Trabajo: 'mdi-briefcase-outline',
-      Salud: 'mdi-heart-pulse',
-      Otro: 'mdi-puzzle-outline',
-      Inactiva: 'mdi-cancel',
-      Activa: 'mdi-check-circle-outline'
-    };
-    return icons[type] || 'mdi-tag-outline';
-  },
-  getTaskTypeColor(type) {
-    const colors = {
-      Personal: '2196F3', // azul
-      Hogar: 'FF9800',   // naranja
-      Trabajo: '9C27B0', // morado
-      Salud: '4CAF50',   // verde
-      Otro: '9E9E9E',    // gris
-      Inactiva: 'F44336',
-      Activa: '4CAF50',
-    };
-    return colors[type] || '757575';
-  },
+    getTaskTypeIcon(type) {
+      const icons = {
+        Personal: "mdi-account-outline",
+        Hogar: "mdi-home-outline",
+        Trabajo: "mdi-briefcase-outline",
+        Salud: "mdi-heart-pulse",
+        Otro: "mdi-puzzle-outline",
+        Inactiva: "mdi-cancel",
+        Activa: "mdi-check-circle-outline",
+      };
+      return icons[type] || "mdi-tag-outline";
+    },
+    getTaskTypeColor(type) {
+      const colors = {
+        Personal: "2196F3", // azul
+        Hogar: "FF9800", // naranja
+        Trabajo: "9C27B0", // morado
+        Salud: "4CAF50", // verde
+        Otro: "9E9E9E", // gris
+        Inactiva: "F44336",
+        Activa: "4CAF50",
+      };
+      return colors[type] || "757575";
+    },
     async showAdd() {
       this.data = {};
       this.data.home_id = this.home_id;
@@ -664,11 +751,12 @@ export default {
             this.editedItem.recurrence = diaryRecurrence.name;
           }
           this.typetasks = result.data?.tasktype || [];
-          this.taskTypes = result.data?.tasktypetask.map(t => ({
-            ...t,
-            icon: this.getTaskTypeIcon(t.id),
-            color: this.getTaskTypeColor(t.id)
-          })) || [];
+          this.taskTypes =
+            result.data?.tasktypetask.map((t) => ({
+              ...t,
+              icon: this.getTaskTypeIcon(t.id),
+              color: this.getTaskTypeColor(t.id),
+            })) || [];
           console.log("typetasks:", this.typetasks);
           //
         } else {
@@ -796,7 +884,7 @@ export default {
           "priority_id",
           "type",
         ];
-         let updatedFields = Object.keys(this.editedItem)
+        let updatedFields = Object.keys(this.editedItem)
           .filter(
             (key) =>
               fieldsToUpdate.includes(key) &&
@@ -859,11 +947,12 @@ export default {
           this.priorities = result.data?.taskpriorities || [];
           this.recurrences = result.data?.taskrecurrences || [];
           this.typetasks = result.data?.tasktype || [];
-          this.taskTypes = result.data?.tasktypetask.map(t => ({
-            ...t,
-            icon: this.getTaskTypeIcon(t.id),
-            color: this.getTaskTypeColor(t.id)
-          })) || [];
+          this.taskTypes =
+            result.data?.tasktypetask.map((t) => ({
+              ...t,
+              icon: this.getTaskTypeIcon(t.id),
+              color: this.getTaskTypeColor(t.id),
+            })) || [];
         } else {
           this.priorities = [];
           this.recurrences = [];
@@ -941,6 +1030,42 @@ export default {
 };
 </script>
 <style scoped>
+.desktop-table {
+  table-layout: fixed;
+}
+
+.mobile-table {
+  table-layout: auto;
+}
+.responsive-data-table-wrapper {
+  width: 100%;
+}
+
+/* Solo en móvil: activar scroll horizontal */
+.responsive-data-table-wrapper.mobile-scroll {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* En móvil: forzar ancho mínimo para que haya algo que scrollear */
+.responsive-data-table-wrapper.mobile-scroll :deep(.v-data-table) {
+  min-width: 800px;
+}
+
+/* En desktop: asegurar que no haya scroll innecesario */
+@media (min-width: 960px) {
+  .responsive-data-table-wrapper :deep(.v-data-table) {
+    min-width: auto;
+    overflow-x: hidden;
+  }
+}
+
+.tools-bar {
+  overflow-x: auto;
+  white-space: nowrap;
+  gap: 8px;
+}
+
 .icono-concavo {
   width: 50px;
   height: 50px;

@@ -60,6 +60,10 @@
           ></v-text-field>
         </div>
       </v-card-title>
+      <div
+      class="ma-0 pa-0 responsive-data-table-wrapper"
+      :class="{ 'mobile-scroll': $vuetify.display.xs || $vuetify.display.sm }"
+    >
       <v-data-table
         :headers="headers"
         :items="dailylogs"
@@ -72,15 +76,15 @@
         hide-default-footer
         class="mt-1"
         style="
-          max-height: 68vh;
-          overflow-y: auto;
-          background: transparent;
-          border: none !important;
-          outline: none !important;
-          box-shadow: none !important;
-          padding: 0;
-        "
-      >
+        max-height: 68vh;
+        overflow-y: auto;
+        overflow-x: hidden;
+        background: transparent;
+        border: none !important;
+        outline: none !important;
+        box-shadow: none !important;
+      "
+    >
         <!-- Header personalizado -->
         <template v-slot:top>
           <v-card
@@ -133,8 +137,11 @@
         <!-- Fila personalizada -->
         <template v-slot:item="{ item }">
           <!-- Fila principal: DailyLog -->
-          <tr>
-            <td :colspan="6" style="padding: 0; border: none">
+          <tr
+          style="display: table; width: 100%;"
+          :class="$vuetify.display.xs || $vuetify.display.sm ? 'mobile-table' : 'desktop-table'"
+        >
+          <td colspan="100%" style="padding: 0; border: none">
               <v-card class="mb-2 mx-1 rounded-lg" elevation="1" flat>
                 <v-card-text class="d-flex align-center pa-2" style="width: 100%">
                   <div style="width: 7%" class="d-flex align-center">
@@ -409,6 +416,7 @@
           </tr>
         </template>
       </v-data-table>
+      </div>
     </v-card-text>
   </v-card>
   <v-dialog
@@ -416,7 +424,6 @@
     fullscreen
     persistent
     transition="dialog-bottom-transient"
-    content-class="fullscreen-dialog"
   >
     <v-form ref="form" v-model="valid" class="h-100">
       <v-card class="pa-10">
@@ -1176,6 +1183,42 @@ export default {
 </script>
 
 <style scoped>
+.desktop-table {
+  table-layout: fixed;
+}
+
+.mobile-table {
+  table-layout: auto;
+}
+.responsive-data-table-wrapper {
+  width: 100%;
+}
+
+/* Solo en móvil: activar scroll horizontal */
+.responsive-data-table-wrapper.mobile-scroll {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* En móvil: forzar ancho mínimo para que haya algo que scrollear */
+.responsive-data-table-wrapper.mobile-scroll :deep(.v-data-table) {
+  min-width: 800px;
+}
+
+/* En desktop: asegurar que no haya scroll innecesario */
+@media (min-width: 960px) {
+  .responsive-data-table-wrapper :deep(.v-data-table) {
+    min-width: auto;
+    overflow-x: hidden;
+  }
+}
+
+.tools-bar {
+  overflow-x: auto;
+  white-space: nowrap;
+  gap: 8px;
+}
+
 .rotate-180 {
   transform: rotate(180deg);
 }

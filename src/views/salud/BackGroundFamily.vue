@@ -59,6 +59,10 @@
           ></v-text-field>
         </div>
       </v-card-title>
+      <div
+        class="ma-0 pa-0 responsive-data-table-wrapper"
+        :class="isMobile ? 'mobile-scroll' : ''"
+      >
       <v-data-table
         :headers="familyHeaders"
         :items="backgroundFamilies"
@@ -68,16 +72,16 @@
         :loading-text="$t('dataTable.loadingText')"
         :loading="loading"
         :hide-default-header="true"
-        style="
-          max-height: 68vh;
-          overflow-y: auto;
-          background: transparent;
-          border: none !important;
-          outline: none !important;
-          box-shadow: none !important;
-          padding: 0;
-        "
-      >
+       style="
+            max-height: 68vh;
+            overflow-y: auto;
+            overflow-x: hidden;
+            background: transparent;
+            border: none !important;
+            outline: none !important;
+            box-shadow: none !important;
+          "
+        >
         <!-- Encabezado fijo -->
         <template v-slot:top>
           <v-card
@@ -134,8 +138,11 @@
 
         <!-- Item (fila) -->
         <template v-slot:item="slotProps">
-          <tr>
-            <td colspan="100%" style="padding: 0; border: none">
+           <tr
+          style="display: table; width: 100%;"
+          :class="isMobile ? 'mobile-table' : 'desktop-table'"
+        >
+          <td colspan="100%" style="padding: 0; border: none"> 
               <v-card
                 class="mb-2 mx-1 rounded-lg"
                 elevation="1"
@@ -226,26 +233,28 @@
           </tr>
         </template>
       </v-data-table>
+      </div>
     </v-card-text>
   </v-card>
   <v-dialog
     v-model="dialog"
-    fullscreen
+    :fullscreen="isFullscreen"
+    :max-width="isMobile ? '100%' : 'none'"
     persistent
     transition="dialog-bottom-transition"
-    content-class="fullscreen-dialog"
   >
     <v-form ref="form" v-model="valid" class="h-100">
-      <v-card class="pa-10">
+      <v-card :class="isMobile ? 'pa-0' : 'pa-10'">	
         <v-card-text class="pt-12">
           <h5 class="text-grey-darken-2 font-weight-medium">{{ formTitle }}</h5>
           <p class="text-grey-lighten-1">
             {{ $t("familyBackground.formInstructions") }}
           </p>
 
-          <v-row class="mt-12">
-            <!-- Side steps -->
-            <v-col cols="3">
+          <v-container fluid class="pa-0 mt-6">
+            <v-row>
+              <!-- Timeline (solo escritorio) -->
+              <v-col v-if="isDesktop" cols="12" md="3" class="pr-md-6">
               <v-timeline align="start" side="end" dense>
                 <v-timeline-item
                   v-for="(s, index) in steps"
@@ -279,48 +288,30 @@
             </v-col>
 
             <!-- Contenido dinámico según paso -->
-            <v-col cols="9">
-              <h3 class="text-deep-purple-accent-3 mb-8">
-                {{ $t(`familyBackground.steps.${steps[step].title}.title`) }}
-              </h3>
+            <v-col :cols="12" :md="isMobile ? 12 : 9" :class="{ 'mt-6': isMobile }">
+                <!-- En móvil: indicador del paso -->
+                <div
+                  v-if="isMobile"
+                  class="d-flex justify-space-between align-center mb-4"
+                >
+                  <v-chip
+                    label
+                    size="small"
+                    color="deep-purple-lighten-4"
+                    class="text-deep-purple"
+                  >
+                    {{ $t(`familyBackground.steps.${steps[step].title}.title`) }}
+                  </v-chip>
+                </div>
+
+                <!-- En escritorio: título del paso -->
+                <h3 v-else class="text-deep-purple-accent-3 mb-6">
+                  {{ $t(`familyBackground.steps.${steps[step].title}.title`) }}
+                </h3>
 
               <!-- Paso 1: Detalles -->
-              <v-row dense v-if="step === 0">
-                <!--<v-col cols="12" sm="6">
-                  <v-autocomplete
-                    v-model="editedItem.type_id"
-                    :items="backgroundTypes"
-                    :label="$t('familyBackground.fields.type')"
-                    item-title="nameTranslated"
-                    item-value="id"
-                    variant="underlined"
-                    :rules="typeRules"
-                  >
-                    <template v-slot:item="{ props, item }">
-                      <v-list-item v-bind="props">
-                        <v-list-item-subtitle class="d-flex flex-column">
-                          <v-tooltip bottom>
-                            <template v-slot:activator="{ props: tooltipProps }">
-                              <div
-                                class="truncate"
-                                v-bind="tooltipProps"
-                                style="
-                                  white-space: nowrap;
-                                  overflow: hidden;
-                                  text-overflow: ellipsis;
-                                "
-                              >
-                                {{ item.raw.descriptionTranslated }}
-                              </div>
-                            </template>
-                            <span>{{ item.raw.descriptionTranslated }}</span>
-                          </v-tooltip>
-                        </v-list-item-subtitle>
-                      </v-list-item>
-                    </template>
-                  </v-autocomplete>
-                </v-col>-->
-
+              <v-row dense>
+              <template v-if="step === 0">
                 <v-col cols="12" sm="6">
                   <v-select
                     v-model="editedItem.relationship"
@@ -361,13 +352,12 @@
                     v-model="editedItem.disease"
                     :label="$t('familyBackground.fields.disease')"
                     variant="underlined"
-                    :rules="diseaseRules"
                   />
                 </v-col>
-              </v-row>
+              </template>
 
               <!-- Step 2: Información adicional -->
-              <v-row dense v-if="step === 1">
+              <template v-if="step === 1">
                 <v-col cols="12">
                   <v-textarea
                     v-model="editedItem.details"
@@ -386,7 +376,6 @@
                     type="number"
                     min="0"
                     max="120"
-                    :rules="diagnosisAgeRules"
                   />
                 </v-col>
                 <v-col cols="12" sm="6">
@@ -404,8 +393,7 @@
                         :modelValue="dateInput"
                         variant="underlined"
                         :label="$t('familyBackground.fields.date')"
-                        :rules="dateRules"
-                      ></v-text-field>
+                       ></v-text-field>
                     </template>
                     <v-locale-provider>
                       <v-date-picker
@@ -418,10 +406,10 @@
                     </v-locale-provider>
                   </v-menu>
                 </v-col>
-              </v-row>
+              </template>
 
               <!-- Step 3: Fechas -->
-              <v-row dense v-if="step === 2">
+              <template v-if="step === 2">
                 <v-col cols="12">
                   <v-menu
                     v-model="dateMenu"
@@ -449,6 +437,7 @@
                     </v-locale-provider>
                   </v-menu>
                 </v-col>
+              </template>
               </v-row>
 
               <!-- Navegación -->
@@ -476,6 +465,7 @@
               </div>
             </v-col>
           </v-row>
+          </v-container>
         </v-card-text>
       </v-card>
     </v-form>
@@ -526,6 +516,7 @@ export default {
   emits: ['update-medical-information'],
   data: () => ({
     selected: shallowRef([2]),
+     isFullscreen: false,
     selected2: null,
     step: 0,
     time: null,
@@ -666,8 +657,21 @@ export default {
       ];
       return this.$t("steps") || defaultSteps;
     },
+      isMobile() {
+      return this.$vuetify.display.xs || this.$vuetify.display.sm;
+    },
+    isDesktop() {
+      return !this.isMobile;
+    },
   },
-
+   watch: {
+    dialog(val) {
+      if (val) this.updateFullscreenMode();
+    },
+    isDesktop() {
+      this.updateFullscreenMode();
+    },
+  },
   created() {
     this.tools = [
       {
@@ -683,6 +687,11 @@ export default {
   },
 
   methods: {
+     updateFullscreenMode() {
+      this.$nextTick(() => {
+        this.isFullscreen = this.isDesktop;
+      });
+    },
     obtenerFechaLocal() {
       const hoy = new Date();
       const year = hoy.getFullYear();
@@ -1026,6 +1035,47 @@ export default {
 </script>
 
 <style scoped>
+.fullscreen-dialog {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  overflow-y: auto;
+}
+.desktop-table {
+  table-layout: fixed;
+}
+
+.mobile-table {
+  table-layout: auto;
+}
+.responsive-data-table-wrapper {
+  width: 100%;
+}
+
+/* Solo en móvil: activar scroll horizontal */
+.responsive-data-table-wrapper.mobile-scroll {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* En móvil: forzar ancho mínimo para que haya algo que scrollear */
+.responsive-data-table-wrapper.mobile-scroll :deep(.v-data-table) {
+  min-width: 800px;
+}
+
+/* En desktop: asegurar que no haya scroll innecesario */
+@media (min-width: 960px) {
+  .responsive-data-table-wrapper :deep(.v-data-table) {
+    min-width: auto;
+    overflow-x: hidden;
+  }
+}
+
+.tools-bar {
+  overflow-x: auto;
+  white-space: nowrap;
+  gap: 8px;
+}
 .icono-concavo {
   width: 50px;
   height: 50px;
@@ -1061,14 +1111,6 @@ export default {
 .date {
   padding: 4px 8px;
   border-radius: 4px;
-}
-
-.fullscreen-dialog {
-  height: 100vh !important;
-  max-height: 100vh !important;
-  min-width: 100vh;
-  margin: 0 !important;
-  padding: 0 !important;
 }
 
 .text-truncate {

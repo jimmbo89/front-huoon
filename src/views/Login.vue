@@ -77,34 +77,59 @@
           {{ $t(this.register ? 'auth.register.subtitle' : 'auth.login.subtitle', { appName: 'huoon' }) }}
         </p>
 
-        <v-row justify="center" class="mb-4">
-          <v-col cols="auto">
-            <v-btn
-              size="x-large"
-              prepend-icon="mdi-google"
-              variant="tonal"
-              color="info"
-              style="text-transform: none; ; min-width: 170px;"
-              rounded="lg"
-              @click="loginWithGoogle"
-            >
-              {{ $t('login.buttons.google') }}
-            </v-btn>
-          </v-col>
-          <v-col cols="auto" class="ml-4">
-            <v-btn
-              size="x-large"
-              prepend-icon="mdi-facebook"
-              variant="tonal"
-              color="primary"
-              style="text-transform: none; min-width: 170px;"
-              rounded="lg"
-              @click="loginWithFacebook"
-            >
-              {{ $t('login.buttons.facebook') }}
-            </v-btn>
-          </v-col>
-        </v-row>
+        <v-row justify="center" class="mb-4" no-gutters style="flex-wrap: nowrap; gap: 16px;">
+  <!-- Columna izquierda vacía (solo en md y superiores) -->
+  <v-col
+    cols="0"
+    md="2"
+    class="d-none d-md-flex"
+  ></v-col>
+
+  <!-- Botón de Google -->
+  <v-col
+    cols="6"
+    md="4"
+    class="d-flex"
+  >
+    <v-btn
+      size="x-large"
+      prepend-icon="mdi-google"
+      variant="tonal"
+      color="info"
+      style="text-transform: none; width: 100%;"
+      rounded="lg"
+      @click="loginWithGoogle"
+    >
+      {{ $t('login.buttons.google') }}
+    </v-btn>
+  </v-col>
+
+  <!-- Botón de Facebook -->
+  <v-col
+    cols="6"
+    md="4"
+    class="d-flex"
+  >
+    <v-btn
+      size="x-large"
+      prepend-icon="mdi-facebook"
+      variant="tonal"
+      color="primary"
+      style="text-transform: none; width: 100%;"
+      rounded="lg"
+      @click="loginWithFacebook"
+    >
+      {{ $t('login.buttons.facebook') }}
+    </v-btn>
+  </v-col>
+
+  <!-- Columna derecha vacía (solo en md y superiores) -->
+  <v-col
+    cols="0"
+    md="2"
+    class="d-none d-md-flex"
+  ></v-col>
+</v-row>
 
 
          <v-form ref="form" v-model="valid" class="my-2">

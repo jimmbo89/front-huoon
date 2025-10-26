@@ -1,6 +1,14 @@
 <template>
-  <v-snackbar class="mt-12" location="right top" :timeout="sb_timeout" :color="sb_type" elevation="24"
-    :multi-line="true" vertical v-model="snackbar">
+  <v-snackbar
+    class="mt-12"
+    location="right top"
+    :timeout="sb_timeout"
+    :color="sb_type"
+    elevation="24"
+    :multi-line="true"
+    vertical
+    v-model="snackbar"
+  >
     <v-row>
       <v-col md="2">
         <v-avatar :icon="sb_icon" color="sb_type" size="40"></v-avatar>
@@ -11,12 +19,12 @@
       </v-col>
     </v-row>
   </v-snackbar>
-  <v-container class="pa-4" >
+  <v-container class="pa-4">
     <v-card elevation="2" rounded="lg" flat>
       <v-card-text>
-      <v-row>
-      <v-col cols="12" sm="10" md="10" class="d-flex align-center">
-          <v-avatar size="48" class="me-3" color="grey-lighten-4" variant="tonal">
+        <v-row>
+          <v-col cols="12" sm="10" md="10" class="d-flex align-center">
+            <v-avatar size="48" class="me-3" color="grey-lighten-4" variant="tonal">
               <v-icon size="35" color="error">mdi-store-outline</v-icon>
             </v-avatar>
             <div>
@@ -24,11 +32,19 @@
                 {{ $t("warehouse.list.title") }}
               </div>
             </div>
-           </v-col>
+          </v-col>
           <v-col cols="12" sm="2" md="2">
             <div class="d-flex align-right justify-end pa-2">
-              <v-switch v-model="localType" true-value="Personal" false-value="Hogar" :base-color="switchColor"
-                :color="switchColor" hide-details inset class="mb-4 font-weight-bold">
+              <v-switch
+                v-model="localType"
+                true-value="Personal"
+                false-value="Hogar"
+                :base-color="switchColor"
+                :color="switchColor"
+                hide-details
+                inset
+                class="mb-4 font-weight-bold"
+              >
                 <template v-slot:label>
                   <span class="text-body-1" :style="{ color: switchColor }">
                     {{ getCurrentName }}
@@ -37,209 +53,234 @@
               </v-switch>
             </div>
           </v-col>
-          </v-row>       
+        </v-row>
         <v-row class="pa-0 ma-0 mt-1">
-  <v-col
-    v-for="warehouse in warehouses"
-    :key="warehouse.id"
-    cols="12"
-    sm="6"
-    md="6"
-    lg="3"
-    class="px-1"
-  >
-    <v-card
-      class="d-flex align-center pa-2"
-      :class="{ 'oscurecer-persistente': warehouse.id === warehouseData?.id }"
-      elevation="1"
-      rounded="lg"
-      @click="selectWarehouse(warehouse)"
-      style="cursor: pointer"
-    >
-      <v-avatar
-        size="40"
-        class="me-3"
-        color="indigo lighten-4"
-        variant="tonal"
-      >
-        <v-icon color="indigo">mdi-warehouse</v-icon>
-      </v-avatar>
+          <v-col
+            v-for="warehouse in warehouses"
+            :key="warehouse.id"
+            cols="12"
+            sm="6"
+            md="6"
+            lg="3"
+            class="px-1"
+          >
+            <v-card
+              class="d-flex align-center pa-2"
+              :class="{ 'oscurecer-persistente': warehouse.id === warehouseData?.id }"
+              elevation="1"
+              rounded="lg"
+              @click="selectWarehouse(warehouse)"
+              style="cursor: pointer"
+            >
+              <v-avatar size="40" class="me-3" color="indigo lighten-4" variant="tonal">
+                <v-icon color="indigo">mdi-warehouse</v-icon>
+              </v-avatar>
 
-      <div style="min-width: 0; flex: 1">
-        <div class="text-body-2 font-weight-medium text-truncate">
-          <span>{{ warehouse.title }}</span>
-          <v-tooltip activator="parent" location="bottom" max-width="350px">
-            <span style="white-space: normal; word-break: break-word">
-              {{ $t("warehouse.fields.name") }}: {{ warehouse.title }}
-            </span>
-          </v-tooltip>
-        </div>
+              <div style="min-width: 0; flex: 1">
+                <div class="text-body-2 font-weight-medium text-truncate">
+                  <span>{{ warehouse.title }}</span>
+                  <v-tooltip activator="parent" location="bottom" max-width="350px">
+                    <span style="white-space: normal; word-break: break-word">
+                      {{ $t("warehouse.fields.name") }}: {{ warehouse.title }}
+                    </span>
+                  </v-tooltip>
+                </div>
 
-          <div class="text-caption text-grey-darken-1 text-truncate">
-            <span>{{ warehouse.description || $t("common.no_description") }}</span>
-            <v-tooltip activator="parent" location="bottom" max-width="350px">
-              <span style="white-space: normal; word-break: break-word">
-                {{ $t("warehouse.fields.description") }}: {{ warehouse.description }}
-              </span>
-            </v-tooltip>
-          </div>
-          <div class="text-caption text-grey-lighten-1 mt-1">
-            {{ warehouse.productCount }} {{ $t("common.product") }}
-          </div>
-      </div>
+                <div class="text-caption text-grey-darken-1 text-truncate">
+                  <span>{{ warehouse.description || $t("common.no_description") }}</span>
+                  <v-tooltip activator="parent" location="bottom" max-width="350px">
+                    <span style="white-space: normal; word-break: break-word">
+                      {{ $t("warehouse.fields.description") }}:
+                      {{ warehouse.description }}
+                    </span>
+                  </v-tooltip>
+                </div>
+                <div class="text-caption text-grey-lighten-1 mt-1">
+                  {{ warehouse.productCount }} {{ $t("common.product") }}
+                </div>
+              </div>
 
-      <!-- ✅ Botón de edición -->
-      <v-btn
-        icon
-        size="x-small"
-        variant="text"
-        color="blue-grey"
-        @click.stop="editWarehouse(warehouse)" 
-        class="position-absolute"
-        style="right: 2px; top: 2px"
-      >
-        <v-tooltip activator="parent" location="bottom">
-          {{ $t("buttons.edit") }}
-        </v-tooltip>
-        <v-icon color="primary" size="20">mdi-pencil</v-icon>
-      </v-btn>
-    </v-card>
-  </v-col>
-</v-row>
+              <!-- ✅ Botón de edición -->
+              <v-btn
+                icon
+                size="x-small"
+                variant="text"
+                color="blue-grey"
+                @click.stop="editWarehouse(warehouse)"
+                class="position-absolute"
+                style="right: 2px; top: 2px"
+              >
+                <v-tooltip activator="parent" location="bottom">
+                  {{ $t("buttons.edit") }}
+                </v-tooltip>
+                <v-icon color="primary" size="20">mdi-pencil</v-icon>
+              </v-btn>
+            </v-card>
+          </v-col>
+        </v-row>
         <v-row dense class="mt-3">
-        <v-col cols="12">
-          <Product
-            v-if="warehouseData"
-            :key="warehouseData.id"
-            :warehouseData="warehouseData"
-          />
-        </v-col>
-      </v-row>
-         </v-card-text>
+          <v-col cols="12">
+            <Product
+              v-if="warehouseData"
+              :key="warehouseData.id"
+              :warehouseData="warehouseData"
+            />
+          </v-col>
+        </v-row>
+      </v-card-text>
     </v-card>
   </v-container>
   <!--Almacén-->
-  <v-dialog v-model="dialogWarehouse" fullscreen persistent transition="dialog-bottom-transition"
-    content-class="fullscreen-dialog">
+  <v-dialog
+    v-model="dialogWarehouse"
+    persistent
+    transition="dialog-bottom-transition"
+    :fullscreen="isFullscreen"
+    :max-width="isMobile ? '100%' : 'none'"
+  >
     <v-form ref="form" v-model="valid" class="h-100">
-      <v-card class="pa-10">
+      <v-card :class="isMobile ? 'pa-0' : 'pa-10'">
         <v-card-text class="pt-12">
           <h5 class="text-grey-darken-2 font-weight-medium">{{ formTitleWarehouse }}</h5>
           <p class="text-grey-lighten-1">
             {{ $t("warehouse.formInstructions") }}
           </p>
 
-          <v-row class="mt-12">
-            <!-- Side steps -->
-            <v-col cols="3">
-              <v-timeline align="start" side="end" dense>
-                <v-timeline-item v-for="(s, index) in stepsW" :key="index" :dot-color="
-                    stepW > index
-                      ? 'green'
-                      : stepW === index
-                      ? 'deep-purple'
-                      : 'grey-lighten-1'
-                  " :icon="
-                    stepW >= index
-                      ? stepW === index
-                        ? `mdi-numeric-${index + 1}`
-                        : 'mdi-check'
-                      : null
-                  " size="large">
-                  <template #opposite>
-                    <div class="text-end">
-                      <strong>{{ $t(`warehouse.steps.${s.title}.title`) }}</strong>
-                      <div class="text-caption text-grey">
-                        {{ $t(`warehouse.steps.${s.title}.subtitle`) }}
+          <v-container fluid class="pa-0 mt-6">
+            <v-row>
+              <!-- Timeline (solo escritorio) -->
+              <v-col v-if="isDesktop" cols="12" md="3" class="pr-md-6">
+                <v-timeline align="start" side="end" dense>
+                  <v-timeline-item
+                    v-for="(s, index) in stepsW"
+                    :key="index"
+                    :dot-color="
+                      stepW > index
+                        ? 'green'
+                        : stepW === index
+                        ? 'deep-purple'
+                        : 'grey-lighten-1'
+                    "
+                    :icon="
+                      stepW >= index
+                        ? stepW === index
+                          ? `mdi-numeric-${index + 1}`
+                          : 'mdi-check'
+                        : null
+                    "
+                    size="large"
+                  >
+                    <template #opposite>
+                      <div class="text-end">
+                        <strong>{{ $t(`warehouse.steps.${s.title}.title`) }}</strong>
+                        <div class="text-caption text-grey">
+                          {{ $t(`warehouse.steps.${s.title}.subtitle`) }}
+                        </div>
                       </div>
-                    </div>
-                  </template>
-                </v-timeline-item>
-              </v-timeline>
-            </v-col>
-
-            <!-- Contenido dinámico según paso -->
-            <v-col cols="9">
-              <h3 class="text-deep-purple-accent-3 mb-8">
-                {{ $t(`warehouse.steps.${stepsW[stepW].title}.title`) }}
-              </h3>
-
-              <!-- Paso 1: Información básica -->
-              <v-row dense v-if="stepW === 0">
-                <!--<v-col cols="12" md="12" v-show="editedIndex === -1">
-                  <v-autocomplete v-model="editedItemWarehouse.warehouse_id" :items="warehouses"
-                    :label="$t('warehouse.fields.warehouse')" item-title="title" item-value="id" variant="underlined">
-                    <template v-slot:item="{ props, item }">
-                      <v-list-item v-bind="props">
-                        <v-list-item-subtitle class="d-flex flex-column">
-                          <v-tooltip location="top right">
-                            <template v-slot:activator="{ props }">
-                              <div class="description-text" v-bind="props" :title="item.raw.description">
-                                {{ $t("warehouse.fields.description") }}:
-                                {{ item.raw.description }}
-                              </div>
-                            </template>
-                            <span>{{ item.raw.description }}</span>
-                          </v-tooltip>
-                          <v-tooltip location="top right">
-                            <template v-slot:activator="{ props }">
-                              <div class="description-text" v-bind="props" :title="item.raw.location">
-                                {{ $t("warehouse.fields.home_location") }}:
-                                {{ item.raw.location }}
-                              </div>
-                            </template>
-                            <span>{{ item.raw.location }}</span>
-                          </v-tooltip>
-                        </v-list-item-subtitle>
-                      </v-list-item>
                     </template>
-                  </v-autocomplete>
-                </v-col>-->
+                  </v-timeline-item>
+                </v-timeline>
+              </v-col>
 
-                <v-col cols="12" md="12">
-                  <v-text-field v-model="editedItemWarehouse.title" clearable :label="$t('warehouse.fields.name')"
-                    variant="underlined" :rules="nameRules"></v-text-field>
-                </v-col>
+              <!-- Contenido dinámico según paso -->
+              <v-col :cols="12" :md="isMobile ? 12 : 9" :class="{ 'mt-6': isMobile }">
+                <!-- En móvil: indicador del paso -->
+                <div
+                  v-if="isMobile"
+                  class="d-flex justify-space-between align-center mb-4"
+                >
+                  <v-chip
+                    label
+                    size="small"
+                    color="deep-purple-lighten-4"
+                    class="text-deep-purple"
+                  >
+                    {{ $t(`warehouse.steps.${stepsW[stepW].title}.title`) }}
+                  </v-chip>
+                </div>
 
-                <v-col cols="12" md="12">
-                  <v-text-field v-model="editedItemWarehouse.location" clearable
-                    :label="$t('warehouse.fields.home_location')" variant="underlined"
-                    :rules="locationRules"></v-text-field>
-                </v-col>
-              </v-row>
+                <!-- En escritorio: título del paso -->
+                <h3 v-else class="text-deep-purple-accent-3 mb-6">
+                  {{ $t(`warehouse.steps.${stepsW[stepW].title}.title`) }}
+                </h3>
 
-              <!-- Paso 2: Configuración adicional -->
-              <v-row dense v-if="stepW === 1">
-                <v-col cols="12" md="6">
-                  <v-select v-model="editedItemWarehouse.status" :items="[
-                      { id: 0, label: $t('warehouse.status.public') },
-                      { id: 1, label: $t('warehouse.status.private') },
-                    ]" item-title="label" item-value="id" :label="$t('warehouse.fields.status')" variant="underlined"
-                    :rules="statusRules"></v-select>
-                </v-col>
+                <!-- Paso 1: Información básica -->
+                <v-row dense>
+                  <template v-if="stepW === 0">
+                    <v-col cols="12" md="12">
+                      <v-text-field
+                        v-model="editedItemWarehouse.title"
+                        clearable
+                        :label="$t('warehouse.fields.name')"
+                        variant="underlined"
+                        :rules="nameRules"
+                      ></v-text-field>
+                    </v-col>
 
-                <v-col cols="12" md="12">
-                  <v-textarea v-model="editedItemWarehouse.description" clearable
-                    :label="$t('warehouse.fields.description')" variant="underlined"
-                    :rules="descriptionRules"></v-textarea>
-                </v-col>
-              </v-row>
+                    <v-col cols="12" md="12">
+                      <v-text-field
+                        v-model="editedItemWarehouse.location"
+                        clearable
+                        :label="$t('warehouse.fields.home_location')"
+                        variant="underlined"
+                        :rules="locationRules"
+                      ></v-text-field>
+                    </v-col>
+                  </template>
 
-              <div class="d-flex justify-space-between mt-8">
-                <v-btn variant="text" class="text-grey-darken-1" @click="stepW > 0 ? stepW-- : this.closeWarehouse()">
-                  {{ stepW === 0 ? $t("buttons.close") : $t("buttons.previous") }}
-                </v-btn>
+                  <!-- Paso 2: Configuración adicional -->
+                  <template v-if="stepW === 1">
+                    <v-col cols="12" md="6">
+                      <v-select
+                        v-model="editedItemWarehouse.status"
+                        :items="[
+                          { id: 0, label: $t('warehouse.status.public') },
+                          { id: 1, label: $t('warehouse.status.private') },
+                        ]"
+                        item-title="label"
+                        item-value="id"
+                        :label="$t('warehouse.fields.status')"
+                        variant="underlined"
+                        :rules="statusRules"
+                      ></v-select>
+                    </v-col>
 
-                <v-btn variant="text" class="text-deep-purple-accent-3" @click="nextStepW" :disabled="!valid">
-                  {{
-                  stepW === stepsW.length - 1
-                  ? $t("buttons.saveAndClose")
-                  : $t("buttons.next")
-                  }}
-                </v-btn>
-              </div>
-            </v-col>
-          </v-row>
+                    <v-col cols="12" md="12">
+                      <v-textarea
+                        v-model="editedItemWarehouse.description"
+                        clearable
+                        :label="$t('warehouse.fields.description')"
+                        variant="underlined"
+                        :rules="descriptionRules"
+                      ></v-textarea>
+                    </v-col>
+                  </template>
+                </v-row>
+                <div class="d-flex justify-space-between mt-8">
+                  <v-btn
+                    variant="text"
+                    class="text-grey-darken-1"
+                    @click="stepW > 0 ? stepW-- : this.closeWarehouse()"
+                  >
+                    {{ stepW === 0 ? $t("buttons.close") : $t("buttons.previous") }}
+                  </v-btn>
+
+                  <v-btn
+                    variant="text"
+                    class="text-deep-purple-accent-3"
+                    @click="nextStepW"
+                    :disabled="!valid"
+                  >
+                    {{
+                      stepW === stepsW.length - 1
+                        ? $t("buttons.saveAndClose")
+                        : $t("buttons.next")
+                    }}
+                  </v-btn>
+                </div>
+              </v-col>
+            </v-row>
+          </v-container>
         </v-card-text>
       </v-card>
     </v-form>
@@ -253,11 +294,11 @@ import { handleRequest } from "@/utils/api"; // Ruta al archivo
 import Product from "../product/Product";
 export default {
   props: {
-      warehouses: {
+    warehouses: {
       type: Array,
       default: () => [],
     },
-     types: {
+    types: {
       type: Array,
       default: () => [],
     },
@@ -266,11 +307,12 @@ export default {
       default: "",
     },
   },
-  emits: ['warehouse-updated', 'update:type'],
+  emits: ["warehouse-updated", "update:type"],
   components: {
-    Product
+    Product,
   },
   data: () => ({
+    isFullscreen: false,
     warehouseData: null,
     dialogWarehouse: false,
     step: 0,
@@ -329,35 +371,23 @@ export default {
     },
     warehouse: [],
   }),
-  watch: {
-     warehouses: {
-      immediate: true, // Se ejecuta al montar el componente
-      handler(newVal) {
-        if (newVal && newVal.length > 0) {
-          this.warehouseData = newVal[0]; // Asigna el primero por defecto
-        } else {
-          this.warehouseData = null;
-        }
+  computed: {
+    localType: {
+      get() {
+        return this.type; // ← lee el prop "type"
+      },
+      set(newValue) {
+        this.$emit("update:type", newValue); // ← emite para actualizar el padre
       },
     },
-  },
-  computed: {
-     localType: {
-    get() {
-      return this.type; // ← lee el prop "type"
-    },
-    set(newValue) {
-      this.$emit('update:type', newValue); // ← emite para actualizar el padre
-    }
-  },
     formTitleWarehouse() {
       return "Editar Almacén";
     },
-  switchColor() {
-      return this.type === 'Personal' ? '#03626C' : '#FB8C00';
+    switchColor() {
+      return this.type === "Personal" ? "#03626C" : "#FB8C00";
     },
     getCurrentName() {
-      const type = this.types.find(t => t.id === this.type);
+      const type = this.types.find((t) => t.id === this.type);
       return type ? type.name : this.type;
     },
     nameRules() {
@@ -386,7 +416,7 @@ export default {
           }),
       ];
     },
-     descriptionRules() {
+    descriptionRules() {
       return [
         (v) =>
           !v ||
@@ -411,14 +441,43 @@ export default {
           }),
       ];
     },
+    isMobile() {
+      return this.$vuetify.display.xs || this.$vuetify.display.sm;
+    },
+    isDesktop() {
+      return !this.isMobile;
+    },
+  },
+  watch: {
+    warehouses: {
+      immediate: true, // Se ejecuta al montar el componente
+      handler(newVal) {
+        if (newVal && newVal.length > 0) {
+          this.warehouseData = newVal[0]; // Asigna el primero por defecto
+        } else {
+          this.warehouseData = null;
+        }
+      },
+    },
+    dialog(val) {
+      if (val) this.updateFullscreenMode();
+    },
+    isDesktop() {
+      this.updateFullscreenMode();
+    },
   },
   mounted() {
     this.home_id = LocalStorageService.getItem("home_id");
   },
   methods: {
+    updateFullscreenMode() {
+      this.$nextTick(() => {
+        this.isFullscreen = this.isDesktop;
+      });
+    },
     selectWarehouse(warehouse) {
-    this.warehouseData = warehouse;
-  },
+      this.warehouseData = warehouse;
+    },
     nextStepW() {
       if (this.stepW < this.stepsW.length - 1) {
         this.stepW++;
@@ -436,59 +495,58 @@ export default {
         this.originalItemWarehouse = Object.assign({}, this.defaultItemWarehouse);
       });
     },
-    async editDataWarehouse(){
+    async editDataWarehouse() {
       const fieldsToUpdate = ["id", "title", "location", "description", "status"];
-        let updatedFields = Object.keys(this.editedItemWarehouse)
-          .filter(
-            (key) =>
-              fieldsToUpdate.includes(key) &&
-              this.editedItemWarehouse[key] !== this.originalItemWarehouse[key]
-          )
-          .reduce((obj, key) => {
-            obj[key] = this.editedItemWarehouse[key];
-            return obj;
-          }, {});
-        if (Object.keys(updatedFields).length > 0) {
-          updatedFields.id = this.editedItemWarehouse.id;
-          this.loading = true;
-          try {
-            const result = await handleRequest({
-              endpoint: "person-warehouse",
-              method: "PUT",
-              data: updatedFields,
-            });
+      let updatedFields = Object.keys(this.editedItemWarehouse)
+        .filter(
+          (key) =>
+            fieldsToUpdate.includes(key) &&
+            this.editedItemWarehouse[key] !== this.originalItemWarehouse[key]
+        )
+        .reduce((obj, key) => {
+          obj[key] = this.editedItemWarehouse[key];
+          return obj;
+        }, {});
+      if (Object.keys(updatedFields).length > 0) {
+        updatedFields.id = this.editedItemWarehouse.id;
+        this.loading = true;
+        try {
+          const result = await handleRequest({
+            endpoint: "person-warehouse",
+            method: "PUT",
+            data: updatedFields,
+          });
 
-            // Manejo de la respuesta según el resultado
-            if (result.success) {
-              this.showAlert("success", result.message, 3000);
-              //this.initialize();
-             this.$emit('warehouse-updated', result.data.personWarehouse);
- 
-            } else {
-              this.loading = false;
-              this.showAlert("warning", result.message, 3000);
-            }
-          } catch (error) {
+          // Manejo de la respuesta según el resultado
+          if (result.success) {
+            this.showAlert("success", result.message, 3000);
+            //this.initialize();
+            this.$emit("warehouse-updated", result.data.personWarehouse);
+          } else {
             this.loading = false;
-            // Este bloque captura errores inesperados fuera del manejo estándar
-            this.showAlert(
-              "error",
-              "Ocurrió un error inesperado al procesar la solicitud.",
-              3000
-            );
+            this.showAlert("warning", result.message, 3000);
           }
+        } catch (error) {
+          this.loading = false;
+          // Este bloque captura errores inesperados fuera del manejo estándar
+          this.showAlert(
+            "error",
+            "Ocurrió un error inesperado al procesar la solicitud.",
+            3000
+          );
         }
+      }
     },
     async editWarehouse(warehouse) {
       console.log("editWarehouse", warehouse);
       this.stepW = 0;
       // Asigna los datos del almacén al objeto de edición
       this.editedItemWarehouse = {
-        ...warehouse
+        ...warehouse,
       };
-    
+
       this.originalItemWarehouse = { ...warehouse };
-        this.dialogWarehouse = true;
+      this.dialogWarehouse = true;
       this.isEditing = false;
     },
     showAlert(sb_type, sb_message, sb_timeout) {
@@ -516,6 +574,47 @@ export default {
 };
 </script>
 <style scoped>
+.fullscreen-dialog {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  overflow-y: auto;
+}
+.desktop-table {
+  table-layout: fixed;
+}
+
+.mobile-table {
+  table-layout: auto;
+}
+.responsive-data-table-wrapper {
+  width: 100%;
+}
+
+/* Solo en móvil: activar scroll horizontal */
+.responsive-data-table-wrapper.mobile-scroll {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* En móvil: forzar ancho mínimo para que haya algo que scrollear */
+.responsive-data-table-wrapper.mobile-scroll :deep(.v-data-table) {
+  min-width: 800px;
+}
+
+/* En desktop: asegurar que no haya scroll innecesario */
+@media (min-width: 960px) {
+  .responsive-data-table-wrapper :deep(.v-data-table) {
+    min-width: auto;
+    overflow-x: hidden;
+  }
+}
+
+.tools-bar {
+  overflow-x: auto;
+  white-space: nowrap;
+  gap: 8px;
+}
 .date-display {
   font-size: 0.85rem; /* Equivale a text-caption */
   line-height: 1.1;
@@ -523,7 +622,7 @@ export default {
   text-align: center;
   word-break: break-word;
   white-space: normal;
-   margin: 0;
+  margin: 0;
   padding: 0;
 }
 .icono-concavo {
@@ -541,7 +640,7 @@ export default {
   overflow: hidden;
   transition: all 0.3s ease;
   cursor: pointer;
-   z-index: 1;
+  z-index: 1;
 }
 
 .icono-concavo::after {
@@ -591,8 +690,8 @@ table.v-table > thead,
 
 .oscurecer-persistente {
   background-color: rgba(0, 0, 0, 0.04) !important; /* Sutil gris claro */
-  border-color: rgba(0, 0, 0, 0.12) !important;     /* Borde más marcado */
-  transform: translateY(-1px) !important;           /* Efecto leve de elevación */
+  border-color: rgba(0, 0, 0, 0.12) !important; /* Borde más marcado */
+  transform: translateY(-1px) !important; /* Efecto leve de elevación */
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.12) !important;
 }
 

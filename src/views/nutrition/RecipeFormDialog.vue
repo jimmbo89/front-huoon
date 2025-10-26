@@ -1,231 +1,282 @@
-<!-- src/components/RecipeFormDialog.vue -->
+
 <template>
-  <!-- Snackbar interno -->
+  <!-- Snackbar -->
   <v-snackbar
     class="mt-12"
     location="right top"
     :timeout="sb_timeout"
     :color="sb_type"
     elevation="24"
-    :multi-line="true"
+    multi-line
     vertical
     v-model="snackbar"
   >
     <v-row>
-      <v-col md="2">
+      <v-col cols="2" class="d-flex justify-center align-center">
         <v-avatar :icon="sb_icon" :color="sb_type" size="40"></v-avatar>
       </v-col>
-      <v-col md="10">
+      <v-col cols="10">
         <h4>{{ sb_title }}</h4>
         {{ sb_message }}
       </v-col>
     </v-row>
   </v-snackbar>
 
+  <!-- Diálogo principal -->
   <v-dialog
     v-model="dialog"
-    fullscreen
+    :fullscreen="isFullscreen"
+    :max-width="isMobile ? 'none' : '100%'"
     persistent
-    transition="dialog-bottom-transient"
-    content-class="fullscreen-dialog"
+    scrollable
+    transition="dialog-bottom-transition"
   >
     <v-form ref="form" v-model="valid" class="h-100">
-      <v-card class="pa-10">
+      <v-card :class="isMobile ? 'pa-0' : 'pa-10'">
         <v-card-text class="pt-12">
           <h5 class="text-grey-darken-2 font-weight-medium">
             {{ $t(`recipe.formTitle.${isEditing ? "edit" : "create"}`) }}
           </h5>
-          <p class="text-grey-lighten-1">{{ $t("recipe.formInstructions") }}</p>
+          <p class="text-grey-lighten-1">
+            {{ $t("recipe.formInstructions") }}
+          </p>
 
-          <v-row class="mt-12">
-            <!-- Timeline -->
-            <v-col cols="3">
-              <v-timeline align="start" side="end" dense>
-                <v-timeline-item
-                  v-for="(s, index) in steps"
-                  :key="index"
-                  :dot-color="
-                    step > index
-                      ? 'green'
-                      : step === index
-                      ? 'deep-purple'
-                      : 'grey-lighten-1'
-                  "
-                  :icon="
-                    step >= index
-                      ? step === index
-                        ? `mdi-numeric-${index + 1}`
-                        : 'mdi-check'
-                      : null
-                  "
-                  size="large"
-                >
-                  <template #opposite>
-                    <div class="text-end">
-                      <strong>{{ $t(`recipe.steps.${s.key}.title`) }}</strong>
-                      <div class="text-caption text-grey">
-                        {{ $t(`recipe.steps.${s.key}.subtitle`) }}
+          <v-container fluid class="pa-0 mt-6">
+            <v-row>
+              <!-- Timeline (solo escritorio) -->
+              <v-col
+                v-if="isDesktop"
+                cols="12"
+                md="3"
+                class="pr-md-6"
+              >
+                <v-timeline align="start" side="end" dense>
+                  <v-timeline-item
+                    v-for="(s, index) in steps"
+                    :key="index"
+                    :dot-color="
+                      step > index
+                        ? 'green'
+                        : step === index
+                        ? 'deep-purple'
+                        : 'grey-lighten-1'
+                    "
+                    :icon="
+                      step >= index
+                        ? step === index
+                          ? `mdi-numeric-${index + 1}`
+                          : 'mdi-check'
+                        : null
+                    "
+                    size="large"
+                  >
+                    <template #opposite>
+                      <div class="text-end">
+                        <strong>{{ $t(`recipe.steps.${s.key}.title`) }}</strong>
+                        <div class="text-caption text-grey">
+                          {{ $t(`recipe.steps.${s.key}.subtitle`) }}
+                        </div>
                       </div>
-                    </div>
+                    </template>
+                  </v-timeline-item>
+                </v-timeline>
+              </v-col>
+
+              <!-- Contenido del formulario -->
+              <v-col
+                :cols="12"
+                :md="isMobile ? 12 : 9"
+                :class="{ 'mt-6': isMobile }"
+              >
+                <!-- En móvil: indicador del paso -->
+                <div
+                  v-if="isMobile"
+                  class="d-flex justify-space-between align-center mb-4"
+                >
+                  <v-chip
+                    label
+                    size="small"
+                    color="deep-purple-lighten-4"
+                    class="text-deep-purple"
+                  >
+                    {{ $t(`recipe.steps.${steps[step].key}.title`) }}
+                  </v-chip>
+                </div>
+
+                <!-- En escritorio: título del paso -->
+                <h3 v-else class="text-deep-purple-accent-3 mb-6">
+                  {{ $t(`recipe.steps.${steps[step].key}.title`) }}
+                </h3>
+
+                <v-row dense>
+                  <!-- Paso 0: información básica -->
+                  <template v-if="step === 0">
+                    <v-col cols="12" md="6">
+                      <v-text-field
+                        v-model="editedItem.name"
+                        :label="$t('recipe.fields.name')"
+                        variant="underlined"
+                        :rules="[
+                          (v) =>
+                            !!v ||
+                            $t('recipe.validation.required', {
+                              field: $t('recipe.fields.name'),
+                            }),
+                        ]"
+                      />
+                    </v-col>
+
+                    <v-col cols="12" md="6">
+                      <v-text-field
+                        v-model.number="editedItem.preparation_time"
+                        :label="$t('recipe.fields.preparation_time')"
+                        type="number"
+                        variant="underlined"
+                        :rules="[(v) => v > 0 || 'Debe ser un valor mayor a 0']"
+                      />
+                    </v-col>
+
+                    <v-col cols="12" md="6">
+                      <v-text-field
+                        v-model.number="editedItem.servings"
+                        :label="$t('recipe.fields.servings')"
+                        type="number"
+                        variant="underlined"
+                        :rules="[(v) => v >= 1 || $t('recipe.validation.min_servings')]"
+                      />
+                    </v-col>
+
+                    <v-col cols="12" md="6">
+                      <div
+                        class="d-flex align-center gap-6"
+                        style="flex-wrap: nowrap;"
+                      >
+                        <v-switch
+                          v-model="editedItem.is_favorite"
+                          :base-color="favoriteSwitchColor"
+                          :color="favoriteSwitchColor"
+                          hide-details
+                          inset
+                          class="mb-0"
+                        >
+                          <template #label>
+                            <span
+                              class="text-body-2 font-weight-medium"
+                              :style="{ color: favoriteSwitchColor }"
+                            >
+                              {{ $t("recipe.fields.is_favorite") }}
+                            </span>
+                          </template>
+                        </v-switch>
+
+                        <v-switch
+                          v-model="editedItem.is_private"
+                          :base-color="privateSwitchColor"
+                          :color="privateSwitchColor"
+                          hide-details
+                          inset
+                          class="mb-0 ml-2"
+                        >
+                          <template #label>
+                            <span
+                              class="text-body-2 font-weight-medium"
+                              :style="{ color: privateSwitchColor }"
+                            >
+                              {{ $t("recipe.fields.is_private") }}
+                            </span>
+                          </template>
+                        </v-switch>
+                      </div>
+                    </v-col>
+
+                    <v-col cols="12">
+                      <v-textarea
+                        v-model="editedItem.description"
+                        :label="$t('recipe.fields.description')"
+                        variant="underlined"
+                        rows="3"
+                      />
+                    </v-col>
+
+                    <!-- Imagen -->
+                    <v-col cols="12" md="6">
+                      <v-file-input
+                        clearable
+                        v-model="file"
+                        ref="fileInput"
+                        :label="$t('recipe.fields.image')"
+                        variant="underlined"
+                        :prepend-icon="null"
+                        density="compact"
+                        name="file"
+                        accept=".png, .jpg, .jpeg"
+                        @change="onFileSelected"
+                      />
+                    </v-col>
+                    <v-col cols="12" md="6">
+                      <v-card
+                        elevation="6"
+                        class="mx-auto"
+                        max-width="210"
+                        max-height="120"
+                      >
+                        <img
+                          v-if="imagenDisponible()"
+                          :src="imgedit"
+                          height="120"
+                          width="210"
+                          style="object-fit: cover"
+                        />
+                      </v-card>
+                    </v-col>
                   </template>
-                </v-timeline-item>
-              </v-timeline>
-            </v-col>
 
-            <v-col cols="9">
-              <h3 class="text-deep-purple-accent-3 mb-8">
-                {{ $t(`recipe.steps.${steps[step].key}.title`) }}
-              </h3>
+                  <!-- Paso 1: ingredientes -->
+                  <template v-if="step === 1">
+                    <v-col cols="12">
+                      <RecipeProductsSection
+                        v-model="editedItem.products"
+                        :selected-person="selectedPerson"
+                      />
+                    </v-col>
+                  </template>
+                </v-row>
 
-              <v-row dense v-if="step === 0">
-                <!-- Campos básicos -->
-                <v-col cols="12" md="6">
-                  <v-text-field
-                    v-model="editedItem.name"
-                    :label="$t('recipe.fields.name')"
-                    variant="underlined"
-                    :rules="[
-                      (v) =>
-                        !!v ||
-                        $t('recipe.validation.required', {
-                          field: $t('recipe.fields.name'),
-                        }),
-                    ]"
-                  />
-                </v-col>
-                <v-col cols="12" md="6">
-                  <v-text-field
-                    v-model.number="editedItem.preparation_time"
-                    :label="$t('recipe.fields.preparation_time')"
-                    type="number"
-                    variant="underlined"
-                    :rules="[(v) => v > 0 || 'Debe ser un valor mayor a 0']"
-                  />
-                </v-col>
-                <v-col cols="12" md="6">
-                  <v-text-field
-                    v-model.number="editedItem.servings"
-                    :label="$t('recipe.fields.servings')"
-                    type="number"
-                    variant="underlined"
-                    :rules="[(v) => v >= 1 || $t('recipe.validation.min_servings')]"
-                  />
-                </v-col>
-                <v-col cols="12" md="6">
-                  <div class="d-flex align-center flex-wrap gap-6">
-                    <v-switch
-                      v-model="editedItem.is_favorite"
-                      :base-color="favoriteSwitchColor"
-                      :color="favoriteSwitchColor"
-                      hide-details
-                      inset
-                      class="mb-0 mr-15 ml-15"
-                    >
-                      <template v-slot:label>
-                        <span
-                          class="text-body-2 font-weight-medium"
-                          :style="{ color: favoriteSwitchColor }"
-                        >
-                          {{ $t("recipe.fields.is_favorite") }}
-                        </span>
-                      </template>
-                    </v-switch>
+                <!-- Botones de navegación -->
+                <div class="d-flex justify-space-between mt-8">
+                  <v-btn
+                    variant="text"
+                    class="text-grey-darken-1"
+                    @click="step > 0 ? step-- : close()"
+                  >
+                    {{
+                      step === 0 ? $t("buttons.close") : $t("buttons.previous")
+                    }}
+                  </v-btn>
 
-                    <v-switch
-                      v-model="editedItem.is_private"
-                      :base-color="privateSwitchColor"
-                      :color="privateSwitchColor"
-                      hide-details
-                      inset
-                      class="mb-0"
-                    >
-                      <template v-slot:label>
-                        <span
-                          class="text-body-2 font-weight-medium"
-                          :style="{ color: privateSwitchColor }"
-                        >
-                          {{ $t("recipe.fields.is_private") }}
-                        </span>
-                      </template>
-                    </v-switch>
-                  </div>
-                </v-col>
-                <v-col cols="12">
-                  <v-textarea
-                    v-model="editedItem.description"
-                    :label="$t('recipe.fields.description')"
-                    variant="underlined"
-                    rows="3"
-                  />
-                </v-col>
-
-                <!-- Imagen: subida + previsualización -->
-                <v-col cols="12" md="6">
-                  <v-file-input
-                    clearable
-                    v-model="file"
-                    ref="fileInput"
-                    :label="$t('recipe.fields.image')"
-                    variant="underlined"
-                    :prepend-icon="null"
-                    density="compact"
-                    name="file"
-                    accept=".png, .jpg, .jpeg"
-                    @change="onFileSelected"
-                  ></v-file-input>
-                </v-col>
-                <v-col cols="12" md="6">
-                  <v-card elevation="6" class="mx-auto" max-width="210" max-height="120">
-                    <img
-                      v-if="imagenDisponible()"
-                      :src="imgedit"
-                      height="120"
-                      width="210"
-                    />
-                  </v-card>
-                </v-col>
-              </v-row>
-
-              <!-- Ingredientes -->
-              <v-row dense v-if="step === 1">
-                <v-col cols="12">
-                  <RecipeProductsSection
-                    v-model="editedItem.products"
-                    :selected-person="selectedPerson"
-                  />
-                </v-col>
-              </v-row>
-
-              <!-- Botones -->
-              <div class="d-flex justify-space-between mt-8">
-                <v-btn
-                  variant="text"
-                  class="text-grey-darken-1"
-                  @click="step > 0 ? step-- : close()"
-                >
-                  {{ step === 0 ? $t("buttons.close") : $t("buttons.previous") }}
-                </v-btn>
-                <v-btn
-                  variant="text"
-                  class="text-deep-purple-accent-3"
-                  @click="nextStep"
-                  :disabled="!valid"
-                  :loading="loading && step === steps.length - 1"
-                >
-                  {{
-                    step === steps.length - 1
-                      ? $t("buttons.saveAndClose")
-                      : $t("buttons.next")
-                  }}
-                </v-btn>
-              </div>
-            </v-col>
-          </v-row>
+                  <v-btn
+                    variant="text"
+                    class="text-deep-purple-accent-3"
+                    @click="nextStep"
+                    :disabled="!valid"
+                    :loading="loading && step === steps.length - 1"
+                  >
+                    {{
+                      step === steps.length - 1
+                        ? $t("buttons.saveAndClose")
+                        : $t("buttons.next")
+                    }}
+                  </v-btn>
+                </div>
+              </v-col>
+            </v-row>
+          </v-container>
         </v-card-text>
       </v-card>
     </v-form>
   </v-dialog>
 </template>
+
 
 <script>
 import { handleRequest } from "@/utils/api";
@@ -243,6 +294,7 @@ export default {
   data() {
     return {
       dialog: false,
+      isFullscreen: false,
       valid: true,
       loading: false,
       step: 0,
@@ -305,6 +357,12 @@ export default {
     };
   },
   computed: {
+    isMobile() {
+    return this.$vuetify.display.xs || this.$vuetify.display.sm;
+  },
+  isDesktop() {
+    return !this.isMobile;
+  },
     isEditing() {
       return this.item && this.item.id != null;
     },
@@ -324,11 +382,20 @@ export default {
       if (val) this.resetForm();
     },
     dialog(val) {
+      if (val) this.updateFullscreenMode();
       this.$emit("update:modelValue", val);
       if (!val) this.$emit("close");
     },
+    isDesktop() {
+      this.updateFullscreenMode();
+    },
   },
   methods: {
+    updateFullscreenMode() {
+      this.$nextTick(() => {
+        this.isFullscreen = this.isDesktop;
+      });
+    },
     resetForm() {
       this.step = 0;
       this.file = null;
@@ -560,3 +627,11 @@ export default {
   },
 };
 </script>
+<style scoped>
+.fullscreen-dialog {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  overflow-y: auto;
+}
+</style>

@@ -19,211 +19,241 @@
       </v-col>
     </v-row>
   </v-snackbar>
-<v-card class="pa-0" elevation="1" rounded="lg" style="
-    position: relative;
-    overflow: visible;
-    z-index: auto;
-  ">
-      <!-- Encabezado con foto y datos -->
-      <v-card-text>
-          <v-card-actions class="bg-grey-lighten-5 tools-bar">
-            <v-btn
-              v-for="tool in tools"
-              :key="tool.name"
-              @click="tool.action()"
-              size="small"
-              color="primary"
-              variant="text"
-              prepend-icon="mdi-plus"
-              class="text-capitalize"
-            >
-              {{ tool.name }}
-            </v-btn>
-          </v-card-actions>
-          <v-card-title class="d-flex flex-wrap align-center pb-2">
-  <!-- Spacer (solo visible en md+) -->
-  <v-spacer class="d-none d-md-block"></v-spacer>
-
-  <!-- Campo de búsqueda global -->
-  <div class="flex-grow-1" style="max-width: 300px">
-    <v-text-field
-      v-model="search"
-      density="compact"
-      :label="$t('dataTable.search')"
-      prepend-inner-icon="mdi-magnify"
-      variant="solo-filled"
-      hide-details
-      single-line
-      flat
-    ></v-text-field>
-  </div>
-</v-card-title>
-
-<v-data-table
-  :headers="headers"
-  :items="consultations"
-  :search="search"
-  :items-per-page-text="$t('dataTable.itemsPerPageText')"
-  :no-data-text="$t('dataTable.noDataText')"
-  :loading-text="$t('dataTable.loadingText')"
-  :loading="loading"
-  :hide-default-header="true"
-  style="
-    max-height: 68vh;
-    overflow-y: auto;
-    background: transparent;
-    border: none !important;
-    outline: none !important;
-    box-shadow: none !important;
-    padding: 0;
-  "
->
-  <!-- Encabezado fijo -->
-  <template v-slot:top>
-    <v-card
-      :elevation="1"
-      flat
-      class="mb-2 mx-1 rounded-lg"
-      style="border: 1px solid #ECEFF1; height: 40px; min-height: 40px; display: flex; align-items: center; transition: none !important"
-    >
-      <v-card-text
-        class="d-flex pa-2"
-        style="width: 100%; min-width: 0; height: 100%; padding: 0 16px !important; display: flex; align-items: center"
-      >
-        <!-- Fecha / Periodo (7%) -->
-        <div style="width: 7%; min-width: 0" class="text-left">
-          {{ $t('consultations.fields.date') }}
-        </div>
-
-        <!-- Tipo + Motivo (40%) -->
-        <div style="width: 40%; min-width: 0" class="text-left">
-          {{ $t('consultations.fields.type') }}
-        </div>
-
-        <!-- Notas Médicas (25%) -->
-        <div style="width: 25%; min-width: 0" class="text-left">
-          {{ $t('consultations.fields.medicalNotes') }}
-        </div>
-
-        <!-- Profesional (18%) -->
-        <div style="width: 18%; min-width: 0" class="text-left">
-          {{ $t('consultations.fields.profesional') }}
-        </div>
-
-        <!-- Acciones (10%) -->
-        <div style="width: 10%; min-width: 0" class="d-flex justify-end">
-          {{ $t('settings.actions') }}
-        </div>
-      </v-card-text>
-    </v-card>
-  </template>
-
-  <!-- Item (fila) -->
-  <template v-slot:item="slotProps">
-    <tr>
-      <td colspan="100%" style="padding: 0; border: none">
-        <v-card
-          class="mb-2 mx-1 rounded-lg"
-          elevation="1"
-          density="comfortable"
-          flat
+  <v-card
+    class="pa-0"
+    elevation="1"
+    rounded="lg"
+    style="position: relative; overflow: visible; z-index: auto"
+  >
+    <!-- Encabezado con foto y datos -->
+    <v-card-text>
+      <v-card-actions class="bg-grey-lighten-5 tools-bar">
+        <v-btn
+          v-for="tool in tools"
+          :key="tool.name"
+          @click="tool.action()"
+          size="small"
+          color="primary"
+          variant="text"
+          prepend-icon="mdi-plus"
+          class="text-capitalize"
         >
-          <v-card-text class="d-flex align-center pa-2" style="width: 100%; min-width: 0">
-            <!-- Fecha / Periodo (7%) -->
-            <div class="d-flex align-center" style="width: 7%; min-width: 0">
-              <v-avatar
-                class="mr-1 icono-concavo"
-                :class="`bg-${getTypeColor(slotProps.item.typeName)}`"
-                :style="{
-                  'min-height': '48px',
-                  'min-width': '48px',
-                  'border-radius': '8px',
-                  'font-size': '0.90em'
-                }"
-              >
-                <div class="text-body-3 font-weight-medium">
-                  {{ formatIntuitiveDate(slotProps.item.date) }}
-                </div>
-              </v-avatar>
-            </div>
+          {{ tool.name }}
+        </v-btn>
+      </v-card-actions>
+      <v-card-title class="d-flex flex-wrap align-center pb-2">
+        <!-- Spacer (solo visible en md+) -->
+        <v-spacer class="d-none d-md-block"></v-spacer>
 
-            <!-- Tipo + Motivo (40%) -->
-            <div style="width: 40%; min-width: 0" class="d-flex flex-column">
-              <div class="text-body-2 text-truncate">
-                {{ slotProps.item.typeName }}
+        <!-- Campo de búsqueda global -->
+        <div class="flex-grow-1" style="max-width: 300px">
+          <v-text-field
+            v-model="search"
+            density="compact"
+            :label="$t('dataTable.search')"
+            prepend-inner-icon="mdi-magnify"
+            variant="solo-filled"
+            hide-details
+            single-line
+            flat
+          ></v-text-field>
+        </div>
+      </v-card-title>
+      <div
+        class="ma-0 pa-0 responsive-data-table-wrapper"
+        :class="isMobile ? 'mobile-scroll' : ''"
+      >
+      <v-data-table
+        :headers="headers"
+        :items="consultations"
+        :search="search"
+        :items-per-page-text="$t('dataTable.itemsPerPageText')"
+        :no-data-text="$t('dataTable.noDataText')"
+        :loading-text="$t('dataTable.loadingText')"
+        :loading="loading"
+        :hide-default-header="true"
+        style="
+            max-height: 68vh;
+            overflow-y: auto;
+            overflow-x: hidden;
+            background: transparent;
+            border: none !important;
+            outline: none !important;
+            box-shadow: none !important;
+          "
+        >
+        <!-- Encabezado fijo -->
+        <template v-slot:top>
+          <v-card
+            :elevation="1"
+            flat
+            class="mb-2 mx-1 rounded-lg"
+            style="
+              border: 1px solid #eceff1;
+              height: 40px;
+              min-height: 40px;
+              display: flex;
+              align-items: center;
+              transition: none !important;
+            "
+          >
+            <v-card-text
+              class="d-flex pa-2"
+              style="
+                width: 100%;
+                min-width: 0;
+                height: 100%;
+                padding: 0 16px !important;
+                display: flex;
+                align-items: center;
+              "
+            >
+              <!-- Fecha / Periodo (7%) -->
+              <div style="width: 7%; min-width: 0" class="text-left">
+                {{ $t("consultations.fields.date") }}
               </div>
-              <div class="text-caption text-grey-darken-1 text-truncate mt-1">
-                {{ slotProps.item.reason || $t('consultations.fields.reason') }}
-                <v-tooltip activator="parent" location="bottom" max-width="350px">
-                  <span style="white-space: normal; word-break: break-word">
-                    {{ $t('consultations.fields.reason') }}: {{ slotProps.item.reason }}
-                  </span>
-                </v-tooltip>
+
+              <!-- Tipo + Motivo (40%) -->
+              <div style="width: 40%; min-width: 0" class="text-left">
+                {{ $t("consultations.fields.type") }}
               </div>
-            </div>
 
-            <!-- Notas Médicas (25%) -->
-            <div style="width: 25%; min-width: 0" class="text-body-2 text-truncate">
-              <span>{{ slotProps.item.medicalNotes }}</span>
-            </div>
+              <!-- Notas Médicas (25%) -->
+              <div style="width: 25%; min-width: 0" class="text-left">
+                {{ $t("consultations.fields.medicalNotes") }}
+              </div>
 
-            <!-- Profesional (18%) -->
-            <div style="width: 18%; min-width: 0" class="text-body-2 text-truncate">
-              <span>{{ slotProps.item.professional}}</span>
-            </div>
+              <!-- Profesional (18%) -->
+              <div style="width: 18%; min-width: 0" class="text-left">
+                {{ $t("consultations.fields.profesional") }}
+              </div>
 
-            <!-- Acciones (10%) -->
-            <div class="d-flex gap-1" style="width: 10%; justify-content: flex-end; flex-wrap: nowrap">
-              <v-btn
-                size="35"
-                icon
-                variant="text"
-                color="green-darken-2"
-                @click="editItem(slotProps.item)"
-                class="flex-shrink-0"
-                title="Editar Consulta Médica"
+              <!-- Acciones (10%) -->
+              <div style="width: 10%; min-width: 0" class="d-flex justify-end">
+                {{ $t("settings.actions") }}
+              </div>
+            </v-card-text>
+          </v-card>
+        </template>
+
+        <!-- Item (fila) -->
+        <template v-slot:item="slotProps">
+           <tr
+          style="display: table; width: 100%;"
+          :class="isMobile ? 'mobile-table' : 'desktop-table'"
+        >
+          <td colspan="100%" style="padding: 0; border: none"> 
+              <v-card
+                class="mb-2 mx-1 rounded-lg"
+                elevation="1"
+                density="comfortable"
+                flat
               >
-                <v-icon size="20">mdi-pencil</v-icon>
-              </v-btn>
+                <v-card-text
+                  class="d-flex align-center pa-2"
+                  style="width: 100%; min-width: 0"
+                >
+                  <!-- Fecha / Periodo (7%) -->
+                  <div class="d-flex align-center" style="width: 7%; min-width: 0">
+                    <v-avatar
+                      class="mr-1 icono-concavo"
+                      :class="`bg-${getTypeColor(slotProps.item.typeName)}`"
+                      :style="{
+                        'min-height': '48px',
+                        'min-width': '48px',
+                        'border-radius': '8px',
+                        'font-size': '0.90em',
+                      }"
+                    >
+                      <div class="text-body-3 font-weight-medium">
+                        {{ formatIntuitiveDate(slotProps.item.date) }}
+                      </div>
+                    </v-avatar>
+                  </div>
 
-              <v-btn
-                size="35"
-                icon
-                variant="text"
-                color="red-darken-2"
-                @click="deleteItem(slotProps.item)"
-                class="flex-shrink-0"
-                title="Eliminar Consulta Médica"
-              >
-                <v-icon size="20">mdi-delete</v-icon>
-              </v-btn>
-            </div>
-          </v-card-text>
-        </v-card>
-      </td>
-    </tr>
-  </template>
-</v-data-table>
+                  <!-- Tipo + Motivo (40%) -->
+                  <div style="width: 40%; min-width: 0" class="d-flex flex-column">
+                    <div class="text-body-2 text-truncate">
+                      {{ slotProps.item.typeName }}
+                    </div>
+                    <div class="text-caption text-grey-darken-1 text-truncate mt-1">
+                      {{ slotProps.item.reason || $t("consultations.fields.reason") }}
+                      <v-tooltip activator="parent" location="bottom" max-width="350px">
+                        <span style="white-space: normal; word-break: break-word">
+                          {{ $t("consultations.fields.reason") }}:
+                          {{ slotProps.item.reason }}
+                        </span>
+                      </v-tooltip>
+                    </div>
+                  </div>
+
+                  <!-- Notas Médicas (25%) -->
+                  <div style="width: 25%; min-width: 0" class="text-body-2 text-truncate">
+                    <span>{{ slotProps.item.medicalNotes }}</span>
+                  </div>
+
+                  <!-- Profesional (18%) -->
+                  <div style="width: 18%; min-width: 0" class="text-body-2 text-truncate">
+                    <span>{{ slotProps.item.professional }}</span>
+                  </div>
+
+                  <!-- Acciones (10%) -->
+                  <div
+                    class="d-flex gap-1"
+                    style="width: 10%; justify-content: flex-end; flex-wrap: nowrap"
+                  >
+                    <v-btn
+                      size="35"
+                      icon
+                      variant="text"
+                      color="green-darken-2"
+                      @click="editItem(slotProps.item)"
+                      class="flex-shrink-0"
+                      title="Editar Consulta Médica"
+                    >
+                      <v-icon size="20">mdi-pencil</v-icon>
+                    </v-btn>
+
+                    <v-btn
+                      size="35"
+                      icon
+                      variant="text"
+                      color="red-darken-2"
+                      @click="deleteItem(slotProps.item)"
+                      class="flex-shrink-0"
+                      title="Eliminar Consulta Médica"
+                    >
+                      <v-icon size="20">mdi-delete</v-icon>
+                    </v-btn>
+                  </div>
+                </v-card-text>
+              </v-card>
+            </td>
+          </tr>
+        </template>
+      </v-data-table>
+    </div>
     </v-card-text>
-    </v-card>
+  </v-card>
   <v-dialog
     v-model="dialog"
-    fullscreen
-    persistent
+    :fullscreen="isFullscreen"
+    :max-width="isMobile ? '100%' : 'none'"
+    persistent 
     transition="dialog-bottom-transition"
-    content-class="fullscreen-dialog"
   >
     <v-form ref="form" v-model="valid" class="h-100">
-      <v-card class="pa-10">
+      <v-card :class="isMobile ? 'pa-0' : 'pa-10'">	
         <v-card-text class="pt-12">
           <h5 class="text-grey-darken-2 font-weight-medium">{{ formTitle }}</h5>
           <p class="text-grey-lighten-1">
             {{ $t("consultations.formInstructions") }}
           </p>
 
-          <v-row class="mt-12">
-            <!-- Side steps -->
-            <v-col cols="3">
+         <v-container fluid class="pa-0 mt-6">
+            <v-row>
+              <!-- Timeline (solo escritorio) -->
+              <v-col v-if="isDesktop" cols="12" md="3" class="pr-md-6">
               <v-timeline align="start" side="end" dense>
                 <v-timeline-item
                   v-for="(s, index) in steps"
@@ -257,21 +287,38 @@
             </v-col>
 
             <!-- Contenido dinámico según paso -->
-            <v-col cols="9">
-              <h3 class="text-deep-purple-accent-3 mb-8">
-                {{ $t(`consultations.steps.${steps[step].title}.title`) }}
-              </h3>
+            <v-col :cols="12" :md="isMobile ? 12 : 9" :class="{ 'mt-6': isMobile }">
+                <!-- En móvil: indicador del paso -->
+                <div
+                  v-if="isMobile"
+                  class="d-flex justify-space-between align-center mb-4"
+                >
+                  <v-chip
+                    label
+                    size="small"
+                    color="deep-purple-lighten-4"
+                    class="text-deep-purple"
+                  >
+                    {{ $t(`consultations.steps.${steps[step].title}.title`) }}
+                  </v-chip>
+                </div>
+
+                <!-- En escritorio: título del paso -->
+                <h3 v-else class="text-deep-purple-accent-3 mb-6">
+                  {{ $t(`consultations.steps.${steps[step].title}.title`) }}
+                </h3>
 
               <!-- Paso 1: Detalles de la consulta -->
-              <v-row dense v-if="step === 0">
+              <v-row dense>
+              <template v-if="step === 0">
                 <v-col cols="12" sm="6">
-                  <v-autocomplete 
+                  <v-autocomplete
                     v-model="editedItem.type_id"
-                    :items="consultationTypes" 
-                    :label="$t('consultations.fields.type')" 
+                    :items="consultationTypes"
+                    :label="$t('consultations.fields.type')"
                     item-title="name"
-                    item-value="id" 
-                    variant="underlined" 
+                    item-value="id"
+                    variant="underlined"
                     :rules="typeRules"
                   >
                     <template v-slot:item="{ props, item }">
@@ -279,10 +326,14 @@
                         <v-list-item-subtitle class="d-flex flex-column">
                           <v-tooltip bottom>
                             <template v-slot:activator="{ props: tooltipProps }">
-                              <div 
-                                class="truncate" 
+                              <div
+                                class="truncate"
                                 v-bind="tooltipProps"
-                                style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis;"
+                                style="
+                                  white-space: nowrap;
+                                  overflow: hidden;
+                                  text-overflow: ellipsis;
+                                "
                               >
                                 {{ item.raw.description }}
                               </div>
@@ -314,10 +365,10 @@
                     :rules="reasonRules"
                   />
                 </v-col>
-              </v-row>
+              </template>
 
               <!-- Step 2: Información adicional -->
-              <v-row dense v-if="step === 1">
+              <template v-if="step === 1">
                 <v-col cols="12">
                   <v-textarea
                     v-model="editedItem.medicalNotes"
@@ -346,16 +397,16 @@
                       ></v-text-field>
                     </template>
                     <v-locale-provider>
-                    <v-date-picker
-                      color="#03626C"
-                      :model-value="dateInput"
-                      @update:model-value="updateDate"
-                    ></v-date-picker>
+                      <v-date-picker
+                        color="#03626C"
+                        :model-value="dateInput"
+                        @update:model-value="updateDate"
+                      ></v-date-picker>
                     </v-locale-provider>
                   </v-menu>
                 </v-col>
+              </template>
               </v-row>
-
               <!-- Navegación -->
               <div class="d-flex justify-space-between mt-8">
                 <v-btn
@@ -381,6 +432,7 @@
               </div>
             </v-col>
           </v-row>
+        </v-container>
         </v-card-text>
       </v-card>
     </v-form>
@@ -390,7 +442,9 @@
       <v-toolbar color="#DA7171">
         <span class="text-subtitle-2 ml-4">
           {{
-            $t("deleteDialog.title", { item: $t(`deleteDialog.items.medicalConsultation`) })
+            $t("deleteDialog.title", {
+              item: $t(`deleteDialog.items.medicalConsultation`),
+            })
           }}</span
         >
       </v-toolbar>
@@ -425,16 +479,17 @@ export default {
   props: {
     selectedPerson: {
       type: Object,
-      required: true
+      required: true,
     },
   },
-  emits: ['update-complementary-data'],
+  emits: ["update-complementary-data"],
   data: () => ({
     selected: shallowRef([2]),
     selected2: null,
     step: 0,
     time: null,
     modal2: false,
+     isFullscreen: false,
     timePickerDialog: false,
     steps: [
       {
@@ -485,11 +540,11 @@ export default {
 
     editedIndex: -1,
     headers: [
-      { title: '', key: 'date', width: '7%' },
-      { title: '', key: 'type', width: '40%' },
-      { title: '', key: 'notes', width: '25%' },
-      { title: '', key: 'professional', width: '18%' },
-      { title: '', key: 'actions', width: '10%' },
+      { title: "", key: "date", width: "7%" },
+      { title: "", key: "type", width: "40%" },
+      { title: "", key: "notes", width: "25%" },
+      { title: "", key: "professional", width: "18%" },
+      { title: "", key: "actions", width: "10%" },
     ],
     search: "",
     reasonRules: [
@@ -498,14 +553,10 @@ export default {
     ],
     profesionalRules: [
       (v) => !!v || "El profesional es requerido",
-      (v) => (v && v.length <= 100) || "El nombre no debe exceder los 100 caracteres"
+      (v) => (v && v.length <= 100) || "El nombre no debe exceder los 100 caracteres",
     ],
-    typeRules: [
-      (v) => !!v || "El tipo de consulta es requerido"
-    ],
-    dateRules: [
-      (v) => !!v || "La fecha es requerida"
-    ],
+    typeRules: [(v) => !!v || "El tipo de consulta es requerido"],
+    dateRules: [(v) => !!v || "La fecha es requerida"],
   }),
 
   computed: {
@@ -514,14 +565,28 @@ export default {
         ? this.$t("consultations.titles.new")
         : this.$t("consultations.titles.edit");
     },
+     isMobile() {
+      return this.$vuetify.display.xs || this.$vuetify.display.sm;
+    },
+    isDesktop() {
+      return !this.isMobile;
+    },
   },
-   created() {
+  watch: {
+    dialog(val) {
+      if (val) this.updateFullscreenMode();
+    },
+    isDesktop() {
+      this.updateFullscreenMode();
+    },
+  },
+  created() {
     this.tools = [
       {
         name: this.$t("consultations.titles.new"),
-        action: () => this.showAdd()
-      }
-    ]
+        action: () => this.showAdd(),
+      },
+    ];
   },
   mounted() {
     this.home_id = JSON.parse(LocalStorageService.getItem("home_id"));
@@ -530,13 +595,18 @@ export default {
   },
 
   methods: {
-     obtenerFechaLocal() {
-    const hoy = new Date();
-    const year = hoy.getFullYear();
-    const month = String(hoy.getMonth() + 1).padStart(2, '0');
-    const day = String(hoy.getDate()).padStart(2, '0');
-    return `${year}-${month}-${day}`;
-  },
+     updateFullscreenMode() {
+      this.$nextTick(() => {
+        this.isFullscreen = this.isDesktop;
+      });
+    },
+    obtenerFechaLocal() {
+      const hoy = new Date();
+      const year = hoy.getFullYear();
+      const month = String(hoy.getMonth() + 1).padStart(2, "0");
+      const day = String(hoy.getDate()).padStart(2, "0");
+      return `${year}-${month}-${day}`;
+    },
     formatIntuitiveDate(dateString) {
       if (!dateString) return "Sin fecha";
 
@@ -573,7 +643,7 @@ export default {
               weekday: "short",
               day: "numeric",
               month: "short",
-              year: "numeric"
+              year: "numeric",
             })
             .replace(/\./g, "");
       }
@@ -587,22 +657,22 @@ export default {
       return colorMap[type] || "blue-darken-2"; // Color por defecto
     },
     updateDate(value) {
-    // value viene como objeto Date desde el date-picker
-    // Convertimos a formato YYYY-MM-DD
-    const year = value.getFullYear();
-    const month = String(value.getMonth() + 1).padStart(2, '0');
-    const day = String(value.getDate()).padStart(2, '0');
-    this.dateInput = `${year}-${month}-${day}`;
-    this.editedItem.date = this.dateInput;
-    this.dateMenu = false;
-  },
-  parseDateString(dateString) {
+      // value viene como objeto Date desde el date-picker
+      // Convertimos a formato YYYY-MM-DD
+      const year = value.getFullYear();
+      const month = String(value.getMonth() + 1).padStart(2, "0");
+      const day = String(value.getDate()).padStart(2, "0");
+      this.dateInput = `${year}-${month}-${day}`;
+      this.editedItem.date = this.dateInput;
+      this.dateMenu = false;
+    },
+    parseDateString(dateString) {
       if (!dateString) {
         const today = new Date();
         // Aseguramos que sea el inicio del día (evita problemas de zona horaria)
         return new Date(today.getFullYear(), today.getMonth(), today.getDate());
       }
-      const [year, month, day] = dateString.split('-');
+      const [year, month, day] = dateString.split("-");
       return new Date(parseInt(year), parseInt(month) - 1, parseInt(day));
     },
 
@@ -611,12 +681,12 @@ export default {
       this.dateInput = this.obtenerFechaLocal();
       this.editedItem.date = this.dateInput;
       this.data = {};
-      this.data.type = 'Consulta';
+      this.data.type = "Consulta";
       try {
         const result = await handleRequest({
-          endpoint: 'get-type-consultations',
-          method: 'POST',
-          data: this.data
+          endpoint: "get-type-consultations",
+          method: "POST",
+          data: this.data,
         });
 
         if (result.success) {
@@ -625,7 +695,11 @@ export default {
           this.consultationTypes = [];
         }
       } catch (error) {
-        this.showAlert('error', 'Ocurrió un error inesperado al cargar los tipos de consulta.', 3000);
+        this.showAlert(
+          "error",
+          "Ocurrió un error inesperado al cargar los tipos de consulta.",
+          3000
+        );
       } finally {
         this.dialog = true;
       }
@@ -649,7 +723,7 @@ export default {
         const result = await handleRequest({
           endpoint: "get-medical-consultations",
           method: "POST",
-          data: this.data
+          data: this.data,
         });
 
         if (result.success) {
@@ -678,12 +752,12 @@ export default {
         this.save();
       }
     },
-     formatDateForBackend(date) {
-    const d = new Date(date);
-    return d.toISOString().split('T')[0]; // Formato YYYY-MM-DD
-    // O alternativamente:
-    // return format(d, 'yyyy-MM-dd HH:mm:ss'); // Si usas date-fns
-  },
+    formatDateForBackend(date) {
+      const d = new Date(date);
+      return d.toISOString().split("T")[0]; // Formato YYYY-MM-DD
+      // O alternativamente:
+      // return format(d, 'yyyy-MM-dd HH:mm:ss'); // Si usas date-fns
+    },
     async save() {
       this.loading = true;
       if (this.editedIndex === -1) {
@@ -693,7 +767,7 @@ export default {
           "reason",
           "professional",
           "medicalNotes",
-          "date"
+          "date",
         ];
 
         let updatedFields = Object.keys(this.editedItem)
@@ -719,7 +793,7 @@ export default {
           if (result.success) {
             this.showAlert("success", result.message, 3000);
             this.initialize();
-            this.$emit('update-complementary-data');
+            this.$emit("update-complementary-data");
           } else {
             this.showAlert("warning", result.message, 3000);
           }
@@ -733,7 +807,7 @@ export default {
           "reason",
           "professional",
           "medicalNotes",
-          "date"
+          "date",
         ];
 
         let updatedFields = Object.keys(this.editedItem)
@@ -759,16 +833,12 @@ export default {
             if (result.success) {
               this.showAlert("success", result.message, 3000);
               this.initialize();
-              this.$emit('update-complementary-data');
+              this.$emit("update-complementary-data");
             } else {
               this.showAlert("warning", result.message, 3000);
             }
           } catch (error) {
-            this.showAlert(
-              "error",
-              "Ocurrió un error al actualizar la consulta",
-              3000
-            );
+            this.showAlert("error", "Ocurrió un error al actualizar la consulta", 3000);
           }
         }
       }
@@ -782,12 +852,12 @@ export default {
       this.editedItem = Object.assign({}, item);
       this.dateInput = item.date || null;
       this.data = {};
-      this.data.type = 'Consulta';
+      this.data.type = "Consulta";
       try {
         const result = await handleRequest({
-          endpoint: 'get-type-consultations',
-          method: 'POST',
-          data: this.data
+          endpoint: "get-type-consultations",
+          method: "POST",
+          data: this.data,
         });
 
         if (result.success) {
@@ -796,7 +866,11 @@ export default {
           this.consultationTypes = [];
         }
       } catch (error) {
-        this.showAlert('error', 'Ocurrió un error inesperado al cargar los tipos de consulta.', 3000);
+        this.showAlert(
+          "error",
+          "Ocurrió un error inesperado al cargar los tipos de consulta.",
+          3000
+        );
       } finally {
         this.dialog = true;
       }
@@ -829,7 +903,7 @@ export default {
         if (result.success) {
           this.showAlert("success", result.message, 3000);
           this.initialize();
-          this.$emit('update-complementary-data');
+          this.$emit("update-complementary-data");
         } else {
           this.showAlert("warning", result.message, 3000);
         }
@@ -905,6 +979,49 @@ export default {
 </script>
 
 <style scoped>
+.desktop-table {
+  table-layout: fixed;
+}
+
+.mobile-table {
+  table-layout: auto;
+}
+.responsive-data-table-wrapper {
+  width: 100%;
+}
+
+/* Solo en móvil: activar scroll horizontal */
+.responsive-data-table-wrapper.mobile-scroll {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* En móvil: forzar ancho mínimo para que haya algo que scrollear */
+.responsive-data-table-wrapper.mobile-scroll :deep(.v-data-table) {
+  min-width: 800px;
+}
+
+/* En desktop: asegurar que no haya scroll innecesario */
+@media (min-width: 960px) {
+  .responsive-data-table-wrapper :deep(.v-data-table) {
+    min-width: auto;
+    overflow-x: hidden;
+  }
+}
+
+.tools-bar {
+  overflow-x: auto;
+  white-space: nowrap;
+  gap: 8px;
+}
+
+.fullscreen-dialog {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  overflow-y: auto;
+}
+
 .icono-concavo {
   width: 50px;
   height: 50px;
@@ -941,7 +1058,7 @@ export default {
 .date {
   padding: 4px 8px;
   border-radius: 4px;
-  background-color: #03626C;
+  background-color: #03626c;
 }
 
 .fullscreen-dialog {

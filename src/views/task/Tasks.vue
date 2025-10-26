@@ -88,6 +88,10 @@
       </div>
     </v-card-title>
 
+    <div
+      class="ma-0 pa-0 responsive-data-table-wrapper"
+      :class="{ 'mobile-scroll': $vuetify.display.xs || $vuetify.display.sm }"
+    >
     <!-- Tabla de datos -->
     <v-data-table
       :headers="headers"
@@ -176,7 +180,10 @@
 
       <!-- Fila personalizada -->
       <template v-slot:item="slotProps">
-        <tr style="display: table; width: 100%; table-layout: fixed;">
+        <tr
+          style="display: table; width: 100%;"
+          :class="$vuetify.display.xs || $vuetify.display.sm ? 'mobile-table' : 'desktop-table'"
+        >
           <td colspan="100%" style="padding: 0; border: none">
             <v-card
               class="mb-2 mx-1 rounded-lg"
@@ -384,223 +391,279 @@
         </tr>
       </template>
     </v-data-table>
+    </div>
     </v-card-text>
   </v-card>
   </v-container>
-  <v-dialog v-model="dialog" fullscreen persistent transition="dialog-bottom-transition"
-    content-class="fullscreen-dialog">
+  <v-dialog v-model="dialog" persistent transition="dialog-bottom-transition"   :fullscreen="isFullscreen"
+  :max-width="isMobile ? '100%' : 'none'">
     <v-form ref="form" v-model="valid" class="h-100">
-      <v-card class="pa-10">
+      <v-card :class="isMobile ? 'pa-0' : 'pa-10'">
         <v-card-text class="pt-12">
           <!-- Pasos laterales -->
 
           <h5 class="text-grey-darken-2 font-weight-medium">{{ formTitle }}</h5>
           <p class="text-grey-lighten-1">{{ $t("formInstructions") }}</p>
-          <v-row class="mt-12">
-            <v-col cols="3">
-              <v-timeline align="start" side="end" dense>
-                <v-timeline-item v-for="(s, index) in steps" :key="index" :dot-color="
-                    step > index
-                      ? 'green'
-                      : step === index
-                      ? 'deep-purple'
-                      : 'grey-lighten-1'
-                  " :icon="
-                    step >= index
-                      ? step === index
-                        ? `mdi-numeric-${index + 1}`
-                        : 'mdi-check'
-                      : null
-                  " size="large">
-                  <template #opposite>
-                    <div class="text-end">
-                      <strong>{{ $t(`steps.${s.title}.title`) }}</strong>
-                      <div class="text-caption text-grey">
-                        {{ $t(`steps.${s.title}.subtitle`) }}
-                      </div>
+          <v-container fluid class="pa-0 mt-6">
+            <v-row>
+              <!-- Timeline (solo escritorio) -->
+              <v-col
+                v-if="isDesktop"
+                cols="12"
+                md="3"
+                class="pr-md-6"
+              >
+          <v-timeline align="start" side="end" dense>
+            <v-timeline-item
+              v-for="(s, index) in steps"
+              :key="index"
+              :dot-color="
+                step > index
+                  ? 'green'
+                  : step === index
+                    ? 'deep-purple'
+                    : 'grey-lighten-1'
+              "
+              :icon="
+                step >= index
+                  ? step === index
+                    ? `mdi-numeric-${index + 1}`
+                    : 'mdi-check'
+                  : null
+              "
+              size="large"
+            >
+              <template #opposite>
+                <div class="text-end">
+                  <strong>{{ $t(`steps.${s.title}.title`) }}</strong>
+                  <div class="text-caption text-grey">
+                    {{ $t(`steps.${s.title}.subtitle`) }}
+                  </div>
+                </div>
+              </template>
+            </v-timeline-item>
+          </v-timeline>
+        </v-col>
+
+        <!-- Contenido principal -->
+        <v-col
+                :cols="12"
+                :md="isMobile ? 12 : 9"
+                :class="{ 'mt-6': isMobile }"
+              >
+                <!-- En móvil: indicador del paso -->
+                <div
+                  v-if="isMobile"
+                  class="d-flex justify-space-between align-center mb-4"
+                >
+                  <v-chip
+                    label
+                    size="small"
+                    color="deep-purple-lighten-4"
+                    class="text-deep-purple"
+                  >
+                    {{ $t(`steps.${steps[step].title}.title`) }}
+                  </v-chip>
+                </div>
+
+                <!-- En escritorio: título del paso -->
+                <h3 v-else class="text-deep-purple-accent-3 mb-6">
+                  {{ $t(`steps.${steps[step].title}.title`) }}
+                </h3>
+          <!-- Contenido del paso (compartido) -->
+          <v-row dense>
+            <!-- Paso 0 -->
+            <template v-if="step === 0">
+              <v-col cols="12" sm="6">
+                <v-text-field
+                  v-model="editedItem.title"
+                  :label="$t('taskForm.fields.title')"
+                  variant="underlined"
+                  :rules="nameRules"
+                />
+              </v-col>
+              <v-col cols="12" sm="6">
+                <v-select
+                  v-model="editedItem.priority_id"
+                  :items="priorities"
+                  item-title="namePriority"
+                  item-value="id"
+                  :label="$t('taskForm.fields.priority')"
+                  variant="underlined"
+                  required
+                >
+                  <template v-slot:item="{ props, item }">
+                    <v-list-item v-bind="props" :title="item.raw.namePriority" :subtitle="item.raw.descriptionPriority">
+                      <template v-slot:prepend>
+                        <v-icon :color="'#' + item.raw.colorPriority">mdi-priority-high</v-icon>
+                      </template>
+                    </v-list-item>
+                  </template>
+                </v-select>
+              </v-col>
+              <v-col cols="12">
+                <v-textarea
+                  v-model="editedItem.description"
+                  :label="$t('taskForm.fields.description')"
+                  variant="underlined"
+                  rows="3"
+                ></v-textarea>
+              </v-col>
+            </template>
+
+            <!-- Paso 1 -->
+            <template v-if="step === 1">
+              <v-col cols="12" sm="6" v-for="role in roles" :key="role.id">
+                <v-card class="mx-auto" max-width="98%">
+                  <v-list
+                    v-model:selected="selectedItems[role.id]"
+                    @update:selected="updateSelection(role, $event)"
+                    select-strategy="leaf"
+                    multiple
+                  >
+                    <v-list-subheader>{{ role.nameRol }}</v-list-subheader>
+                    <v-list-item
+                      v-for="person in filteredPeople(role.id)"
+                      :key="`${role.id}-${person.id}`"
+                      :value="person.id"
+                      active-class="text-green"
+                      class="py-3"
+                    >
+                      <template v-slot:prepend>
+                        <v-avatar>
+                          <v-img :src="`${this.$axios.defaults.baseURL}images/${person.imagePerson}`" />
+                        </v-avatar>
+                      </template>
+                      <v-list-item-title>{{ person.namePerson }}</v-list-item-title>
+                      <v-list-item-subtitle class="mb-1 text-high-emphasis opacity-100">
+                        {{ person.roleName }}
+                      </v-list-item-subtitle>
+                      <template v-slot:append>
+                        <v-icon v-if="isPersonSelected(person.id, role.id)" :color="getRoleIcon(role.id) === 'mdi-star' ? 'green-darken-3' : 'green-darken-3'">
+                          {{ getRoleIcon(role.id) === 'mdi-star' ? 'mdi-star' : 'mdi-circle-slice-8' }}
+                        </v-icon>
+                        <v-icon v-else class="opacity-30" :color="getRoleIcon(role.id) === 'mdi-star' ? 'green-darken-3' : undefined">
+                          {{ getRoleIcon(role.id) === 'mdi-star' ? 'mdi-star-outline' : 'mdi-checkbox-blank-circle-outline' }}
+                        </v-icon>
+                      </template>
+                    </v-list-item>
+                  </v-list>
+                </v-card>
+              </v-col>
+            </template>
+
+            <!-- Paso 2 -->
+            <template v-if="step === 2">
+              <v-col cols="12" md="6">
+                <v-locale-provider>
+                  <v-menu v-model="menu" :close-on-content-click="false" :nudge-right="40" transition="scale-transition" offset-y min-width="290px" location="end">
+                    <template v-slot:activator="{ props }">
+                      <v-text-field v-bind="props" :modelValue="this.input" variant="underlined" :label="$t('taskForm.today')"></v-text-field>
+                    </template>
+                    <v-date-picker color="#03626C" :modelValue="this.input" @update:model-value="updateDate" format="yyyy-MM-dd"></v-date-picker>
+                  </v-menu>
+                </v-locale-provider>
+              </v-col>
+              <v-col cols="12" md="6">
+                <v-text-field
+                  v-model="editedItem.start_time"
+                  :label="$t('taskForm.fields.time')"
+                  readonly
+                  variant="underlined"
+                  @click="timePickerDialog = true"
+                ></v-text-field>
+                <v-dialog v-model="timePickerDialog" width="auto">
+                  <v-locale-provider>
+                    <v-time-picker v-model="editedItem.start_time" format="24hr" color="#03626C" @update:model-value="timePickerDialog = false"></v-time-picker>
+                  </v-locale-provider>
+                </v-dialog>
+              </v-col>
+              <v-col cols="12" md="6">
+                <v-text-field
+                  v-model="editedItem.estimated_time"
+                  type="number"
+                  :label="$t('taskForm.fields.estimatedTime')"
+                  variant="underlined"
+                  :rules="[(v) => v > 0 || 'Debe ser un número válido']"
+                ></v-text-field>
+              </v-col>
+              <v-col cols="12" md="6">
+                <v-select
+                  v-model="editedItem.recurrence"
+                  :items="recurrences"
+                  item-title="name"
+                  item-value="id"
+                  :label="$t('taskForm.fields.recurrence')"
+                  variant="underlined"
+                  :rules="selectRules"
+                ></v-select>
+              </v-col>
+              <v-col cols="12" md="6" v-if="editedIndex !== -1">
+                <v-autocomplete
+                  v-model="editedItem.status_id"
+                  :items="status"
+                  :label="$t('taskForm.fields.status')"
+                  item-title="nameStatus"
+                  item-value="id"
+                  variant="underlined"
+                  :rules="selectRules"
+                >
+                  <template v-slot:selection="{ item }">
+                    <div class="d-flex align-center">
+                      <v-avatar size="24" :color="'#' + item.raw.colorStatus" class="mr-2">
+                        <v-icon>{{ item.raw.iconStatus }}</v-icon>
+                      </v-avatar>
+                      <span>{{ item.raw.nameStatus }}</span>
                     </div>
                   </template>
-                </v-timeline-item>
-              </v-timeline>
-            </v-col>
-
-            <!-- Contenido dinámico según paso -->
-            <v-col cols="9">
-              <h3 class="text-deep-purple-accent-3 mb-8">
-                {{ $t(`steps.${steps[step].title}.title`) }}
-              </h3>
-
-              <v-row dense v-if="step === 0">
-                <v-col cols="12" sm="6">
-                  <v-text-field v-model="editedItem.title" :label="$t('taskForm.fields.title')" variant="underlined"
-                    :rules="nameRules" />
-                </v-col>
-
-                <v-col cols="12" sm="6">
-                  <v-select v-model="editedItem.priority_id" :items="priorities" item-title="namePriority"
-                    item-value="id" :label="$t('taskForm.fields.priority')" variant="underlined" required>
-                    <!-- Cómo se muestra en la lista desplegable -->
-                    <template v-slot:item="{ props, item }">
-                      <v-list-item v-bind="props" :title="item.raw.namePriority"
-                        :subtitle="item.raw.descriptionPriority">
-                        <template v-slot:prepend>
-                          <v-icon :color="'#' + item.raw.colorPriority">
-                            mdi-priority-high
-                          </v-icon>
-                        </template>
-                      </v-list-item>
-                    </template>
-                  </v-select>
-                </v-col>
-                <v-col cols="12" md="12">
-                  <v-textarea v-model="editedItem.description" :label="$t('taskForm.fields.description')"
-                    variant="underlined" rows="3"></v-textarea>
-                </v-col>
-              </v-row>
-              <v-row dense v-if="step === 1">
-                <v-col cols="6" v-for="role in roles" :key="role.id">
-                  <v-card class="mx-auto" max-width="98%">
-                    <v-list v-model:selected="selectedItems[role.id]" @update:selected="updateSelection(role, $event)"
-                      select-strategy="leaf" multiple>
-                      <v-list-subheader>{{ role.nameRol }}</v-list-subheader>
-                      <v-list-item v-for="person in filteredPeople(role.id)" :key="`${role.id}-${person.id}`"
-                        :value="person.id" active-class="text-green"
-                        :prepend-avatar="`${this.$axios.defaults.baseURL}images/${person.imagePerson}`" class="py-3">
-                        <!-- Contenido del ítem - Nueva estructura Vuetify 3 -->
-                        <template v-slot:prepend>
-                          <v-avatar>
-                            <v-img :src="`${this.$axios.defaults.baseURL}images/${person.imagePerson}`" />
-                          </v-avatar>
-                        </template>
-
-                        <!-- Nombre y rol -->
-                        <v-list-item-title>{{ person.namePerson }}</v-list-item-title>
-                        <v-list-item-subtitle class="mb-1 text-high-emphasis opacity-100">
-                          {{ person.roleName }}
-                        </v-list-item-subtitle>
-
-                        <!-- Icono de selección -->
-                        <template v-slot:append>
-                          <v-icon v-if="isPersonSelected(person.id, role.id)" :color="
-                              getRoleIcon(role.id) === 'mdi-star'
-                                ? 'green-darken-3'
-                                : 'green-darken-3'
-                            ">
-                            {{
-                            getRoleIcon(role.id) === "mdi-star"
-                            ? "mdi-star"
-                            : "mdi-circle-slice-8"
-                            }}
-                          </v-icon>
-                          <v-icon v-else class="opacity-30" :color="
-                              getRoleIcon(role.id) === 'mdi-star'
-                                ? 'green-darken-3'
-                                : undefined
-                            ">
-                            {{
-                            getRoleIcon(role.id) === "mdi-star"
-                            ? "mdi-star-outline"
-                            : "mdi-checkbox-blank-circle-outline"
-                            }}
-                          </v-icon>
-                        </template>
-                      </v-list-item>
-                    </v-list>
-                  </v-card>
-                </v-col>
-              </v-row>
-              <v-row dense v-if="step === 2">
-                <v-col cols="12" md="6">
-                    <v-locale-provider>
-                  <v-menu v-model="menu" :close-on-content-click="false" :nudge-right="40" transition="scale-transition"
-                    offset-y min-width="290px" location="end">
-                    <template v-slot:activator="{ props }">
-                      <v-text-field v-bind="props" :modelValue="this.input" variant="underlined"
-                        :label="$t('taskForm.today')"></v-text-field>
-                    </template>
-                      <v-date-picker color="#03626C" :modelValue="this.input" @update:model-value="updateDate"
-                        format="yyyy-MM-dd"></v-date-picker>
-                  </v-menu>
-                    </v-locale-provider>
-                </v-col>
-
-                <v-col cols="12" md="6">
-                  <v-text-field v-model="editedItem.start_time" :active="timePickerDialog" :focused="timePickerDialog"
-                    :label="$t('taskForm.fields.time')" readonly variant="underlined"
-                    @click="timePickerDialog = true"></v-text-field>
-
-                  <v-dialog v-model="timePickerDialog" width="auto">
-                    <v-locale-provider>
-                      <v-time-picker v-model="editedItem.start_time" format="24hr" color="#03626C"
-                        @update:model-value="timePickerDialog = false"></v-time-picker>
-                    </v-locale-provider>
-                  </v-dialog>
-                </v-col>
-                <v-col cols="12" md="6">
-                  <v-text-field v-model="editedItem.estimated_time" type="number"
-                    :label="$t('taskForm.fields.estimatedTime')" variant="underlined"
-                    :rules="[(v) => v > 0 || 'Debe ser un número válido']"></v-text-field>
-                </v-col>
-                <v-col cols="12" md="6">
-                  <v-select v-model="editedItem.recurrence" :items="recurrences" item-title="name" item-value="id"
-                    :label="$t('taskForm.fields.recurrence')" variant="underlined"
-                    :rules="selectRules">
-                  </v-select>
-                </v-col>
-                <v-col cols="12" md="6" v-if="editedIndex !== -1">
-                  <v-autocomplete v-model="editedItem.status_id" :items="status" :label="$t('taskForm.fields.status')"
-                    item-title="nameStatus" item-value="id" variant="underlined" :rules="selectRules">
-                    <!-- Slot para el item seleccionado (en el input) -->
-                    <template v-slot:selection="{ item }">
-                      <div class="d-flex align-center">
-                        <v-avatar size="24" :color="'#' + item.raw.colorStatus" class="mr-2">
+                  <template v-slot:item="{ props, item }">
+                    <v-list-item
+                      v-bind="props"
+                      :style="{
+                        'background-color':
+                          item.props.value === editedItem.status_id
+                            ? `#${item.raw.colorStatus}20`
+                            : 'transparent',
+                      }"
+                    >
+                      <template v-slot:prepend>
+                        <v-avatar size="24" :color="'#' + item.raw.colorStatus">
                           <v-icon>{{ item.raw.iconStatus }}</v-icon>
                         </v-avatar>
-                        <span>{{ item.raw.nameStatus }}</span>
-                      </div>
-                    </template>
+                      </template>
+                      <v-list-item-subtitle class="d-flex flex-column">
+                        <div>{{ item.raw.descriptionStatus }}</div>
+                      </v-list-item-subtitle>
+                    </v-list-item>
+                  </template>
+                </v-autocomplete>
+              </v-col>
+              <v-col cols="12">
+                <v-text-field
+                  v-model="editedItem.geo_location"
+                  :label="$t('taskForm.fields.location')"
+                  variant="underlined"
+                ></v-text-field>
+              </v-col>
+            </template>
+          </v-row>
 
-                    <!-- Slot para los items del dropdown -->
-                    <template v-slot:item="{ props, item }">
-                      <v-list-item v-bind="props" :style="{
-                          'background-color':
-                            item.props.value === editedItem.status_id
-                              ? `#${item.raw.colorStatus}20` // Aplica opacidad (20 = 12%)
-                              : 'transparent',
-                        }">
-                        <template v-slot:prepend>
-                          <v-avatar size="24" :color="'#' + item.raw.colorStatus">
-                            <v-icon>{{ item.raw.iconStatus }}</v-icon>
-                          </v-avatar>
-                        </template>
-                        <v-list-item-subtitle class="d-flex flex-column">
-                          <div>{{ item.raw.descriptionStatus }}</div>
-                        </v-list-item-subtitle>
-                      </v-list-item>
-                    </template>
-                  </v-autocomplete>
-                </v-col>
-                <v-col cols="12" md="12">
-                  <v-text-field v-model="editedItem.geo_location" :label="$t('taskForm.fields.location')"
-                    variant="underlined"></v-text-field>
-                </v-col>
-              </v-row>
-
-              <div class="d-flex justify-space-between mt-8">
-                <v-btn variant="text" class="text-grey-darken-1" @click="step > 0 ? step-- : this.close()">
-                  {{ step === 0 ? $t("buttons.close") : $t("buttons.previous") }}
-                </v-btn>
-
-                <v-btn variant="text" class="text-deep-purple-accent-3" @click="nextStep" :disabled="!valid">
-                  {{
-                  step === steps.length - 1
+          <!-- Botones (compartidos) -->
+          <div class="d-flex justify-space-between mt-8">
+            <v-btn variant="text" class="text-grey-darken-1" @click="step > 0 ? step-- : this.close()">
+              {{ step === 0 ? $t("buttons.close") : $t("buttons.previous") }}
+            </v-btn>
+            <v-btn variant="text" class="text-deep-purple-accent-3" @click="nextStep" :disabled="!valid">
+              {{
+                step === steps.length - 1
                   ? $t("buttons.saveAndClose")
                   : $t("buttons.next")
-                  }}
-                </v-btn>
-              </div>
-            </v-col>
-          </v-row>
+              }}
+            </v-btn>
+          </div>
+        </v-col>
+      </v-row>
+      </v-container>
         </v-card-text>
       </v-card>
     </v-form>
@@ -750,6 +813,7 @@ export default {
     selected2: null,
     dialogSuggested: false,
     suggestedTasks: null,
+    isFullscreen: false,
     step: 0,
     dateMenu: false,
       searchDate: '',
@@ -934,6 +998,12 @@ export default {
     module: "",
   }),
   computed: {
+    isMobile() {
+			return this.$vuetify.display.xs || this.$vuetify.display.sm;
+		},
+		isDesktop() {
+			return !this.isMobile;
+		},
     formTitle() {
       return this.editedIndex === -1
         ? this.$t("taskForm.titles.new")
@@ -1040,6 +1110,14 @@ export default {
       },
     ];
   },
+  watch: {
+    dialog(val) {
+      if (val) this.updateFullscreenMode();
+      },
+    isDesktop() {
+      this.updateFullscreenMode();
+    },
+	},
   mounted() {
     this.home_id = JSON.parse(LocalStorageService.getItem("home_id"));
     this.person_id = JSON.parse(LocalStorageService.getItem("person_id"));
@@ -1047,6 +1125,11 @@ export default {
     this.timeSlots = this.generateTimeSlots(); // Genera los horarios al montar el componente
   },
   methods: {
+    updateFullscreenMode() {
+      this.$nextTick(() => {
+        this.isFullscreen = this.isDesktop;
+      });
+    },
     getImageUrl(imagePath) {
       return `${this.$axios.defaults.baseURL}images/${imagePath}?t=${this.getCacheTimestamp()}`;
     },
@@ -1802,7 +1885,7 @@ export default {
             // Manejo de la respuesta según el resultado
             if (result.success) {
               this.loading = false;
-              this.showAlert("success", result.message, 3000);
+              this.showAlert("success", result.message || "Tarea creada correctamente", 3000);
               if (result.data?.suggestedTasks?.length > 0) {
                 this.suggestedTasks = result.data.suggestedTasks;
                 this.dialogSuggested = true;
@@ -1810,7 +1893,7 @@ export default {
               this.initialize();
             } else {
               this.loading = false;
-              this.showAlert("warning", result.message, 3000);
+              this.showAlert("warning", result.message || "Tarea actualizada Correctamente", 3000);
             }
           } catch (error) {
             this.loading = false;
@@ -2080,6 +2163,46 @@ export default {
 };
 </script>
 <style scoped>
+.fullscreen-dialog {
+	display: flex;
+	flex-direction: column;
+	height: 100%;
+	overflow-y: auto;
+	}
+.desktop-table {
+  table-layout: fixed;
+}
+
+.mobile-table {
+  table-layout: auto;
+}
+.responsive-data-table-wrapper {
+  width: 100%;
+}
+
+/* Solo en móvil: activar scroll horizontal */
+.responsive-data-table-wrapper.mobile-scroll {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* En móvil: forzar ancho mínimo para que haya algo que scrollear */
+.responsive-data-table-wrapper.mobile-scroll :deep(.v-data-table) {
+  min-width: 800px;
+}
+
+/* En desktop: asegurar que no haya scroll innecesario */
+@media (min-width: 960px) {
+  .responsive-data-table-wrapper :deep(.v-data-table) {
+    min-width: auto;
+    overflow-x: hidden;
+  }
+}
+.tools-bar {
+  overflow-x: auto;
+  white-space: nowrap;
+  gap: 8px;
+}
 .icono-concavo {
   width: 50px;
   height: 50px;

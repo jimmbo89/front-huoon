@@ -19,321 +19,362 @@
       </v-col>
     </v-row>
   </v-snackbar>
-<v-card class="pa-0" elevation="1" rounded="lg" style="
-    position: relative;
-    overflow: visible;
-    z-index: auto;
-  ">
-      <!-- Encabezado con foto y datos -->
-      <v-card-text>
-          <v-card-actions class="bg-grey-lighten-5 tools-bar">
-            <v-btn
-              v-for="tool in tools"
-              :key="tool.name"
-              @click="tool.action()"
-              size="small"
-              color="primary"
-              variant="text"
-              prepend-icon="mdi-plus"
-              class="text-capitalize"
-            >
-              {{ tool.name }}
-            </v-btn>
-          </v-card-actions>
-           <v-card-title class="d-flex flex-wrap align-center pb-2">
-                <!-- Título -->
-
-                <!-- Spacer (solo visible en md+) -->
-                <v-spacer class="d-none d-md-block"></v-spacer>
-                <!-- Campo de búsqueda global -->
-                <div class="flex-grow-1" style="max-width: 300px">
-                    <v-text-field v-model="search" density="compact" :label="$t('dataTable.search')"
-                        prepend-inner-icon="mdi-magnify" variant="solo-filled" hide-details single-line
-                        flat></v-text-field>
-                </div>
-            </v-card-title>
-            <v-data-table
-      :headers="headers"
-      :items="backgroundPersons"
-      :search="search"
-      :items-per-page-text="$t('dataTable.itemsPerPageText')"
-      :no-data-text="$t('dataTable.noDataText')"
-      :loading-text="$t('dataTable.loadingText')"
-      :loading="loading"
-      :hide-default-header="true"
-      style="
-        max-height: 68vh;
-        overflow-y: auto;
-        background: transparent;
-        border: none !important;
-        outline: none !important;
-        box-shadow: none !important;
-        padding: 0;
-      "
-    >
-      <!-- Encabezado fijo -->
-      <template v-slot:top>
-        <v-card
-          :elevation="1"
-          flat
-          class="mb-2 mx-1 rounded-lg"
-          style="border: 1px solid #ECEFF1; height: 40px; min-height: 40px; display: flex; align-items: center; transition: none !important"
+  <v-card
+    class="pa-0"
+    elevation="1"
+    rounded="lg"
+    style="position: relative; overflow: visible; z-index: auto"
+  >
+    <!-- Encabezado con foto y datos -->
+    <v-card-text>
+      <v-card-actions class="bg-grey-lighten-5 tools-bar">
+        <v-btn
+          v-for="tool in tools"
+          :key="tool.name"
+          @click="tool.action()"
+          size="small"
+          color="primary"
+          variant="text"
+          prepend-icon="mdi-plus"
+          class="text-capitalize"
         >
-          <v-card-text
-            class="d-flex pa-2"
-            style="width: 100%; min-width: 0; height: 100%; padding: 0 16px !important; display: flex; align-items: center"
-          >
-            <!-- Fecha / Periodo (7%) -->
-            <div style="width: 7%; min-width: 0" class="text-left">
-              {{ $t('personalBackground.fields.startDate') }}
-            </div>
-            <div style="width: 34%; min-width: 0" class="text-left">
-              {{ $t('personalBackground.fields.description') }}
-            </div>
+          {{ tool.name }}
+        </v-btn>
+      </v-card-actions>
+      <v-card-title class="d-flex flex-wrap align-center pb-2">
+        <!-- Título -->
 
-            <!-- Estado (24%) -->
-            <div style="width: 15%; min-width: 0" class="text-left">
-              {{ $t('personalBackground.fields.status') }}
-            </div>
-
-            <!-- Detalles (10%) -->
-            <div style="width: 34%; min-width: 0" class="text-left">
-              {{ $t('personalBackground.fields.details') }}
-            </div>
-
-            <!-- Acciones (10%) -->
-            <div style="width: 10%; min-width: 0" class="d-flex justify-end">
-              {{ $t('settings.actions') }}
-            </div>
-          </v-card-text>
-        </v-card>
-      </template>
-
-      <!-- Item (fila) -->
-      <template v-slot:item="slotProps">
-        <tr>
-          <td colspan="100%" style="padding: 0; border: none">
+        <!-- Spacer (solo visible en md+) -->
+        <v-spacer class="d-none d-md-block"></v-spacer>
+        <!-- Campo de búsqueda global -->
+        <div class="flex-grow-1" style="max-width: 300px">
+          <v-text-field
+            v-model="search"
+            density="compact"
+            :label="$t('dataTable.search')"
+            prepend-inner-icon="mdi-magnify"
+            variant="solo-filled"
+            hide-details
+            single-line
+            flat
+          ></v-text-field>
+        </div>
+      </v-card-title>
+      <div
+        class="ma-0 pa-0 responsive-data-table-wrapper"
+        :class="isMobile ? 'mobile-scroll' : ''"
+      >
+        <v-data-table
+          :headers="headers"
+          :items="backgroundPersons"
+          :search="search"
+          :items-per-page-text="$t('dataTable.itemsPerPageText')"
+          :no-data-text="$t('dataTable.noDataText')"
+          :loading-text="$t('dataTable.loadingText')"
+          :loading="loading"
+          :hide-default-header="true"
+          style="
+            max-height: 68vh;
+            overflow-y: auto;
+            overflow-x: hidden;
+            background: transparent;
+            border: none !important;
+            outline: none !important;
+            box-shadow: none !important;
+          "
+        >
+          <!-- Encabezado fijo -->
+          <template v-slot:top>
             <v-card
-              class="mb-2 mx-1 rounded-lg"
-              elevation="1"
-              density="comfortable"
+              :elevation="1"
               flat
+              class="mb-2 mx-1 rounded-lg"
+              style="
+                border: 1px solid #eceff1;
+                height: 40px;
+                min-height: 40px;
+                display: flex;
+                align-items: center;
+                transition: none !important;
+              "
             >
-              <v-card-text class="d-flex align-center pa-2" style="width: 100%; min-width: 0">
+              <v-card-text
+                class="d-flex pa-2"
+                style="
+                  width: 100%;
+                  min-width: 0;
+                  height: 100%;
+                  padding: 0 16px !important;
+                  display: flex;
+                  align-items: center;
+                "
+              >
                 <!-- Fecha / Periodo (7%) -->
-                <div class="d-flex align-center" style="width: 7%; min-width: 0">
-                  <v-avatar
-                    class="mr-1 icono-concavo"
-                    :class="`bg-${getTypeColor(slotProps.item.typeName)}`"
-                    :style="{
-                      'min-height': '48px',
-                      'min-width': '48px',
-                      'border-radius': '8px',
-                      'font-size': '0.90em'
-                    }"
-                  >
-                    <div class="text-body-3 font-weight-medium">
-                      {{ formatIntuitiveDate(slotProps.item.startDate) }}
-                    </div>
-                  </v-avatar>
+                <div style="width: 7%; min-width: 0" class="text-left">
+                  {{ $t("personalBackground.fields.startDate") }}
                 </div>
-                <div style="width: 34%; min-width: 0" class="d-flex flex-column">
+                <div style="width: 34%; min-width: 0" class="text-left">
+                  {{ $t("personalBackground.fields.description") }}
+                </div>
+
+                <!-- Estado (24%) -->
+                <div style="width: 15%; min-width: 0" class="text-left">
+                  {{ $t("personalBackground.fields.status") }}
+                </div>
+
+                <!-- Detalles (10%) -->
+                <div style="width: 34%; min-width: 0" class="text-left">
+                  {{ $t("personalBackground.fields.details") }}
+                </div>
+
+                <!-- Acciones (10%) -->
+                <div style="width: 10%; min-width: 0" class="d-flex justify-end">
+                  {{ $t("settings.actions") }}
+                </div>
+              </v-card-text>
+            </v-card>
+          </template>
+
+          <!-- Item (fila) -->
+          <template v-slot:item="slotProps">
+            <tr
+              style="display: table; width: 100%"
+              :class="isMobile ? 'mobile-table' : 'desktop-table'"
+            >
+              <td colspan="100%" style="padding: 0; border: none">
+                <v-card
+                  class="mb-2 mx-1 rounded-lg"
+                  elevation="1"
+                  density="comfortable"
+                  flat
+                >
+                  <v-card-text
+                    class="d-flex align-center pa-2"
+                    style="width: 100%; min-width: 0"
+                  >
+                    <!-- Fecha / Periodo (7%) -->
+                    <div class="d-flex align-center" style="width: 7%; min-width: 0">
+                      <v-avatar
+                        class="mr-1 icono-concavo"
+                        :class="`bg-${getTypeColor(slotProps.item.typeName)}`"
+                        :style="{
+                          'min-height': '48px',
+                          'min-width': '48px',
+                          'border-radius': '8px',
+                          'font-size': '0.90em',
+                        }"
+                      >
+                        <div class="text-body-3 font-weight-medium">
+                          {{ formatIntuitiveDate(slotProps.item.startDate) }}
+                        </div>
+                      </v-avatar>
+                    </div>
+                    <div style="width: 34%; min-width: 0" class="d-flex flex-column">
                       <div class="text-body-2 text-truncate">
                         {{ slotProps.item.description }}
-                        </div>
-                        <v-tooltip activator="parent" location="bottom" max-width="350px">
-                    <span style="white-space: normal; word-break: break-word">
-                      {{ slotProps.item.description }}
-                    </span>
-                  </v-tooltip>
+                      </div>
+                      <v-tooltip activator="parent" location="bottom" max-width="350px">
+                        <span style="white-space: normal; word-break: break-word">
+                          {{ slotProps.item.description }}
+                        </span>
+                      </v-tooltip>
                       <div class="text-caption text-grey-darken-1 text-truncate">
                         {{ slotProps.item.severity }}
                       </div>
                     </div>
 
-                <!-- Estado (24%) -->
-                <div style="width: 15%; min-width: 0" class="text-body-2 text-truncate">
-                  <span>{{ slotProps.item.status }}</span>
-                  <v-tooltip activator="parent" location="bottom" max-width="350px">
-                    <span style="white-space: normal; word-break: break-word">
-                     {{ slotProps.item.status }}
-                    </span>
-                  </v-tooltip>
-                </div>
+                    <!-- Estado (24%) -->
+                    <div
+                      style="width: 15%; min-width: 0"
+                      class="text-body-2 text-truncate"
+                    >
+                      <span>{{ slotProps.item.status }}</span>
+                      <v-tooltip activator="parent" location="bottom" max-width="350px">
+                        <span style="white-space: normal; word-break: break-word">
+                          {{ slotProps.item.status }}
+                        </span>
+                      </v-tooltip>
+                    </div>
 
-                <!-- Detalles (10%) -->
-                <div style="width: 34%; min-width: 0" class="text-body-2 text-truncate">
-                  <span>{{ slotProps.item.details }}</span>
-                  <v-tooltip activator="parent" location="bottom" max-width="350px">
-                    <span style="white-space: normal; word-break: break-word">
-                     {{ slotProps.item.details }}
-                    </span>
-                  </v-tooltip>
-                </div>
+                    <!-- Detalles (10%) -->
+                    <div
+                      style="width: 34%; min-width: 0"
+                      class="text-body-2 text-truncate"
+                    >
+                      <span>{{ slotProps.item.details }}</span>
+                      <v-tooltip activator="parent" location="bottom" max-width="350px">
+                        <span style="white-space: normal; word-break: break-word">
+                          {{ slotProps.item.details }}
+                        </span>
+                      </v-tooltip>
+                    </div>
 
-                <!-- Acciones (10%) -->
-                <div class="d-flex gap-1" style="width: 10%; justify-content: flex-end; flex-wrap: nowrap">
-                  <v-btn
-                    size="35"
-                    icon
-                    variant="text"
-                    color="green-darken-2"
-                    @click="editItem(slotProps.item)"
-                    class="flex-shrink-0 mr-1"
-                    title="Editar Vacunación"
-                  >
-                    <v-icon size="20">mdi-pencil</v-icon>
-                  </v-btn>
-
-                  <v-btn
-                    size="35"
-                    icon
-                    variant="text"
-                    color="red-darken-2"
-                    @click="deleteItem(slotProps.item)"
-                    class="flex-shrink-0"
-                    title="Eliminar Vacunación"
-                  >
-                    <v-icon size="20">mdi-delete</v-icon>
-                  </v-btn>
-                </div>
-              </v-card-text>
-            </v-card>
-          </td>
-        </tr>
-      </template>
-    </v-data-table>
-          </v-card-text>
-          </v-card>
-        <v-dialog
-          v-model="dialog"
-          fullscreen
-          persistent
-          transition="dialog-bottom-transition"
-          content-class="fullscreen-dialog"
-        >
-          <v-form ref="form" v-model="valid" class="h-100">
-            <v-card class="pa-10">
-              <v-card-text class="pt-12">
-                <h5 class="text-grey-darken-2 font-weight-medium">{{ formTitle }}</h5>
-                <p class="text-grey-lighten-1">
-                  {{ $t("personalBackground.formInstructions") }}
-                </p>
-
-                <v-row class="mt-12">
-                  <!-- Side steps -->
-                  <v-col cols="3">
-                    <v-timeline align="start" side="end" dense>
-                      <v-timeline-item
-                        v-for="(s, index) in steps"
-                        :key="index"
-                        :dot-color="
-                          step > index
-                            ? 'green'
-                            : step === index
-                            ? 'deep-purple'
-                            : 'grey-lighten-1'
-                        "
-                        :icon="
-                          step >= index
-                            ? step === index
-                              ? `mdi-numeric-${index + 1}`
-                              : 'mdi-check'
-                            : null
-                        "
-                        size="large"
+                    <!-- Acciones (10%) -->
+                    <div
+                      class="d-flex gap-1"
+                      style="width: 10%; justify-content: flex-end; flex-wrap: nowrap"
+                    >
+                      <v-btn
+                        size="35"
+                        icon
+                        variant="text"
+                        color="green-darken-2"
+                        @click="editItem(slotProps.item)"
+                        class="flex-shrink-0 mr-1"
+                        title="Editar Vacunación"
                       >
-                        <template #opposite>
-                          <div class="text-end">
-                            <strong>{{
-                              $t(`personalBackground.steps.${s.title}.title`)
-                            }}</strong>
-                            <div class="text-caption text-grey">
-                              {{ $t(`personalBackground.steps.${s.title}.subtitle`) }}
-                            </div>
-                          </div>
+                        <v-icon size="20">mdi-pencil</v-icon>
+                      </v-btn>
+
+                      <v-btn
+                        size="35"
+                        icon
+                        variant="text"
+                        color="red-darken-2"
+                        @click="deleteItem(slotProps.item)"
+                        class="flex-shrink-0"
+                        title="Eliminar Vacunación"
+                      >
+                        <v-icon size="20">mdi-delete</v-icon>
+                      </v-btn>
+                    </div>
+                  </v-card-text>
+                </v-card>
+              </td>
+            </tr>
+          </template>
+        </v-data-table>
+      </div>
+    </v-card-text>
+  </v-card>
+  <v-dialog
+    v-model="dialog"
+    :fullscreen="isFullscreen"
+    :max-width="isMobile ? '100%' : 'none'"
+    persistent
+    transition="dialog-bottom-transition"
+  >
+    <v-form ref="form" v-model="valid" class="h-100">
+      <v-card :class="isMobile ? 'pa-0' : 'pa-10'">
+        <v-card-text class="pt-12">
+          <h5 class="text-grey-darken-2 font-weight-medium">{{ formTitle }}</h5>
+          <p class="text-grey-lighten-1">
+            {{ $t("personalBackground.formInstructions") }}
+          </p>
+
+          <v-container fluid class="pa-0 mt-6">
+            <v-row>
+              <!-- Timeline (solo escritorio) -->
+              <v-col v-if="isDesktop" cols="12" md="3" class="pr-md-6">
+                <v-timeline align="start" side="end" dense>
+                  <v-timeline-item
+                    v-for="(s, index) in steps"
+                    :key="index"
+                    :dot-color="
+                      step > index
+                        ? 'green'
+                        : step === index
+                        ? 'deep-purple'
+                        : 'grey-lighten-1'
+                    "
+                    :icon="
+                      step >= index
+                        ? step === index
+                          ? `mdi-numeric-${index + 1}`
+                          : 'mdi-check'
+                        : null
+                    "
+                    size="large"
+                  >
+                    <template #opposite>
+                      <div class="text-end">
+                        <strong>{{
+                          $t(`personalBackground.steps.${s.title}.title`)
+                        }}</strong>
+                        <div class="text-caption text-grey">
+                          {{ $t(`personalBackground.steps.${s.title}.subtitle`) }}
+                        </div>
+                      </div>
+                    </template>
+                  </v-timeline-item>
+                </v-timeline>
+              </v-col>
+
+              <!-- Contenido dinámico según paso -->
+              <v-col :cols="12" :md="isMobile ? 12 : 9" :class="{ 'mt-6': isMobile }">
+                <!-- En móvil: indicador del paso -->
+                <div
+                  v-if="isMobile"
+                  class="d-flex justify-space-between align-center mb-4"
+                >
+                  <v-chip
+                    label
+                    size="small"
+                    color="deep-purple-lighten-4"
+                    class="text-deep-purple"
+                  >
+                    {{ $t(`personalBackground.steps.${steps[step].title}.title`) }}
+                  </v-chip>
+                </div>
+
+                <!-- En escritorio: título del paso -->
+                <h3 v-else class="text-deep-purple-accent-3 mb-6">
+                  {{ $t(`personalBackground.steps.${steps[step].title}.title`) }}
+                </h3>
+
+                <!-- Paso 1: Detalles -->
+                <v-row dense>
+                  <template v-if="step === 0">
+                    <v-col cols="12" md="6">
+                      <v-menu
+                        v-model="dateMenu"
+                        :close-on-content-click="false"
+                        transition="scale-transition"
+                        offset-y
+                        min-width="auto"
+                      >
+                        <template v-slot:activator="{ props }">
+                          <v-text-field
+                            v-bind="props"
+                            :model-value="dateInput"
+                            :label="$t('personalBackground.fields.startDate')"
+                            variant="underlined"
+                            readonly
+                          ></v-text-field>
                         </template>
-                      </v-timeline-item>
-                    </v-timeline>
-                  </v-col>
-
-                  <!-- Contenido dinámico según paso -->
-                  <v-col cols="9">
-                    <h3 class="text-deep-purple-accent-3 mb-8">
-                      {{ $t(`personalBackground.steps.${steps[step].title}.title`) }}
-                    </h3>
-
-                    <!-- Paso 1: Detalles -->
-                    <v-row dense v-if="step === 0">
-                      <!--<v-col cols="12" sm="6">
-                        <v-autocomplete 
-                        v-model="editedItem.type_id"
-                        :items="backgroundTypes" 
-                        :label="$t('personalBackground.fields.type')" 
-                        item-title="nameTranslated"
-                        item-value="id" 
-                        variant="underlined" 
-                        :rules="typeRules"
+                        <v-locale-provider>
+                          <v-date-picker
+                            color="#03626C"
+                            :model-value="dateInput"
+                            @update:model-value="updateDate"
+                            :max="new Date().toISOString().split('T')[0]"
+                          ></v-date-picker>
+                        </v-locale-provider>
+                      </v-menu>
+                    </v-col>
+                    <v-col cols="12" sm="6">
+                      <v-select
+                        v-model="editedItem.status"
+                        :items="status"
+                        item-title="name"
+                        item-value="id"
+                        :label="$t('personalBackground.fields.status')"
+                        variant="underlined"
+                        :rules="selectRules"
                       >
                         <template v-slot:item="{ props, item }">
                           <v-list-item v-bind="props">
                             <v-list-item-subtitle class="d-flex flex-column">
                               <v-tooltip bottom>
                                 <template v-slot:activator="{ props: tooltipProps }">
-                                  <div 
-                                    class="truncate" 
+                                  <div
+                                    class="truncate"
                                     v-bind="tooltipProps"
-                                    style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis;"
-                                  >
-                                    {{ item.raw.descriptionTranslated }}
-                                  </div>
-                                </template>
-                                <span>{{ item.raw.descriptionTranslated }}</span>
-                              </v-tooltip>
-                            </v-list-item-subtitle>
-                          </v-list-item>
-                        </template>
-                      </v-autocomplete>
-                      </v-col>-->
-                      <v-col cols="12" md="6">
-                        <v-menu
-                    v-model="dateMenu"
-                    :close-on-content-click="false"
-                    transition="scale-transition"
-                    offset-y
-                    min-width="auto"
-                  >
-                    <template v-slot:activator="{ props }">
-                      <v-text-field
-                        v-bind="props"
-                        :model-value="dateInput"
-                        :label="$t('personalBackground.fields.startDate')"
-                        variant="underlined"
-                        readonly
-                      ></v-text-field>
-                    </template>
-                    <v-locale-provider>
-                    <v-date-picker
-                      color="#03626C"
-                      :model-value="dateInput"
-                      @update:model-value="updateDate"
-                      :max="new Date().toISOString().split('T')[0]"
-                    ></v-date-picker>
-                    </v-locale-provider>
-                  </v-menu>
-                      </v-col>
-                      <v-col cols="12" sm="6">
-                        <v-select v-model="editedItem.status" :items="status" item-title="name" item-value="id"
-                          :label="$t('personalBackground.fields.status')" variant="underlined" :rules="selectRules">
-                          <template v-slot:item="{ props, item }">
-                          <v-list-item v-bind="props">
-                            <v-list-item-subtitle class="d-flex flex-column">
-                              <v-tooltip bottom>
-                                <template v-slot:activator="{ props: tooltipProps }">
-                                  <div 
-                                    class="truncate" 
-                                    v-bind="tooltipProps"
-                                    style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis;"
+                                    style="
+                                      white-space: nowrap;
+                                      overflow: hidden;
+                                      text-overflow: ellipsis;
+                                    "
                                   >
                                     {{ item.raw.description }}
                                   </div>
@@ -343,36 +384,41 @@
                             </v-list-item-subtitle>
                           </v-list-item>
                         </template>
-                        </v-select>
-                      </v-col>
-                      <v-col cols="12">
-                        <v-text-field
-                          v-model="editedItem.description"
-                          :label="$t('personalBackground.fields.description')"
-                          variant="underlined"
-                          :rules="descriptionRules"
-                        />
-                      </v-col>
-                      
+                      </v-select>
+                    </v-col>
+                    <v-col cols="12">
+                      <v-text-field
+                        v-model="editedItem.description"
+                        :label="$t('personalBackground.fields.description')"
+                        variant="underlined"
+                        :rules="descriptionRules"
+                      />
+                    </v-col>
+                  </template>
 
-                    </v-row>
+                  <!-- Step 2: Información adicional -->
+                  <template v-if="step === 1">
+                    <v-col cols="12">
+                      <v-textarea
+                        v-model="editedItem.details"
+                        :label="$t('personalBackground.fields.details')"
+                        variant="underlined"
+                        rows="3"
+                        auto-grow
+                      />
+                    </v-col>
 
-                    <!-- Step 2: Información adicional -->
-                    <v-row dense v-if="step === 1">
-                      <v-col cols="12">
-                        <v-textarea
-                          v-model="editedItem.details"
-                          :label="$t('personalBackground.fields.details')"
-                          variant="underlined"
-                          rows="3"
-                          auto-grow
-                        />
-                      </v-col>
-
-                      <v-col cols="12" sm="6">
-                        <v-select v-model="editedItem.severity" :items="severity" item-title="name" item-value="id"
-                          :label="$t('personalBackground.fields.severity')" variant="underlined" :rules="selectRules">
-                          <template v-slot:item="{ props, item }">
+                    <v-col cols="12" sm="6">
+                      <v-select
+                        v-model="editedItem.severity"
+                        :items="severity"
+                        item-title="name"
+                        item-value="id"
+                        :label="$t('personalBackground.fields.severity')"
+                        variant="underlined"
+                        :rules="selectRules"
+                      >
+                        <template v-slot:item="{ props, item }">
                           <v-list-item v-bind="props">
                             <!--<v-list-item-subtitle class="d-flex flex-column">
                               <v-tooltip bottom>
@@ -390,127 +436,70 @@
                             </v-list-item-subtitle>-->
                           </v-list-item>
                         </template>
-                        </v-select>
-                      </v-col>
-                    </v-row>
-
-                    <!-- Step 3: Fechas 
-                    <v-row dense v-if="step === 2">
-                      <v-col cols="12" md="6">
-                        <v-menu
-                          v-model="startDateMenu"
-                          :close-on-content-click="false"
-                          :nudge-right="40"
-                          transition="scale-transition"
-                          offset-y
-                          min-width="290px"
-                        >
-                          <template v-slot:activator="{ props }">
-                            <v-text-field
-                              v-bind="props"
-                              :modelValue="startDateFormatted"
-                              variant="underlined"
-                              :label="$t('personalBackground.fields.startDate')"
-                              :rules="dateRules"
-                            ></v-text-field>
-                          </template>
-                          <v-locale-provider>
-                            <v-date-picker
-                              color="#03626C"
-                              :modelValue="startDateInput"
-                              @update:model-value="updateStartDate"
-                              format="yyyy-MM-dd"
-                            ></v-date-picker>
-                          </v-locale-provider>
-                        </v-menu>
-                      </v-col>
-
-                      <v-col cols="12" md="6">
-                        <v-menu
-                          v-model="endDateMenu"
-                          :close-on-content-click="false"
-                          :nudge-right="40"
-                          transition="scale-transition"
-                          offset-y
-                          min-width="290px"
-                        >
-                          <template v-slot:activator="{ props }">
-                            <v-text-field
-                              v-bind="props"
-                              :modelValue="endDateFormatted"
-                              variant="underlined"
-                              :label="$t('personalBackground.fields.endDate')"
-                              :rules="dateRules"
-                            ></v-text-field>
-                          </template>
-                          <v-locale-provider>
-                            <v-date-picker
-                              color="#03626C"
-                              :modelValue="endDateInput"
-                              @update:model-value="updateEndDate"
-                              format="yyyy-MM-dd"
-                            ></v-date-picker>
-                          </v-locale-provider>
-                        </v-menu>
-                      </v-col>
-                    </v-row>-->
-
-                    <!-- Navegación -->
-                    <div class="d-flex justify-space-between mt-8">
-                      <v-btn
-                        variant="text"
-                        class="text-grey-darken-1"
-                        @click="step > 0 ? step-- : this.close()"
-                      >
-                        {{ step === 0 ? $t("buttons.close") : $t("buttons.previous") }}
-                      </v-btn>
-
-                      <v-btn
-                        variant="text"
-                        class="text-deep-purple-accent-3"
-                        @click="nextStep"
-                        :disabled="!valid"
-                      >
-                        {{
-                          step === steps.length - 1
-                            ? $t("buttons.saveAndClose")
-                            : $t("buttons.next")
-                        }}
-                      </v-btn>
-                    </div>
-                  </v-col>
+                      </v-select>
+                    </v-col>
+                  </template>
                 </v-row>
-              </v-card-text>
-            </v-card>
-          </v-form>
-        </v-dialog>
-        <v-dialog v-model="dialogDelete" max-width="500px">
-          <v-card>
-            <v-toolbar color="#DA7171">
-              <span class="text-subtitle-2 ml-4">
-                {{
-                  $t("deleteDialog.title", { item: $t(`deleteDialog.items.personalBackground`) })
-                }}</span
-              >
-            </v-toolbar>
-            <v-card-text class="mt-2 mb-2"> {{ $t("deleteDialog.message") }}</v-card-text>
-            <v-divider></v-divider>
-            <v-card-actions>
-              <v-spacer></v-spacer>
-              <v-btn color="grey" variant="flat" @click="closeDelete">{{
-                $t("taskForm.buttons.cancel")
-              }}</v-btn>
-              <v-btn
-                color="#03626C"
-                variant="flat"
-                :loading="loading"
-                @click="deleteItemConfirm"
-              >
-                {{ $t("taskForm.buttons.confirmDelete") }}</v-btn
-              >
-            </v-card-actions>
-          </v-card>
-        </v-dialog>
+
+                <!-- Navegación -->
+                <div class="d-flex justify-space-between mt-8">
+                  <v-btn
+                    variant="text"
+                    class="text-grey-darken-1"
+                    @click="step > 0 ? step-- : this.close()"
+                  >
+                    {{ step === 0 ? $t("buttons.close") : $t("buttons.previous") }}
+                  </v-btn>
+
+                  <v-btn
+                    variant="text"
+                    class="text-deep-purple-accent-3"
+                    @click="nextStep"
+                    :disabled="!valid"
+                  >
+                    {{
+                      step === steps.length - 1
+                        ? $t("buttons.saveAndClose")
+                        : $t("buttons.next")
+                    }}
+                  </v-btn>
+                </div>
+              </v-col>
+            </v-row>
+          </v-container>
+        </v-card-text>
+      </v-card>
+    </v-form>
+  </v-dialog>
+  <v-dialog v-model="dialogDelete" max-width="500px">
+    <v-card>
+      <v-toolbar color="#DA7171">
+        <span class="text-subtitle-2 ml-4">
+          {{
+            $t("deleteDialog.title", {
+              item: $t(`deleteDialog.items.personalBackground`),
+            })
+          }}</span
+        >
+      </v-toolbar>
+      <v-card-text class="mt-2 mb-2"> {{ $t("deleteDialog.message") }}</v-card-text>
+      <v-divider></v-divider>
+      <v-card-actions>
+        <v-spacer></v-spacer>
+        <v-btn color="grey" variant="flat" @click="closeDelete">{{
+          $t("taskForm.buttons.cancel")
+        }}</v-btn>
+        <v-btn
+          color="#03626C"
+          variant="flat"
+          :loading="loading"
+          @click="deleteItemConfirm"
+        >
+          {{ $t("taskForm.buttons.confirmDelete") }}</v-btn
+        >
+      </v-card-actions>
+    </v-card>
+  </v-dialog>
 </template>
 
 <script>
@@ -524,11 +513,12 @@ export default {
   props: {
     selectedPerson: {
       type: Object,
-      required: true
+      required: true,
     },
   },
-  emits: ['update-medical-information'],
+  emits: ["update-medical-information"],
   data: () => ({
+    isFullscreen: false,
     selected: shallowRef([2]),
     selected2: null,
     step: 0,
@@ -543,11 +533,11 @@ export default {
       {
         title: "additional",
         subtitle: "clinical_details",
-      },/*
+      } /*
       {
         title: "dates",
         subtitle: "timeline",
-      },*/
+      },*/,
     ],
     itemsPerPage: 6,
     currentPage: 1,
@@ -581,7 +571,7 @@ export default {
       endDate: null,
       status: null,
       severity: null,
-      typeDetail: 'Alergia'
+      typeDetail: "Alergia",
     },
 
     defaultItem: {
@@ -591,9 +581,9 @@ export default {
       details: "",
       startDate: null,
       endDate: null,
-      status:null,
+      status: null,
       severity: null,
-      typeDetail: 'Alergia'
+      typeDetail: "Alergia",
     },
     originalItem: {
       id: "",
@@ -604,7 +594,7 @@ export default {
       endDate: null,
       status: null,
       severity: null,
-      typeDetail: null
+      typeDetail: null,
     },
 
     startDateMenu: false,
@@ -614,14 +604,14 @@ export default {
     editedIndex: -1,
     search: "",
     headers: [
-      { title: 'Fecha', key: 'startDate' },
-      { title: 'Tipo', key: 'type' },
-      { title: 'Tipo', key: 'typeName' },
-      { title: 'Descripciòn', key: 'description' },
-      { title: 'Estado', key: 'status' },
-      { title: 'Severidad', key: 'severity' },
-      { title: 'Detalles', key: 'details' },
-      { title: 'Acciones', key: 'actions' },
+      { title: "Fecha", key: "startDate" },
+      { title: "Tipo", key: "type" },
+      { title: "Tipo", key: "typeName" },
+      { title: "Descripciòn", key: "description" },
+      { title: "Estado", key: "status" },
+      { title: "Severidad", key: "severity" },
+      { title: "Detalles", key: "details" },
+      { title: "Acciones", key: "actions" },
     ],
     nameRules: [
       (v) => !!v || "El campo es requerido",
@@ -651,9 +641,15 @@ export default {
     dateInput: null,
   }),
   computed: {
+    isMobile() {
+      return this.$vuetify.display.xs || this.$vuetify.display.sm;
+    },
+    isDesktop() {
+      return !this.isMobile;
+    },
     typeRules() {
       return [
-        v => !!v || this.$t('personalBackground.validationMessages.type.required')
+        (v) => !!v || this.$t("personalBackground.validationMessages.type.required"),
       ];
     },
     formTitle() {
@@ -686,9 +682,17 @@ export default {
     this.tools = [
       {
         name: this.$t("personalBackground.titles.allergy.new"),
-        action: () => this.showAdd()
-      }
-    ]
+        action: () => this.showAdd(),
+      },
+    ];
+  },
+  watch: {
+    dialog(val) {
+      if (val) this.updateFullscreenMode();
+    },
+    isDesktop() {
+      this.updateFullscreenMode();
+    },
   },
   mounted() {
     this.home_id = JSON.parse(LocalStorageService.getItem("home_id"));
@@ -696,13 +700,18 @@ export default {
     this.initialize();
   },
   methods: {
-        obtenerFechaLocal() {
-    const hoy = new Date();
-    const year = hoy.getFullYear();
-    const month = String(hoy.getMonth() + 1).padStart(2, '0');
-    const day = String(hoy.getDate()).padStart(2, '0');
-    return `${year}-${month}-${day}`;
-  },
+    updateFullscreenMode() {
+      this.$nextTick(() => {
+        this.isFullscreen = this.isDesktop;
+      });
+    },
+    obtenerFechaLocal() {
+      const hoy = new Date();
+      const year = hoy.getFullYear();
+      const month = String(hoy.getMonth() + 1).padStart(2, "0");
+      const day = String(hoy.getDate()).padStart(2, "0");
+      return `${year}-${month}-${day}`;
+    },
     formatIntuitiveDate(dateString) {
       if (!dateString) return "Sin fecha";
 
@@ -739,7 +748,7 @@ export default {
               weekday: "short",
               day: "numeric",
               month: "short",
-              year: "numeric"
+              year: "numeric",
             })
             .replace(/\./g, "");
       }
@@ -768,65 +777,71 @@ export default {
       this.endDateMenu = false;
     },
     updateDate(value) {
-    // value viene como objeto Date desde el date-picker
-    // Convertimos a formato YYYY-MM-DD
-    const year = value.getFullYear();
-    const month = String(value.getMonth() + 1).padStart(2, '0');
-    const day = String(value.getDate()).padStart(2, '0');
-    this.dateInput = `${year}-${month}-${day}`;
-    this.editedItem.startDate = this.dateInput;
-    this.dateMenu = false;
-  },
-  parseDateString(dateString) {
+      // value viene como objeto Date desde el date-picker
+      // Convertimos a formato YYYY-MM-DD
+      const year = value.getFullYear();
+      const month = String(value.getMonth() + 1).padStart(2, "0");
+      const day = String(value.getDate()).padStart(2, "0");
+      this.dateInput = `${year}-${month}-${day}`;
+      this.editedItem.startDate = this.dateInput;
+      this.dateMenu = false;
+    },
+    parseDateString(dateString) {
       if (!dateString) {
         const today = new Date();
         // Aseguramos que sea el inicio del día (evita problemas de zona horaria)
         return new Date(today.getFullYear(), today.getMonth(), today.getDate());
       }
-      const [year, month, day] = dateString.split('-');
+      const [year, month, day] = dateString.split("-");
       return new Date(parseInt(year), parseInt(month) - 1, parseInt(day));
     },
     async showAdd() {
       this.editedIndex = -1;
       this.dateInput = this.obtenerFechaLocal();
       this.editedItem.startDate = this.dateInput;
-      this.data = {},
-      this.data.type = "Personal";
+      (this.data = {}), (this.data.type = "Personal");
       this.data.query = "Alergia";
-            try {
-                const result = await handleRequest({
-                    endpoint: 'get-type-state-severity',
-                    method: 'POST',
-                    data: this.data
-                });
+      try {
+        const result = await handleRequest({
+          endpoint: "get-type-state-severity",
+          method: "POST",
+          data: this.data,
+        });
 
-                if (result.success) {
-                    // Si la solicitud es exitosa, asignamos las sucursales
-                    this.backgroundTypes = result.data?.types || [];
-                    this.status = result.data?.status || [];
-                    this.severity = result.data?.severity || [];
+        if (result.success) {
+          // Si la solicitud es exitosa, asignamos las sucursales
+          this.backgroundTypes = result.data?.types || [];
+          this.status = result.data?.status || [];
+          this.severity = result.data?.severity || [];
 
-                    const normalizeText = (text) =>
-                      text.toLowerCase().replace(/á/g, 'a').replace(/é/g, 'e').replace(/í/g, 'i').replace(/ó/g, 'o').replace(/ú/g, 'u');
+          const normalizeText = (text) =>
+            text
+              .toLowerCase()
+              .replace(/á/g, "a")
+              .replace(/é/g, "e")
+              .replace(/í/g, "i")
+              .replace(/ó/g, "o")
+              .replace(/ú/g, "u");
 
-                    
-                      this.editedItem.type_id = this.backgroundTypes.find(t => t.name === 'Alergia')?.id || null;
-                      console.log('this.editedItem.type_id');
-                      console.log(this.editedItem.type_id);
-                      this.editedItem.status= this.status.find(s => normalizeText(s.name) === 'activo')?.id || null;
-                      this.editedItem.severity= this.severity.find(s => normalizeText(s.name) === 'leve')?.id || null;
-                    
-                } else {
-                    // Si no hay datos, asignamos un array vacío
-                    this.backgroundTypes = [];
-                    this.status = [];
-                    this.severity = [];
-                }
-            } catch (error) {
-                this.showAlert('error', 'Ocurrió un error inesperado al cargar los datos.', 3000);
-            } finally {
-                this.dialog = true;
-            }
+          this.editedItem.type_id =
+            this.backgroundTypes.find((t) => t.name === "Alergia")?.id || null;
+          console.log("this.editedItem.type_id");
+          console.log(this.editedItem.type_id);
+          this.editedItem.status =
+            this.status.find((s) => normalizeText(s.name) === "activo")?.id || null;
+          this.editedItem.severity =
+            this.severity.find((s) => normalizeText(s.name) === "leve")?.id || null;
+        } else {
+          // Si no hay datos, asignamos un array vacío
+          this.backgroundTypes = [];
+          this.status = [];
+          this.severity = [];
+        }
+      } catch (error) {
+        this.showAlert("error", "Ocurrió un error inesperado al cargar los datos.", 3000);
+      } finally {
+        this.dialog = true;
+      }
     },
     close() {
       this.step = 0;
@@ -842,7 +857,7 @@ export default {
     async initialize() {
       this.data = {};
       this.data.home_id = this.home_id;
-      this.data.type = 'Alergia';
+      this.data.type = "Alergia";
       this.data.person_id = this.selectedPerson.id;
       try {
         this.loading = true;
@@ -893,7 +908,7 @@ export default {
           "endDate",
           "status",
           "severity",
-          "typeDetail"
+          "typeDetail",
         ];
 
         let updatedFields = Object.keys(this.editedItem)
@@ -908,7 +923,7 @@ export default {
           }, {});
 
         if (Object.keys(updatedFields).length > 0) {
-          updatedFields.typeDetail = 'Alergia';
+          updatedFields.typeDetail = "Alergia";
           updatedFields.person_id = this.selectedPerson.id;
           try {
             const result = await handleRequest({
@@ -920,7 +935,7 @@ export default {
             if (result.success) {
               this.showAlert("success", result.message, 3000);
               this.initialize();
-              this.$emit('update-medical-information');
+              this.$emit("update-medical-information");
             } else {
               this.showAlert("warning", result.message, 3000);
             }
@@ -938,7 +953,7 @@ export default {
           "endDate",
           "status",
           "severity",
-          "typeDetail"
+          "typeDetail",
         ];
 
         let updatedFields = Object.keys(this.editedItem)
@@ -964,7 +979,7 @@ export default {
             if (result.success) {
               this.showAlert("success", result.message, 3000);
               this.initialize();
-              this.$emit('update-medical-information');
+              this.$emit("update-medical-information");
             } else {
               this.showAlert("warning", result.message, 3000);
             }
@@ -989,32 +1004,31 @@ export default {
       this.originalItem = Object.assign({}, item);
       this.editedItem = Object.assign({}, item);
       this.dateInput = item.startDate || null;
-      this.data = {},
-      this.data.type = "Personal";
+      (this.data = {}), (this.data.type = "Personal");
       this.data.query = "Alergia";
-            try {
-                const result = await handleRequest({
-                    endpoint: 'get-type-state-severity',
-                    method: 'POST',
-                    data: this.data
-                });
+      try {
+        const result = await handleRequest({
+          endpoint: "get-type-state-severity",
+          method: "POST",
+          data: this.data,
+        });
 
-                if (result.success) {
-                    // Si la solicitud es exitosa, asignamos las sucursales
-                    this.backgroundTypes = result.data?.types || [];
-                    this.status = result.data?.status || [];
-                    this.severity = result.data?.severity || [];
-                } else {
-                    // Si no hay datos, asignamos un array vacío
-                    this.backgroundTypes = [];
-                    this.status = [];
-                    this.severity = [];
-                }
-            } catch (error) {
-                this.showAlert('error', 'Ocurrió un error inesperado al cargar los datos.', 3000);
-            } finally {
-                this.dialog = true;
-            }
+        if (result.success) {
+          // Si la solicitud es exitosa, asignamos las sucursales
+          this.backgroundTypes = result.data?.types || [];
+          this.status = result.data?.status || [];
+          this.severity = result.data?.severity || [];
+        } else {
+          // Si no hay datos, asignamos un array vacío
+          this.backgroundTypes = [];
+          this.status = [];
+          this.severity = [];
+        }
+      } catch (error) {
+        this.showAlert("error", "Ocurrió un error inesperado al cargar los datos.", 3000);
+      } finally {
+        this.dialog = true;
+      }
     },
     deleteItem(item) {
       this.editedIndex = 1;
@@ -1044,7 +1058,7 @@ export default {
         if (result.success) {
           this.showAlert("success", result.message, 3000);
           this.initialize();
-          this.$emit('update-medical-information');
+          this.$emit("update-medical-information");
         } else {
           this.showAlert("warning", result.message, 3000);
         }
@@ -1084,7 +1098,48 @@ export default {
   },
 };
 </script>
-<style>
+<style scoped>
+.fullscreen-dialog {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  overflow-y: auto;
+}
+.desktop-table {
+  table-layout: fixed;
+}
+
+.mobile-table {
+  table-layout: auto;
+}
+.responsive-data-table-wrapper {
+  width: 100%;
+}
+
+/* Solo en móvil: activar scroll horizontal */
+.responsive-data-table-wrapper.mobile-scroll {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* En móvil: forzar ancho mínimo para que haya algo que scrollear */
+.responsive-data-table-wrapper.mobile-scroll :deep(.v-data-table) {
+  min-width: 800px;
+}
+
+/* En desktop: asegurar que no haya scroll innecesario */
+@media (min-width: 960px) {
+  .responsive-data-table-wrapper :deep(.v-data-table) {
+    min-width: auto;
+    overflow-x: hidden;
+  }
+}
+
+.tools-bar {
+  overflow-x: auto;
+  white-space: nowrap;
+  gap: 8px;
+}
 .icono-concavo {
   width: 50px;
   height: 50px;
@@ -1144,7 +1199,6 @@ export default {
   text-overflow: ellipsis;
   display: block;
 }
-
 
 .v-data-table > .v-data-table__wrapper > table > thead,
 .v-data-table > .v-data-table__wrapper > .v-table > table > thead,

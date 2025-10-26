@@ -25,22 +25,27 @@
   <!-- Diálogo -->
   <v-dialog
     v-model="dialog"
-    fullscreen
+    :fullscreen="isFullscreen"
+    :max-width="isMobile ? '100%' : 'none'"
     persistent
     transition="dialog-bottom-transient"
-    content-class="fullscreen-dialog"
   >
     <v-form ref="form" v-model="valid" class="h-100">
-      <v-card class="pa-10">
+      <v-card :class="isMobile ? 'pa-0' : 'pa-10'">
         <v-card-text class="pt-12">
           <h5 class="text-grey-darken-2 font-weight-medium">
             {{ $t(`daily_log.formTitle.${isEditing ? 'edit' : 'create'}`) }}
           </h5>
           <p class="text-grey-lighten-1">{{ $t("daily_log.formInstructions") }}</p>
-
-          <v-row class="mt-12">
-            <!-- Timeline lateral -->
-            <v-col cols="3">
+            <v-container fluid class="pa-0 mt-6">
+            <v-row>
+              <!-- Timeline (solo escritorio) -->
+              <v-col
+                v-if="isDesktop"
+                cols="12"
+                md="3"
+                class="pr-md-6"
+              >
               <v-timeline align="start" side="end" dense>
                 <v-timeline-item dot-color="deep-purple" icon="mdi-numeric-1" size="large">
                   <template #opposite>
@@ -56,11 +61,30 @@
             </v-col>
 
             <!-- Formulario -->
-            <v-col cols="9">
-              <h3 class="text-deep-purple-accent-3 mb-8">
-                {{ $t("daily_log.steps.info.title") }}
-              </h3>
+            <v-col
+                :cols="12"
+                :md="isMobile ? 12 : 9"
+                :class="{ 'mt-6': isMobile }"
+              >
+                <!-- En móvil: indicador del paso -->
+                <div
+                  v-if="isMobile"
+                  class="d-flex justify-space-between align-center mb-4"
+                >
+                  <v-chip
+                    label
+                    size="small"
+                    color="deep-purple-lighten-4"
+                    class="text-deep-purple"
+                  >
+                    {{ $t("daily_log.steps.info.title") }}
+                  </v-chip>
+                </div>
 
+                <!-- En escritorio: título del paso -->
+                <h3 v-else class="text-deep-purple-accent-3 mb-6">
+                  {{ $t("daily_log.steps.info.title") }}
+                </h3>
               <v-row dense>
                 <!-- Fecha -->
                 <v-col cols="12" md="6">
@@ -96,7 +120,7 @@
                 <!-- Agua -->
                 <v-col cols="12" md="6">
                   <div class="d-flex align-center">
-                    <div style="width: 40%; flex-shrink: 0" class="d-flex align-center">
+                    <div style="width: 70%; flex-shrink: 0" class="d-flex align-center">
                       <v-checkbox
                         v-model="waterEnabled"
                         :label="$t('daily_log.fields.water_intake')"
@@ -113,7 +137,7 @@
                       type="number"
                       step="0.1"
                       min="0"
-                      style="width: 60%"
+                      style="width: 30%"
                       density="compact"
                       hide-details
                       :rules="positiveRules($t('daily_log.fields.water_intake'))"
@@ -126,7 +150,7 @@
                 <!-- Sueño -->
                 <v-col cols="12" md="6">
                   <div class="d-flex align-center">
-                    <div style="width: 40%; flex-shrink: 0" class="d-flex align-center">
+                    <div style="width: 70%; flex-shrink: 0" class="d-flex align-center">
                       <v-checkbox
                         v-model="sleepEnabled"
                         :label="$t('daily_log.fields.sleep_hours')"
@@ -143,7 +167,7 @@
                       type="number"
                       step="0.5"
                       min="0"
-                      style="width: 60%"
+                      style="width: 30%"
                       density="compact"
                       hide-details
                       :rules="positiveRules($t('daily_log.fields.sleep_hours'))"
@@ -156,7 +180,7 @@
                 <!-- Pasos -->
                 <v-col cols="12" md="6">
                   <div class="d-flex align-center">
-                    <div style="width: 40%; flex-shrink: 0" class="d-flex align-center">
+                    <div style="width: 70%; flex-shrink: 0" class="d-flex align-center">
                       <v-checkbox
                         v-model="stepsEnabled"
                         :label="$t('daily_log.fields.steps')"
@@ -172,7 +196,7 @@
                       variant="underlined"
                       type="number"
                       min="0"
-                      style="width: 60%"
+                      style="width: 30%"
                       density="compact"
                       hide-details
                       :rules="positiveRules($t('daily_log.fields.steps'))"
@@ -209,6 +233,7 @@
               </div>
             </v-col>
           </v-row>
+          </v-container>
         </v-card-text>
       </v-card>
     </v-form>
@@ -234,6 +259,7 @@ export default {
   emits: ["update:modelValue", "close", "saved"],
   data() {
     return {
+      isFullscreen: false,
       dialog: false,
       valid: true,
       loading: false,
@@ -272,6 +298,12 @@ export default {
     };
   },
   computed: {
+    isMobile() {
+			return this.$vuetify.display.xs || this.$vuetify.display.sm;
+		},
+		isDesktop() {
+			return !this.isMobile;
+		},
     isEditing() {
       return this.item && this.item.id != null;
     },
@@ -284,13 +316,22 @@ export default {
       }
     },
     dialog(val) {
+      if (val) this.updateFullscreenMode();
       this.$emit("update:modelValue", val);
       if (!val) {
         this.$emit("close");
       }
     },
+    isDesktop() {
+      this.updateFullscreenMode();
+    },
   },
   methods: {
+    updateFullscreenMode() {
+      this.$nextTick(() => {
+        this.isFullscreen = this.isDesktop;
+      });
+    },
     resetForm() {
       const today = new Date();
       const year = today.getFullYear();
@@ -478,3 +519,12 @@ export default {
   },
 };
 </script>
+
+<style scoped>
+.fullscreen-dialog {
+	display: flex;
+	flex-direction: column;
+	height: 100%;
+	overflow-y: auto;
+	}
+</style>

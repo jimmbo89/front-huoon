@@ -60,6 +60,10 @@
           ></v-text-field>
         </div>
       </v-card-title>
+      <div
+        class="ma-0 pa-0 responsive-data-table-wrapper"
+        :class="isMobile ? 'mobile-scroll' : ''"
+      >
       <v-data-table
         :headers="headers"
         :items="physicalExams"
@@ -70,15 +74,15 @@
         :loading="loading"
         :hide-default-header="true"
         style="
-          max-height: 68vh;
-          overflow-y: auto;
-          background: transparent;
-          border: none !important;
-          outline: none !important;
-          box-shadow: none !important;
-          padding: 0;
-        "
-      >
+        max-height: 68vh;
+        overflow-y: auto;
+        overflow-x: hidden;
+        background: transparent;
+        border: none !important;
+        outline: none !important;
+        box-shadow: none !important;
+      "
+    >
         <template v-slot:top>
           <v-card
             :elevation="1"
@@ -122,8 +126,11 @@
           </v-card>
         </template>
         <template v-slot:item="slotProps">
-          <tr>
-            <td colspan="100%" style="padding: 0; border: none">
+          <tr
+          style="display: table; width: 100%;"
+          :class="isMobile ? 'mobile-table' : 'desktop-table'"
+        >
+          <td colspan="100%" style="padding: 0; border: none">
               <v-card
                 class="mb-2 mx-1 rounded-lg"
                 elevation="1"
@@ -195,11 +202,12 @@
           </tr>
         </template>
       </v-data-table>
+      </div>
     </v-card-text>
   </v-card>
   <v-dialog
   v-model="dialog"
-  max-width="500px"
+  :max-width="isMobile ? '100%' : '500px'"
   persistent
   transition="dialog-bottom-transition"
 >
@@ -323,6 +331,7 @@ export default {
     selected: shallowRef([2]),
     selected2: null,
     step: 0,
+    isFullscreen: false,
     time: null,
     modal2: false,
     timePickerDialog: false,
@@ -437,11 +446,6 @@ export default {
     ],
     selectRules: [(v) => !!v || "Seleccionar al menos un elemento"],
     dateRules: [(v) => !v || !isNaN(Date.parse(v)) || "Fecha inválida"],
-   heightRules: [
-  v => !!v || this.$t('physicalExam.rules.required'),
-  v => (v >= 0.3 && v <= 3.0) || this.$t('physicalExam.rules.heightRange'),
-  v => /^\d\.\d{1,2}$/.test(v) || this.$t('physicalExam.rules.validFormat')
-],
     bmiRules: [(v) => !v || (v > 10 && v < 60) || "IMC debe ser entre 10-60"],
 
     title: "",
@@ -452,12 +456,31 @@ export default {
     dateInput: null,
   }),
   computed: {
+    isMobile() {
+			return this.$vuetify.display.xs || this.$vuetify.display.sm;
+		},
+		isDesktop() {
+			return !this.isMobile;
+		},
     formTitle() {
       return this.editedIndex === -1
         ? this.$t("physicalExam.forms.height.title.add")
         : this.$t("physicalExam.forms.height.title.edit");
     },
+     heightRules: [
+  v => !!v || this.$t('physicalExam.rules.required'),
+  v => (v >= 0.3 && v <= 3.0) || this.$t('physicalExam.rules.heightRange'),
+  v => /^\d\.\d{1,2}$/.test(v) || this.$t('physicalExam.rules.validFormat')
+],
   },
+  watch: {
+    dialog(val) {
+      if (val) this.updateFullscreenMode();
+      },
+    isDesktop() {
+      this.updateFullscreenMode();
+    },
+	},
   created() {
     this.tools = [
       {
@@ -472,6 +495,11 @@ export default {
     this.initialize();
   },
   methods: {
+    updateFullscreenMode() {
+      this.$nextTick(() => {
+        this.isFullscreen = this.isDesktop;
+      });
+    },
       obtenerFechaLocal() {
     const hoy = new Date();
     const year = hoy.getFullYear();
@@ -830,6 +858,49 @@ export default {
 };
 </script>
 <style scoped>
+.desktop-table {
+  table-layout: fixed;
+}
+
+.mobile-table {
+  table-layout: auto;
+}
+.responsive-data-table-wrapper {
+  width: 100%;
+}
+
+/* Solo en móvil: activar scroll horizontal */
+.responsive-data-table-wrapper.mobile-scroll {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* En móvil: forzar ancho mínimo para que haya algo que scrollear */
+.responsive-data-table-wrapper.mobile-scroll :deep(.v-data-table) {
+  min-width: 800px;
+}
+
+/* En desktop: asegurar que no haya scroll innecesario */
+@media (min-width: 960px) {
+  .responsive-data-table-wrapper :deep(.v-data-table) {
+    min-width: auto;
+    overflow-x: hidden;
+  }
+}
+
+.tools-bar {
+  overflow-x: auto;
+  white-space: nowrap;
+  gap: 8px;
+}
+
+.fullscreen-dialog {
+	display: flex;
+	flex-direction: column;
+	height: 100%;
+	overflow-y: auto;
+}
+
 .icono-concavo {
   width: 50px;
   height: 50px;

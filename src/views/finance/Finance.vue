@@ -1,6 +1,14 @@
 <template>
-  <v-snackbar class="mt-12" location="right top" :timeout="sb_timeout" :color="sb_type" elevation="24"
-    :multi-line="true" vertical v-model="snackbar">
+  <v-snackbar
+    class="mt-12"
+    location="right top"
+    :timeout="sb_timeout"
+    :color="sb_type"
+    elevation="24"
+    :multi-line="true"
+    vertical
+    v-model="snackbar"
+  >
     <v-row>
       <v-col md="2">
         <v-avatar :icon="sb_icon" color="sb_type" size="40"></v-avatar>
@@ -12,11 +20,12 @@
     </v-row>
   </v-snackbar>
   <v-container>
-    <v-card class="pa-4" elevation="4" rounded="lg" style="
-    position: relative;
-    overflow: visible;
-    z-index: auto;
-  ">
+    <v-card
+      class="pa-4"
+      elevation="4"
+      rounded="lg"
+      style="position: relative; overflow: visible; z-index: auto"
+    >
       <!-- Encabezado con foto y datos -->
       <v-card-text>
         <v-row class="mb-4" align="center" dense>
@@ -38,8 +47,16 @@
           <!-- Columna de la tarjeta de sugerencia -->
           <v-col cols="12" sm="2" md="2">
             <div class="d-flex align-right justify-end pa-2">
-              <v-switch v-model="budget_type" true-value="Personal" false-value="Hogar" :base-color="switchColor"
-                :color="switchColor" hide-details inset class="mb-4 font-weight-bold">
+              <v-switch
+                v-model="budget_type"
+                true-value="Personal"
+                false-value="Hogar"
+                :base-color="switchColor"
+                :color="switchColor"
+                hide-details
+                inset
+                class="mb-4 font-weight-bold"
+              >
                 <template v-slot:label>
                   <span class="text-body-1" :style="{ color: switchColor }">
                     {{ getCurrentName }}
@@ -50,7 +67,6 @@
           </v-col>
         </v-row>
 
-        
         <v-card-actions class="pa-3 bg-grey-lighten-5 tools-bar">
           <v-btn
             v-for="tool in tools"
@@ -78,78 +94,144 @@
                   </v-avatar>
                 </template>
 
-                <template v-slot:title> Día {{ todayDay }} de {{ lastDayOfMonth }} </template>
-                <template v-slot:subtitle> {{ fullDate }} </template>
+                <!-- Título y subtítulo con truncamiento -->
+                <template v-slot:title>
+                  <span class="text-subtitle-2 text-truncate" style="max-width: 120px">
+                    Día {{ todayDay }} de {{ lastDayOfMonth }}
+                  </span>
+                  <v-tooltip activator="parent" location="bottom" max-width="350px">
+                    <span style="white-space: normal; word-break: break-word">
+                      Día {{ todayDay }} de {{ lastDayOfMonth }}
+                    </span>
+                  </v-tooltip>
+                </template>
+                <template v-slot:subtitle>
+                  <span class="text-caption text-truncate" style="max-width: 150px">
+                    {{ fullDate }}
+                  </span>
+                  <v-tooltip activator="parent" location="bottom" max-width="350px">
+                    <span style="white-space: normal; word-break: break-word">
+                      {{ fullDate }}
+                    </span>
+                  </v-tooltip>
+                </template>
+
                 <template v-slot:append>
-                    <v-tooltip location="top">
-                      <template v-slot:activator="{ props }">
-                        <v-chip
-                          v-bind="props"
-                          class="ma-2"
-                          :color="currentStatus.color"
-                          label
-                          rounded="lg"
-                        >
-                          <v-icon :icon="currentStatus.icon" start></v-icon>
-                          <span class="text-subtitle-2">{{ currentStatus.levelLabel }}</span>
-                        </v-chip>
-                      </template>
-                      <span>{{ currentStatus.message }}</span>
-                    </v-tooltip>
-                  </template>
+                  <v-tooltip location="top">
+                    <template v-slot:activator="{ props }">
+                      <!-- Chip más compacto en móvil -->
+                      <v-chip
+                        v-bind="props"
+                        :color="currentStatus.color"
+                        label
+                        rounded="lg"
+                        density="compact"
+                        class="ma-1"
+                      >
+                        <v-icon :icon="currentStatus.icon" start size="small"></v-icon>
+                        <span class="text-caption">{{ currentStatus.levelLabel }}</span>
+                      </v-chip>
+                    </template>
+                    <span>{{ currentStatus.message }}</span>
+                  </v-tooltip>
+                </template>
               </v-list-item>
 
               <v-divider></v-divider>
 
-              <v-card-text class="text-medium-emphasis pa-2">
-                <v-sheet max-width="2150" rounded="lg">
-                  <div class="pa-4">
-                    <!-- Título: Presupuesto del mes -->
-                    <div class="text-subtitle-2 font-weight-bold">
-                      Balance del mes de {{ fullMonth }}
-                    </div>
+              <v-card-text class="text-medium-emphasis pa-1 pa-sm-2">
+                <!-- Eliminamos max-width fijo y usamos contenedor fluido -->
+                <v-sheet rounded="lg" class="pa-2 pa-sm-4">
+                  <!-- Título: Presupuesto del mes -->
+                  <div class="text-subtitle-2 font-weight-bold text-truncate">
+                    Balance del mes de {{ fullMonth }}
+                  </div>
 
-                    <!-- Disponible (restante) -->
-                    <div class="d-flex justify-space-between mt-2">
-                      <div class="text-caption grey--text"></div>
-                      <div class="text-caption font-weight-medium">
-                        <v-chip color="teal-darken-2" label rounded="lg" variant="text">
-                          <v-icon icon="mdi-trending-up"></v-icon>
-                          <span class="text-subtitle-2">{{ balance.available }} CLP disponibles</span>
-                        </v-chip>
-                      </div>
-                    </div>
-                    <!-- Barra de progreso -->
-                    <v-progress-linear :model-value="currentUsageAsNumber" :max="100" :color="progressColor"
-                      :bg-color="progressBgColor" height="16"
-                      rounded class="mt-2" style="height: 16px !important;"> <!--:buffer-value="projectedUsage" buffer-opacity="0.3"-->
-                      <template v-slot:default>
-                        <span class="text-caption font-weight-bold">
-                          {{ currentUsageAsNumber }}%
-                        </span>
-                      </template>
-                    </v-progress-linear>
-
-                    <div class="d-flex justify-space-between align-center mt-2">
-                      <!-- Consumido - Izquierda -->
-                      <v-chip color="red-darken-4" label rounded="lg" variant="text">
-                        <v-icon icon="mdi-trending-down" size="small"></v-icon>
-                        <span class="text-subtitle-2 ml-1">{{ balance.spent }} CLP consumidos</span>
-                      </v-chip>
-
-                      <!-- Presupuesto - Derecha -->
-                      <v-chip color="green-darken-4" label rounded="lg" variant="text">
-                        <v-icon icon="mdi-wallet" size="small"></v-icon>
-                        <span class="text-subtitle-2 ml-1">{{ balance.income }} CLP ingresado</span>
+                  <!-- Disponible (restante) - ahora con flex-wrap en móvil -->
+                  <div
+                    class="d-flex flex-column flex-sm-row justify-sm-space-between align-center mt-2"
+                  >
+                    <div class="text-caption grey--text d-none d-sm-block"></div>
+                    <div class="text-caption font-weight-medium">
+                      <v-chip
+                        color="teal-darken-2"
+                        label
+                        rounded="lg"
+                        variant="text"
+                        density="compact"
+                      >
+                        <v-icon icon="mdi-trending-up" size="small"></v-icon>
+                        <span class="text-caption ml-1"
+                          >{{ balance.available }} CLP disponibles</span
+                        >
                       </v-chip>
                     </div>
                   </div>
+
+                  <!-- Barra de progreso más pequeña en móvil -->
+                  <v-progress-linear
+                    :model-value="currentUsageAsNumber"
+                    :max="100"
+                    :color="progressColor"
+                    :bg-color="progressBgColor"
+                    height="12"
+                    rounded
+                    class="mt-2"
+                  >
+                    <template v-slot:default>
+                      <span class="text-caption font-weight-bold">
+                        {{ currentUsageAsNumber }}%
+                      </span>
+                    </template>
+                  </v-progress-linear>
+
+                  <!-- Consumido y Presupuesto en columna en móvil -->
+                  <div
+                    class="d-flex flex-column flex-sm-row justify-sm-space-between align-center mt-2"
+                  >
+                    <v-chip
+                      color="red-darken-4"
+                      label
+                      rounded="lg"
+                      variant="text"
+                      density="compact"
+                      class="mb-1 mb-sm-0"
+                    >
+                      <v-icon icon="mdi-trending-down" size="small"></v-icon>
+                      <span class="text-caption ml-1"
+                        >{{ balance.spent }} CLP consumidos</span
+                      >
+                    </v-chip>
+
+                    <v-chip
+                      color="green-darken-4"
+                      label
+                      rounded="lg"
+                      variant="text"
+                      density="compact"
+                      class="mb-1 mb-sm-0"
+                    >
+                      <v-icon icon="mdi-wallet" size="small"></v-icon>
+                      <span class="text-caption ml-1"
+                        >{{ balance.income }} CLP ingresado</span
+                      >
+                    </v-chip>
+                  </div>
                 </v-sheet>
 
-                <v-alert v-if="budgetAlerts && budgetAlerts.length > 0" color="warning" icon="mdi-alert-circle"
-                  variant="outlined" theme="dark" border density="compact" class="py-1 px-4" @click="showAddBuget()"
-                  style="cursor: pointer;">
-                  <div class="text-body2 text-black">
+                <v-alert
+                  v-if="budgetAlerts && budgetAlerts.length > 0"
+                  color="warning"
+                  icon="mdi-alert-circle"
+                  variant="outlined"
+                  theme="dark"
+                  border
+                  density="compact"
+                  class="py-1 px-2 mt-2"
+                  @click="showAddBuget()"
+                  style="cursor: pointer"
+                >
+                  <div class="text-body2 text-black text-truncate">
                     {{ budgetAlerts[0].message }}
                   </div>
                 </v-alert>
@@ -158,30 +240,64 @@
           </v-col>
 
           <v-col cols="12" md="6" class="d-flex mt-4">
-            <v-card class="mx-auto flex-grow-1 d-flex flex-column" elevation="1" rounded="lg" border flat>
-
+            <v-card
+              class="mx-auto flex-grow-1 d-flex flex-column"
+              elevation="1"
+              rounded="lg"
+              border
+              flat
+            >
               <!-- Título y Select -->
-              <v-card-title class="d-flex align-center justify-space-between pb-2">
-                <div class="text-subtitle-2">Gastos por categorías</div>
-                <v-select v-model="selectedGroup" :items="selectItems" item-title="title" item-value="value"
-                  density="compact" max-width="250" variant="solo-filled" flat hide-details single-line
-                  placeholder="Todas">
+              <v-card-title
+                class="d-flex flex-column flex-sm-row align-center justify-sm-space-between py-2 px-4"
+              >
+                <!-- Título con truncamiento -->
+                <div
+                  class="text-subtitle-2 text-truncate mb-1 mb-sm-0"
+                  style="max-width: 100%"
+                >
+                  Gastos por categorías
+                </div>
+
+                <!-- Select con ancho adaptable y densidad compacta -->
+                <v-select
+                  v-model="selectedGroup"
+                  :items="selectItems"
+                  item-title="title"
+                  item-value="value"
+                  density="compact"
+                  variant="solo-filled"
+                  flat
+                  hide-details
+                  single-line
+                  placeholder="Todas"
+                  class="ml-0 ml-sm-2 mt-1 mt-sm-0"
+                  style="min-width: 120px; width: 100%; max-width: 250px"
+                >
                   <!-- Selección con ícono y color -->
                   <template v-slot:selection="data">
                     <template v-if="data.item">
-                      <v-icon :icon="data.item.raw?.icon || data.item.icon"
-                        :color="data.item.raw?.color || data.item.color" size="18" class="mr-1"></v-icon>
-                      <span>{{ data.item.title }}</span>
+                      <v-icon
+                        :icon="data.item.raw?.icon || data.item.icon"
+                        :color="data.item.raw?.color || data.item.color"
+                        size="18"
+                        class="mr-1"
+                      ></v-icon>
+                      <span class="text-caption">{{ data.item.title }}</span>
                     </template>
-                    <span v-else class="text-grey">Todas</span>
+                    <span v-else class="text-grey text-caption">Todas</span>
                   </template>
 
                   <!-- Opciones con ícono y color -->
                   <template v-slot:item="data">
                     <v-list-item v-bind="data.props">
                       <template v-slot:prepend>
-                        <v-icon :icon="data.item?.raw?.icon || data.item?.icon"
-                          :color="data.item?.raw?.color || data.item?.color" size="20" class="ml-1"></v-icon>
+                        <v-icon
+                          :icon="data.item?.raw?.icon || data.item?.icon"
+                          :color="data.item?.raw?.color || data.item?.color"
+                          size="20"
+                          class="ml-1"
+                        ></v-icon>
                       </template>
                     </v-list-item>
                   </template>
@@ -189,10 +305,23 @@
               </v-card-title>
 
               <!-- Contenedor del gráfico (flexible con scroll si es necesario) -->
-              <div class="flex-grow-1 d-flex align-center justify-center position-relative">
-                <v-pie :key="selectedGroup" :items="currentItems" :legend="{ position: $vuetify.display.mdAndUp ? 'right' : 'bottom' }" :tooltip="true" gap="4"
-                  inner-cut="70" item-key="id" rounded="1" animation hide-slice reveal size="230">
-
+              <div
+                class="flex-grow-1 d-flex align-center justify-center position-relative"
+              >
+                <v-pie
+                  :key="selectedGroup"
+                  :items="currentItems"
+                  :legend="{ position: $vuetify.display.mdAndUp ? 'right' : 'bottom' }"
+                  :tooltip="true"
+                  gap="4"
+                  inner-cut="70"
+                  item-key="id"
+                  rounded="1"
+                  animation
+                  hide-slice
+                  reveal
+                  size="230"
+                >
                   <template v-slot:center>
                     <div class="text-center">
                       <div class="text-h6 font-weight-bold">{{ totalDisplay }}</div>
@@ -207,20 +336,32 @@
                       Consumido:
                       {{ formatCurrency(parseFloat(item.raw.amount || 0)) }}
                       de
-                      {{ formatCurrency(
-                          selectedGroup 
-                            ? parseFloat(item.raw.budget || 0) 
+                      {{
+                        formatCurrency(
+                          selectedGroup
+                            ? parseFloat(item.raw.budget || 0)
                             : dataSpent.totalAmount
-                        ) }}
+                        )
+                      }}
                       ({{ item.value }}%)
                     </div>
                   </template>
 
                   <template v-slot:legend="{ items, toggle, isActive }">
-                    <v-list class="py-0 bg-transparent"  :width="$vuetify.display.mdAndUp ? 250 : '100%'" max-height="200" style="overflow-y: auto;">
-                      <v-list-item v-for="item in items" :key="item.key"
-                        :class="['my-1', { 'opacity-40': !isActive(item) }]" rounded="lg" link
-                        @click="toggle(item)">
+                    <v-list
+                      class="py-0 bg-transparent"
+                      :width="$vuetify.display.mdAndUp ? 250 : '100%'"
+                      max-height="200"
+                      style="overflow-y: auto"
+                    >
+                      <v-list-item
+                        v-for="item in items"
+                        :key="item.key"
+                        :class="['my-1', { 'opacity-40': !isActive(item) }]"
+                        rounded="lg"
+                        link
+                        @click="toggle(item)"
+                      >
                         <template v-slot:prepend>
                           <v-avatar :color="item.color" :size="16" />
                         </template>
@@ -230,7 +371,7 @@
                               <div
                                 v-bind="props"
                                 class="text-body-1 text-truncate"
-                                style="max-width: 150px;"
+                                style="max-width: 150px"
                               >
                                 {{ item.title }}
                               </div>
@@ -248,17 +389,30 @@
                   </template>
                 </v-pie>
               </div>
-
             </v-card>
           </v-col>
 
           <v-col cols="12" md="6" class="d-flex mt-4">
-            <IncomeSpentChart v-if="initializated" :incomeData="customIncomeData" :spentData="customSpentData"
-              :year="new Date().getFullYear()" />
+            <IncomeSpentChart
+              v-if="initializated"
+              :incomeData="customIncomeData"
+              :spentData="customSpentData"
+              :year="new Date().getFullYear()"
+            />
           </v-col>
           <v-col cols="12" class="d-flex">
-            <v-alert v-if="spentAlerts" color="warning" icon="mdi-alert-circle" variant="outlined" theme="dark" border
-              density="compact" class="py-1 px-4 mt-1" @click="showAddIncomeSpent()" style="cursor: pointer;">
+            <v-alert
+              v-if="spentAlerts"
+              color="warning"
+              icon="mdi-alert-circle"
+              variant="outlined"
+              theme="dark"
+              border
+              density="compact"
+              class="py-1 px-4 mt-1"
+              @click="showAddIncomeSpent()"
+              style="cursor: pointer"
+            >
               <div class="text-body2 text-black">
                 {{ spentAlerts.message }}
               </div>
@@ -269,9 +423,18 @@
         <div class="h-0">
           <svg height="0" version="1.1" width="0" xmlns="http://www.w3.org/2000/svg">
             <defs>
-              <pattern id="pattern-0" height="20" patternUnits="userSpaceOnUse" width="20">
-                <path d="M0 10h20zm0 20h20zm0 20h20zm0 20h20z" fill="none" stroke="rgb(var(--v-theme-surface))"
-                  stroke-width="3" />
+              <pattern
+                id="pattern-0"
+                height="20"
+                patternUnits="userSpaceOnUse"
+                width="20"
+              >
+                <path
+                  d="M0 10h20zm0 20h20zm0 20h20zm0 20h20z"
+                  fill="none"
+                  stroke="rgb(var(--v-theme-surface))"
+                  stroke-width="3"
+                />
               </pattern>
             </defs>
           </svg>
@@ -279,7 +442,11 @@
 
         <v-divider class="my-4" />
 
-        <SuggestionsList :items="suggestions" :title="$t('finances.sections.suggestions')" icon="mdi-finance">
+        <SuggestionsList
+          :items="suggestions"
+          :title="$t('finances.sections.suggestions')"
+          icon="mdi-finance"
+        >
           <template #detail="{ taskData, onClose }">
             <ChatTask :taskData="taskData" @close-dialog="onClose" />
           </template>
@@ -287,65 +454,54 @@
       </v-card-text>
     </v-card>
   </v-container>
-  <!--dialogo de ingresos
-  <v-dialog v-model="dialogIncome" fullscreen transition="dialog-bottom-transition">
-    <v-card>
-      <v-card-text>
-        <Income />
-      </v-card-text>
-      <v-divider></v-divider>
-      <v-card-actions>
-        <v-spacer></v-spacer>
-        <v-btn text @click="close">Cerrar</v-btn>
-      </v-card-actions>
-    </v-card>
-  </v-dialog>-->
-
-  <!--dialogo de gastos
-  <v-dialog v-model="dialogSpent" fullscreen transition="dialog-bottom-transition">
-    <v-card>
-      <v-card-text>
-        <Spent />
-      </v-card-text>
-      <v-divider></v-divider>
-      <v-card-actions>
-        <v-spacer></v-spacer>
-        <v-btn text @click="close">Cerrar</v-btn>
-      </v-card-actions>
-    </v-card>
-  </v-dialog>-->
-
-  <v-dialog v-model="dialogAddFinance" fullscreen persistent transition="dialog-bottom-transition"
-    content-class="fullscreen-dialog">
+  <v-dialog
+    v-model="dialogAddFinance"
+    :fullscreen="isFullscreen"
+    :max-width="isMobile ? '100%' : 'none'"
+    persistent
+    transition="dialog-bottom-transition"
+  >
     <v-form ref="form" v-model="valid" class="h-100">
-      <v-card class="pa-10">
+      <v-card :class="isMobile ? 'pa-0' : 'pa-10'">
         <v-card-text class="pt-12">
           <h5 class="text-grey-darken-2 font-weight-medium">{{ formTitle }}</h5>
           <p :class="[isIncome ? 'text-green' : 'text-red', 'text-grey-lighten-1']">
             {{
-            isIncome
-            ? $t("finances.formInstructions.income")
-            : $t("finances.formInstructions.expense")
+              isIncome
+                ? $t("finances.formInstructions.income")
+                : $t("finances.formInstructions.expense")
             }}
           </p>
 
-          <v-row class="mt-12">
-            <!-- Side steps -->
-            <v-col cols="3">
+          <v-container fluid class="pa-0 mt-6">
+            <v-row>
+              <!-- Timeline (solo escritorio) -->
+              <v-col
+                v-if="isDesktop"
+                cols="12"
+                md="3"
+                class="pr-md-6"
+              >
               <v-timeline align="start" side="end" dense>
-                <v-timeline-item v-for="(s, index) in steps" :key="index" :dot-color="
+                <v-timeline-item
+                  v-for="(s, index) in steps"
+                  :key="index"
+                  :dot-color="
                     step > index
                       ? 'green'
                       : step === index
                       ? 'deep-purple'
                       : 'grey-lighten-1'
-                  " :icon="
+                  "
+                  :icon="
                     step >= index
                       ? step === index
                         ? `mdi-numeric-${index + 1}`
                         : 'mdi-check'
                       : null
-                  " size="large">
+                  "
+                  size="large"
+                >
                   <template #opposite>
                     <div class="text-end">
                       <strong>{{ $t(`finances.steps.${s.title}.title`) }}</strong>
@@ -359,286 +515,271 @@
             </v-col>
 
             <!-- Contenido dinámico según paso -->
-            <v-col cols="9">
-              <h3 class="text-deep-purple-accent-3 mb-8">
-                {{ $t(`finances.steps.${steps[step].title}.title`) }}
-              </h3>
+            <v-col
+                :cols="12"
+                :md="isMobile ? 12 : 9"
+                :class="{ 'mt-6': isMobile }"
+              >
+                <!-- En móvil: indicador del paso -->
+                <div
+                  v-if="isMobile"
+                  class="d-flex justify-space-between align-center mb-4"
+                >
+                  <v-chip
+                    label
+                    size="small"
+                    color="deep-purple-lighten-4"
+                    class="text-deep-purple"
+                  >
+                    {{ $t(`finances.steps.${steps[step].title}.title`) }}
+                  </v-chip>
+                </div>
 
-              <!-- Paso 1: Detalles del ingreso -->
-              <v-row dense v-if="step === 0">
-                <v-col cols="12" sm="12">
-                  <v-switch v-model="isIncome" inset hide-details :label="''" :base-color="isIncome ? 'green' : 'red'"
-                    :color="isIncome ? 'green' : 'red'" class="mb-4 font-weight-bold">
-                    <template #label>
-                      <span :class="isIncome ? 'text-green' : 'text-red'">
-                        {{
-                        isIncome
-                        ? $t("finances.fields.income")
-                        : $t("finances.fields.spent")
-                        }}
-                      </span>
-                    </template>
-                  </v-switch>
-                </v-col>
+                <!-- En escritorio: título del paso -->
+                <h3 v-else class="text-deep-purple-accent-3 mb-6">
+                  {{ $t(`finances.steps.${steps[step].title}.title`) }}
+                </h3>
+             <!-- Paso 1: Detalles del ingreso -->
+              <v-row dense>
+                <template v-if="step === 0">
+                  <v-col cols="12" sm="12">
+                    <v-switch
+                      v-model="isIncome"
+                      inset
+                      hide-details
+                      :label="''"
+                      :base-color="isIncome ? 'green' : 'red'"
+                      :color="isIncome ? 'green' : 'red'"
+                      class="mb-4 font-weight-bold"
+                    >
+                      <template #label>
+                        <span :class="isIncome ? 'text-green' : 'text-red'">
+                          {{
+                            isIncome
+                              ? $t("finances.fields.income")
+                              : $t("finances.fields.spent")
+                          }}
+                        </span>
+                      </template>
+                    </v-switch>
+                  </v-col>
 
-                <v-col cols="12" sm="6">
-                  <v-autocomplete v-model="editedItem.type" :items="types" :label="$t('finances.fields.type')"
-                    item-title="name" item-value="id" variant="underlined" :rules="typeRules"
-                    :disabled="editedIndex === -1">
-                    <template v-slot:item="{ props, item }">
-                      <v-list-item v-bind="props">
-                        <v-list-item-subtitle class="d-flex flex-column">
-                          <v-tooltip bottom>
-                            <template v-slot:activator="{ props: tooltipProps }">
-                              <div class="truncate" v-bind="tooltipProps" style="
-                                  white-space: nowrap;
-                                  overflow: hidden;
-                                  text-overflow: ellipsis;
-                                ">
-                                {{ item.raw.description }}
-                              </div>
-                            </template>
-                            <span>{{ item.raw.description }}</span>
-                          </v-tooltip>
-                        </v-list-item-subtitle>
-                      </v-list-item>
-                    </template>
-                  </v-autocomplete>
-                </v-col>
+                  <v-col cols="12" sm="6">
+                    <v-autocomplete
+                      v-model="editedItem.type"
+                      :items="types"
+                      :label="$t('finances.fields.type')"
+                      item-title="name"
+                      item-value="id"
+                      variant="underlined"
+                      :rules="typeRules"
+                      :disabled="editedIndex === -1"
+                    >
+                      <template v-slot:item="{ props, item }">
+                        <v-list-item v-bind="props">
+                          <v-list-item-subtitle class="d-flex flex-column">
+                            <v-tooltip bottom>
+                              <template v-slot:activator="{ props: tooltipProps }">
+                                <div
+                                  class="truncate"
+                                  v-bind="tooltipProps"
+                                  style="
+                                    white-space: nowrap;
+                                    overflow: hidden;
+                                    text-overflow: ellipsis;
+                                  "
+                                >
+                                  {{ item.raw.description }}
+                                </div>
+                              </template>
+                              <span>{{ item.raw.description }}</span>
+                            </v-tooltip>
+                          </v-list-item-subtitle>
+                        </v-list-item>
+                      </template>
+                    </v-autocomplete>
+                  </v-col>
 
-                <v-col cols="12" sm="6">
-                  <v-text-field v-if="isIncome" v-model="editedItem.income" :label="$t('finances.fields.income')"
-                    variant="underlined" type="number" :rules="incomeRules" required />
-                  <v-text-field v-else v-model="editedItem.spent" :label="$t('finances.fields.spent')"
-                    variant="underlined" type="number" :rules="[validateSpent]" :hint="spentHint" persistent-hint
-                    required :class="{
-                      'has-negative-hint': availableAmountDynamic < 0,
-                      'has-positive-hint': availableAmountDynamic > 0,
-                      'has-neutral-hint': availableAmountDynamic === 0
-                    }" />
-                </v-col>
+                  <v-col cols="12" sm="6">
+                    <v-text-field
+                      v-if="isIncome"
+                      v-model="editedItem.income"
+                      :label="$t('finances.fields.income')"
+                      variant="underlined"
+                      type="number"
+                      :rules="incomeRules"
+                      required
+                    />
+                    <v-text-field
+                      v-else
+                      v-model="editedItem.spent"
+                      :label="$t('finances.fields.spent')"
+                      variant="underlined"
+                      type="number"
+                      :rules="[validateSpent]"
+                      :hint="spentHint"
+                      persistent-hint
+                      required
+                      :class="{
+                        'has-negative-hint': availableAmountDynamic < 0,
+                        'has-positive-hint': availableAmountDynamic > 0,
+                        'has-neutral-hint': availableAmountDynamic === 0,
+                      }"
+                    />
+                  </v-col>
 
-                <v-col cols="12" sm="12" v-if="!isIncome">
-                  <v-autocomplete v-model="editedItem.budget_id" :items="filteredBudgets"
-                    :label="$t('budget.fields.category')" item-title="categoryName" item-value="id" variant="underlined"
-                    :rules="selectRules">
-                    <template v-slot:item="{ props, item }">
-                      <v-list-item v-bind="props">
-                        <template v-slot:prepend>
-                          <v-avatar size="24">
-                            <template v-if="isImage(item.raw.icon)">
-                              <img :src="`${this.$axios.defaults.baseURL}images/${item.raw.icon}`" alt="icon" />
-                            </template>
-                            <template v-else>
-                              <v-icon>{{ getIconName(item.raw.icon) }}</v-icon>
-                            </template>
-                          </v-avatar>
-                        </template>
-                        <v-list-item-subtitle class="d-flex flex-column">
-                          <div>
-                            {{ $t("finances.fields.available") }}:
-                            {{ formatCurrency(item.raw.amount - item.raw.used_amount) }}
-                          </div>
-                          <div>
-                            {{ $t("finances.fields.total") }}:
-                            {{ formatCurrency(item.raw.amount) }}
-                          </div>
-                        </v-list-item-subtitle>
-                      </v-list-item>
-                    </template>
-                  </v-autocomplete>
-                </v-col>
+                  <v-col cols="12" sm="12" v-if="!isIncome">
+                    <v-autocomplete
+                      v-model="editedItem.budget_id"
+                      :items="filteredBudgets"
+                      :label="$t('budget.fields.category')"
+                      item-title="categoryName"
+                      item-value="id"
+                      variant="underlined"
+                      :rules="selectRules"
+                    >
+                      <template v-slot:item="{ props, item }">
+                        <v-list-item v-bind="props">
+                          <template v-slot:prepend>
+                            <v-avatar size="24">
+                              <template v-if="isImage(item.raw.icon)">
+                                <img
+                                  :src="`${this.$axios.defaults.baseURL}images/${item.raw.icon}`"
+                                  alt="icon"
+                                />
+                              </template>
+                              <template v-else>
+                                <v-icon>{{ getIconName(item.raw.icon) }}</v-icon>
+                              </template>
+                            </v-avatar>
+                          </template>
+                          <v-list-item-subtitle class="d-flex flex-column">
+                            <div>
+                              {{ $t("finances.fields.available") }}:
+                              {{ formatCurrency(item.raw.amount - item.raw.used_amount) }}
+                            </div>
+                            <div>
+                              {{ $t("finances.fields.total") }}:
+                              {{ formatCurrency(item.raw.amount) }}
+                            </div>
+                          </v-list-item-subtitle>
+                        </v-list-item>
+                      </template>
+                    </v-autocomplete>
+                  </v-col>
 
-                <v-col cols="12" md="6">
-                  <v-file-input v-model="file" ref="fileInput" :label="$t('finances.fields.attach_file')"
-                    variant="underlined" name="file" accept=".png, .jpg, .jpeg" @change="onFileSelected"
-                    :prepend-icon="null"></v-file-input>
-                </v-col>
-                <v-col cols="12" md="6">
-                  <v-card elevation="6" class="mx-auto" max-width="210" max-height="120">
-                    <img v-if="imagenDisponible() && this.showImage" :src="imgedit" height="120"
-                      :label="$t('finances.fields.file')" width="210" />
-                    <v-icon v-else class="d-flex align-center justify-center"
-                      style="height: 120px; width: 210px; font-size: 120px">{{ this.icono }}</v-icon>
-                  </v-card>
-                </v-col>
+                  <v-col cols="12" md="6">
+                    <v-file-input
+                      v-model="file"
+                      ref="fileInput"
+                      :label="$t('finances.fields.attach_file')"
+                      variant="underlined"
+                      name="file"
+                      accept=".png, .jpg, .jpeg"
+                      @change="onFileSelected"
+                      :prepend-icon="null"
+                    ></v-file-input>
+                  </v-col>
+                  <v-col cols="12" md="6">
+                    <v-card
+                      elevation="6"
+                      class="mx-auto"
+                      max-width="210"
+                      max-height="120"
+                    >
+                      <img
+                        v-if="imagenDisponible() && this.showImage"
+                        :src="imgedit"
+                        height="120"
+                        :label="$t('finances.fields.file')"
+                        width="210"
+                      />
+                      <v-icon
+                        v-else
+                        class="d-flex align-center justify-center"
+                        style="height: 120px; width: 210px; font-size: 120px"
+                        >{{ this.icono }}</v-icon
+                      >
+                    </v-card>
+                  </v-col>
+                </template>
+
+                <!-- Step 2: Descripción y fecha -->
+                <template v-if="step === 1">
+                  <v-col cols="12">
+                    <v-textarea
+                      v-model="editedItem.description"
+                      :label="$t('finances.fields.description')"
+                      variant="underlined"
+                      rows="3"
+                      auto-grow
+                      :rules="descriptionRules"
+                    />
+                  </v-col>
+
+                  <v-col cols="12">
+                    <v-menu
+                      v-model="dateMenu"
+                      :close-on-content-click="true"
+                      transition="scale-transition"
+                      offset-y
+                      min-width="auto"
+                    >
+                      <template v-slot:activator="{ props }">
+                        <v-text-field
+                          v-bind="props"
+                          :model-value="dateInput"
+                          :label="$t('finances.fields.date')"
+                          variant="underlined"
+                          readonly
+                        ></v-text-field>
+                      </template>
+                      <v-date-picker
+                        color="#03626C"
+                        :model-value="parseDateString(dateInput)"
+                        @update:model-value="updateDate"
+                        :max="maxDate"
+                      ></v-date-picker>
+                    </v-menu>
+                  </v-col>
+                </template>
               </v-row>
-
-              <!-- Step 2: Descripción y fecha -->
-              <v-row dense v-if="step === 1">
-                <v-col cols="12">
-                  <v-textarea v-model="editedItem.description" :label="$t('finances.fields.description')"
-                    variant="underlined" rows="3" auto-grow :rules="descriptionRules" />
-                </v-col>
-
-                <v-col cols="12">
-                  <v-menu v-model="dateMenu" :close-on-content-click="true" transition="scale-transition" offset-y
-                    min-width="auto">
-                    <template v-slot:activator="{ props }">
-                      <v-text-field v-bind="props" :model-value="dateInput" :label="$t('finances.fields.date')"
-                        variant="underlined" readonly></v-text-field>
-                    </template>
-                    <v-date-picker color="#03626C" :model-value="parseDateString(dateInput)"
-                      @update:model-value="updateDate" :max="maxDate"></v-date-picker>
-                  </v-menu>
-                </v-col>
-              </v-row>
-
               <!-- Navegación -->
               <div class="d-flex justify-space-between mt-8">
-                <v-btn variant="text" class="text-grey-darken-1"
-                  @click="step > 0 ? step-- : this.closeDialogFinances()">
+                <v-btn
+                  variant="text"
+                  class="text-grey-darken-1"
+                  @click="step > 0 ? step-- : this.closeDialogFinances()"
+                >
                   {{ step === 0 ? $t("buttons.close") : $t("buttons.previous") }}
                 </v-btn>
 
-                <v-btn variant="text" class="text-deep-purple-accent-3" @click="nextStep" :disabled="!valid">
+                <v-btn
+                  variant="text"
+                  class="text-deep-purple-accent-3"
+                  @click="nextStep"
+                  :disabled="!valid"
+                >
                   {{
-                  step === steps.length - 1
-                  ? $t("buttons.saveAndClose")
-                  : $t("buttons.next")
+                    step === steps.length - 1
+                      ? $t("buttons.saveAndClose")
+                      : $t("buttons.next")
                   }}
                 </v-btn>
               </div>
             </v-col>
           </v-row>
+          </v-container>
         </v-card-text>
       </v-card>
     </v-form>
   </v-dialog>
 
-  <!--<v-dialog v-model="dialogAddSpent" fullscreen persistent transition="dialog-bottom-transition"
-    content-class="fullscreen-dialog">
-    <v-form ref="form" v-model="valid" class="h-100">
-      <v-card class="pa-10">
-        <v-card-text class="pt-12">
-          <p class="text-grey-lighten-1">
-            {{ $t("finances.formInstructions.expense") }}
-          </p>
-
-          <v-row class="mt-12">
-            <v-col cols="3">
-              <v-timeline align="start" side="end" dense>
-                <v-timeline-item v-for="(s, index) in steps" :key="index" :dot-color="
-                    step > index
-                      ? 'green'
-                      : step === index
-                      ? 'deep-purple'
-                      : 'grey-lighten-1'
-                  " :icon="
-                    step >= index
-                      ? step === index
-                        ? `mdi-numeric-${index + 1}`
-                        : 'mdi-check'
-                      : null
-                  " size="large">
-                  <template #opposite>
-                    <div class="text-end">
-                      <strong>{{ $t(`finances.steps.${s.title}.title`) }}</strong>
-                      <div class="text-caption text-grey">
-                        {{ $t(`finances.steps.${s.title}.subtitle`) }}
-                      </div>
-                    </div>
-                  </template>
-                </v-timeline-item>
-              </v-timeline>
-            </v-col>
-
-            <v-col cols="9">
-              <h3 class="text-deep-purple-accent-3 mb-8">
-                {{ $t(`finances.steps.${steps[step].title}.title`) }}
-              </h3>
-
-              <v-row dense v-if="step === 0">
-                <v-col cols="12" sm="6">
-                  <v-autocomplete v-model="editedItem.type" :items="types" :label="$t('finances.fields.type')"
-                    item-title="name" item-value="id" variant="underlined" :rules="typeRules">
-                    <template v-slot:item="{ props, item }">
-                      <v-list-item v-bind="props">
-                        <v-list-item-subtitle class="d-flex flex-column">
-                          <v-tooltip bottom>
-                            <template v-slot:activator="{ props: tooltipProps }">
-                              <div class="truncate" v-bind="tooltipProps" style="
-                                  white-space: nowrap;
-                                  overflow: hidden;
-                                  text-overflow: ellipsis;
-                                ">
-                                {{ item.raw.description }}
-                              </div>
-                            </template>
-                            <span>{{ item.raw.description }}</span>
-                          </v-tooltip>
-                        </v-list-item-subtitle>
-                      </v-list-item>
-                    </template>
-                  </v-autocomplete>
-                </v-col>
-
-                <v-col cols="12" sm="6">
-                  <v-text-field v-model="editedItem.spent" :label="$t('finances.fields.spent')" variant="underlined"
-                    type="number" :rules="incomeRules" required />
-                </v-col>
-
-                <v-col cols="12" md="6">
-                  <v-file-input v-model="file" ref="fileInput" :label="$t('finances.fields.attach_file')"
-                    variant="underlined" name="file" accept=".png, .jpg, .jpeg" @change="onFileSelected"
-                    :prepend-icon="null"></v-file-input>
-                </v-col>
-                <v-col cols="12" md="6">
-                  <v-card elevation="6" class="mx-auto" max-width="210" max-height="120">
-                    <img v-if="imagenDisponible() && this.showImage" :src="imgedit" height="120"
-                      :label="$t('finances.fields.file')" width="210" />
-                    <v-icon v-else class="d-flex align-center justify-center"
-                      style="height: 120px; width: 210px; font-size: 120px">{{ this.icono }}</v-icon>
-                  </v-card>
-                </v-col>
-              </v-row>
-
-              <v-row dense v-if="step === 1">
-                <v-col cols="12">
-                  <v-textarea v-model="editedItem.description" :label="$t('finances.fields.description')"
-                    variant="underlined" rows="3" auto-grow :rules="descriptionRules" />
-                </v-col>
-
-                <v-col cols="12">
-                  <v-menu v-model="dateMenu" :close-on-content-click="true" transition="scale-transition" offset-y
-                    min-width="auto">
-                    <template v-slot:activator="{ props }">
-                      <v-text-field v-bind="props" :model-value="dateInput" :label="$t('finances.fields.date')"
-                        variant="underlined" readonly></v-text-field>
-                    </template>
-                    <v-date-picker color="#03626C" :model-value="parseDateString(dateInput)"
-                      @update:model-value="updateDate" :max="maxDate"></v-date-picker>
-                  </v-menu>
-                </v-col>
-              </v-row>
-
-              <div class="d-flex justify-space-between mt-8">
-                <v-btn variant="text" class="text-grey-darken-1" @click="step > 0 ? step-- : this.closeDialogSpents()">
-                  {{ step === 0 ? $t("buttons.close") : $t("buttons.previous") }}
-                </v-btn>
-
-                <v-btn variant="text" class="text-deep-purple-accent-3" @click="nextStep" :disabled="!valid">
-                  {{
-                  step === steps.length - 1
-                  ? $t("buttons.saveAndClose")
-                  : $t("buttons.next")
-                  }}
-                </v-btn>
-              </div>
-            </v-col>
-          </v-row>
-        </v-card-text>
-      </v-card>
-    </v-form>
-  </v-dialog>-->
-
   <v-dialog v-model="dialogBugets" fullscreen transition="dialog-bottom-transition">
     <v-card class="bg-grey-lighten-4">
       <v-card-text>
         <!-- Aquí pasamos el 'selectedWorker' al componente dentro del diálogo -->
-        <Budget 
-        :types="types"
-        :type="budget_type"/>
+        <Budget :types="types" :type="budget_type" />
       </v-card-text>
       <v-divider></v-divider>
       <v-card-actions>
@@ -651,10 +792,7 @@
     <v-card class="bg-grey-lighten-4">
       <v-card-text>
         <!-- Aquí pasamos el 'selectedWorker' al componente dentro del diálogo -->
-        <IncomeSpent 
-        :types="types"
-        :type="budget_type"/>
-        
+        <IncomeSpent :types="types" :type="budget_type" />
       </v-card-text>
       <v-divider></v-divider>
       <v-card-actions>
@@ -663,8 +801,13 @@
       </v-card-actions>
     </v-card>
   </v-dialog>
-  <v-dialog v-model="showSuggestedTasksDialog" fullscreen persistent transition="dialog-bottom-transition"
-    content-class="fullscreen-dialog">
+  <v-dialog
+    v-model="showSuggestedTasksDialog"
+    fullscreen
+    persistent
+    transition="dialog-bottom-transition"
+    content-class="fullscreen-dialog"
+  >
     <v-form ref="form" v-model="valid" class="h-100">
       <v-card class="pa-10">
         <v-card-title class="d-flex justify-space-between align-center pt-12">
@@ -683,7 +826,11 @@
             <!-- Timeline lateral con un solo paso -->
             <v-col cols="3">
               <v-timeline align="start" side="end" dense>
-                <v-timeline-item dot-color="deep-purple" icon="mdi-numeric-1" size="large">
+                <v-timeline-item
+                  dot-color="deep-purple"
+                  icon="mdi-numeric-1"
+                  size="large"
+                >
                   <template #opposite>
                     <div class="text-end">
                       <strong>{{ $t("suggestedTasks.steps.selection.title") }}</strong>
@@ -704,8 +851,14 @@
 
               <!-- Lista de tareas sugeridas -->
               <div class="task-list-container">
-                <v-card v-for="(task, index) in suggestedTasks" :key="index" class="mb-3 rounded-lg" elevation="2"
-                  :class="{ 'selected-task': task.selected }" @click="task.selected = !task.selected">
+                <v-card
+                  v-for="(task, index) in suggestedTasks"
+                  :key="index"
+                  class="mb-3 rounded-lg"
+                  elevation="2"
+                  :class="{ 'selected-task': task.selected }"
+                  @click="task.selected = !task.selected"
+                >
                   <v-row no-gutters class="align-center">
                     <!-- Checkbox 
                     <v-col cols="auto" class="d-flex justify-center">
@@ -718,12 +871,19 @@
                     </v-col>-->
 
                     <!-- Fecha y hora -->
-                    <v-col cols="auto" class="pa-2 d-flex flex-column align-center date-time-col">
-                      <div class="text-body-2 font-weight-medium text-center date-time-text">
+                    <v-col
+                      cols="auto"
+                      class="pa-2 d-flex flex-column align-center date-time-col"
+                    >
+                      <div
+                        class="text-body-2 font-weight-medium text-center date-time-text"
+                      >
                         {{ formatDate(task.start_date) }}
                       </div>
-                      <div v-if="task.start_time"
-                        class="text-body-2 font-weight-medium text-center mt-1 date-time-text">
+                      <div
+                        v-if="task.start_time"
+                        class="text-body-2 font-weight-medium text-center mt-1 date-time-text"
+                      >
                         {{ formatTime(task.start_time) }}
                       </div>
                     </v-col>
@@ -737,8 +897,12 @@
                     </v-col>
 
                     <v-col cols="auto" class="d-flex align-center px-2">
-                      <v-chip color="amber" variant="outlined" class="score-chip"
-                        :title="$t('suggestedTasks.scoreTooltip')">
+                      <v-chip
+                        color="amber"
+                        variant="outlined"
+                        class="score-chip"
+                        :title="$t('suggestedTasks.scoreTooltip')"
+                      >
                         <v-icon left size="small">mdi-star</v-icon>
                         {{ task.score }}
                       </v-chip>
@@ -748,7 +912,7 @@
                       <div>
                         <span class="text-black">{{
                           task.priority_name_translated
-                          }}</span>
+                        }}</span>
                       </div>
                     </v-col>
 
@@ -756,10 +920,21 @@
                     <v-col cols="auto" class="d-flex align-center pe-4 gap-2">
                       <div class="avatar-row d-flex flex-wrap justify-end gap-1">
                         <template v-if="task.people && task.people.length > 0">
-                          <v-tooltip v-for="(person, personIndex) in task.people" :key="personIndex" bottom>
+                          <v-tooltip
+                            v-for="(person, personIndex) in task.people"
+                            :key="personIndex"
+                            bottom
+                          >
                             <template v-slot:activator="{ props }">
-                              <v-avatar class="avatar-item hover-expand" size="32" v-bind="props">
-                                <v-img :src="`${this.$axios.defaults.baseURL}images/${person.image}`" alt="avatar" />
+                              <v-avatar
+                                class="avatar-item hover-expand"
+                                size="32"
+                                v-bind="props"
+                              >
+                                <v-img
+                                  :src="`${this.$axios.defaults.baseURL}images/${person.image}`"
+                                  alt="avatar"
+                                />
                               </v-avatar>
                             </template>
                             <span>{{ person.name }}<br />{{ person.roleName }}</span>
@@ -776,12 +951,20 @@
 
               <!-- Acciones del formulario -->
               <div class="d-flex justify-space-between mt-8">
-                <v-btn variant="text" class="text-grey-darken-1" @click="showSuggestedTasksDialog = false">
+                <v-btn
+                  variant="text"
+                  class="text-grey-darken-1"
+                  @click="showSuggestedTasksDialog = false"
+                >
                   {{ $t("buttons.close") }}
                 </v-btn>
 
-                <v-btn variant="text" class="text-deep-purple-accent-3" @click="sendSuggestedTasksToAPI"
-                  :disabled="selectedSuggestedTasksCount === 0">
+                <v-btn
+                  variant="text"
+                  class="text-deep-purple-accent-3"
+                  @click="sendSuggestedTasksToAPI"
+                  :disabled="selectedSuggestedTasksCount === 0"
+                >
                   {{ $t("buttons.saveAndClose") }}
                   <v-chip color="deep-purple" small class="ml-2">
                     {{ selectedSuggestedTasksCount }}
@@ -794,49 +977,6 @@
       </v-card>
     </v-form>
   </v-dialog>
-  <!--<v-dialog v-model="dialogChatTask" fullscreen transition="dialog-bottom-transition">
-    <v-card>
-      <v-card-text>
-        <ChatTaskFinance :taskData="currentTask" @close-dialog="closeDialgChat()" />
-      </v-card-text>
-      <v-divider></v-divider>
-      <v-card-actions>
-        <v-spacer></v-spacer>
-        <v-btn text @click="closeDialgChat()">Cerrar</v-btn>
-      </v-card-actions>
-    </v-card>
-  </v-dialog>-->
-  <!--<v-dialog v-model="dialogAlerta" max-width="500">
-    <v-card rounded-lg>
-      <v-card-title class="text-body-2">Alertas para Hoy</v-card-title>
-      <v-card-text>
-        <v-list v-if="suggestions.length">
-          <v-list-item v-for="(alerta, i) in suggestions" :key="i">
-            <template v-slot:prepend>
-              <v-icon color="deep-orange" icon="mdi-alert"></v-icon>
-            </template>
-
-            <v-list-item-title class="text-subtitle-2">
-              {{ alerta.title }}
-            </v-list-item-title>
-            <v-list-item-subtitle class="text-caption text-truncate">
-              {{ alerta.description }}
-              <v-tooltip activator="parent" location="bottom" max-width="350px" class="custom-tooltip">
-                <span style="white-space: normal; word-break: break-word">
-                  {{ alerta.description }}
-                </span>
-              </v-tooltip>
-            </v-list-item-subtitle>
-          </v-list-item>
-        </v-list>
-        <div v-else class="text-caption text-grey">No hay alertas para hoy.</div>
-      </v-card-text>
-      <v-card-actions>
-        <v-spacer />
-        <v-btn text @click="dialogAlerta = false">Cerrar</v-btn>
-      </v-card-actions>
-    </v-card>
-  </v-dialog>-->
 </template>
 
 <script>
@@ -863,17 +1003,18 @@ export default {
   data() {
     return {
       initializated: false,
+      isFullscreen: false,
       tools: [
         {
           name: this.$t("finances.titles.new.finance"),
           icon: "mdi-plus",
-           action: () => this.showAddFinance(),
-        },/*
+          action: () => this.showAddFinance(),
+        } /*
         {
           name: this.$t("finances.fields.spent"),
           icon: "mdi-trending-down",
           action: () => this.showSpent(),
-        },*/
+        },*/,
         {
           name: this.$t("finances.sections.movements"),
           icon: "mdi-cash",
@@ -1150,9 +1291,9 @@ export default {
       income: {},
       spent: {},
       //grafico de pie
-        selectedGroup: null, // null = mostrar resumen; si es ID, mostrar subcategorías
-        selectedItems: [],
-    dataSpent: null,     // datos del backend
+      selectedGroup: null, // null = mostrar resumen; si es ID, mostrar subcategorías
+      selectedItems: [],
+      dataSpent: null, // datos del backend
       balance: {},
       budget: {},
       nameRules: [
@@ -1168,94 +1309,99 @@ export default {
           "El precio debe ser un número válido con hasta 2 decimales", // Valida el formato del precio
         (v) => v > 0 || "El precio debe ser un número positivo", // El precio debe ser positivo
       ],
-    budget_type: 'Personal', // ← valor que usas en lógica
+      budget_type: "Personal", // ← valor que usas en lógica
       switchValue: 0, // ← 0 = Personal, 1 = Hogar (estado del switch)
     };
   },
   computed: {
-     maxDate() {
-    const today = new Date();
+    isMobile() {
+			return this.$vuetify.display.xs || this.$vuetify.display.sm;
+		},
+		isDesktop() {
+			return !this.isMobile;
+		},
+    maxDate() {
+      const today = new Date();
       const year = today.getFullYear();
       const month = String(today.getMonth() + 1).padStart(2, "0");
       const day = String(today.getDate()).padStart(2, "0");
       return `${year}-${month}-${day}`;
-    // Esto asegura que sea el inicio del día (evita problemas de hora/minuto)
-  },
-     
+      // Esto asegura que sea el inicio del día (evita problemas de hora/minuto)
+    },
 
-  /*totalDisplay() {
+    /*totalDisplay() {
     if (!this.dataSpent) return "0.00";
     return (this.selectedGroup 
       ? (this.dataSpent.totalBudgetByGroup?.[this.selectedGroup] || 0)
       : this.dataSpent.totalAmount
     ).toFixed(2);
   },*/
-   currentItems() {
-    if (!this.dataSpent) return [];
+    currentItems() {
+      if (!this.dataSpent) return [];
 
-    if (!this.selectedGroup) {
-      // Vista "Todas": summary (padres)
-      return this.dataSpent.summary.map(item => ({
-        ...item,
-        amount: item.total, // para reutilizar lógica
-        budget: this.dataSpent.totalBudgetByGroup?.[item.id] || 0,
-      }));
-    }
+      if (!this.selectedGroup) {
+        // Vista "Todas": summary (padres)
+        return this.dataSpent.summary.map((item) => ({
+          ...item,
+          amount: item.total, // para reutilizar lógica
+          budget: this.dataSpent.totalBudgetByGroup?.[item.id] || 0,
+        }));
+      }
 
-    // Vista detalle: subcategorías
-    return this.dataSpent.details[this.selectedGroup] || [];
-  },
-  totalDisplay() {
-    if (!this.dataSpent) return "0.00";
+      // Vista detalle: subcategorías
+      return this.dataSpent.details[this.selectedGroup] || [];
+    },
+    totalDisplay() {
+      if (!this.dataSpent) return "0.00";
 
-    // Si no hay selecciones, usar el valor original
-    if (this.selectedItems.length === 0) {
-      return (this.selectedGroup 
-        ? (this.dataSpent.totalBudgetByGroup?.[this.selectedGroup] || 0)
-        : this.dataSpent.totalAmount
-      ).toFixed(2);
-    }
+      // Si no hay selecciones, usar el valor original
+      if (this.selectedItems.length === 0) {
+        return (this.selectedGroup
+          ? this.dataSpent.totalBudgetByGroup?.[this.selectedGroup] || 0
+          : this.dataSpent.totalAmount
+        ).toFixed(2);
+      }
 
-    // Si hay selecciones, sumar solo los montos de los items seleccionados
-    const total = this.selectedItems.reduce((sum, key) => {
-      const item = this.currentItems.find(i => i.id === key);
-      return sum + (parseFloat(item?.raw?.amount || item?.amount || 0) || 0);
-    }, 0);
+      // Si hay selecciones, sumar solo los montos de los items seleccionados
+      const total = this.selectedItems.reduce((sum, key) => {
+        const item = this.currentItems.find((i) => i.id === key);
+        return sum + (parseFloat(item?.raw?.amount || item?.amount || 0) || 0);
+      }, 0);
 
-    return total.toFixed(2);
-  },
+      return total.toFixed(2);
+    },
     selectItems() {
       if (!this.dataSpent) return [];
       return [
-        { 
-          title: "Todas las categorías", 
+        {
+          title: "Todas las categorías",
           value: null,
-          icon: "mdi-view-dashboard" // opcional: ícono para "Todas"
+          icon: "mdi-view-dashboard", // opcional: ícono para "Todas"
         },
-        ...this.dataSpent.categories // ya incluyen: id, title, value, icon, color
+        ...this.dataSpent.categories, // ya incluyen: id, title, value, icon, color
       ];
     },
-   currentUsageAsNumber() {
-      const str = this.balance?.spentPercentage || '0';
+    currentUsageAsNumber() {
+      const str = this.balance?.spentPercentage || "0";
       const num = parseFloat(str).toFixed(2);
       return isNaN(num) ? 0 : num;
     },
     progressColor() {
-    const usage = this.currentUsageAsNumber;
-    if (usage >= 100) return 'red-darken-4';     // 🔴 Rojo muy oscuro
-    if (usage >= 80) return 'deep-orange-darken-3'; // 🟠 Naranja intenso
-    if (usage > 0) return 'orange-darken-3';
-    return 'grey-darken-1';                      // ⚪ Gris oscuro
-  },
-  progressBgColor() {
-    // ✅ Teal para el fondo no utilizado
-    return this.currentUsageAsNumber >= 100 ? 'red-lighten-3' : 'teal-darken-2';
-  },
+      const usage = this.currentUsageAsNumber;
+      if (usage >= 100) return "red-darken-4"; // 🔴 Rojo muy oscuro
+      if (usage >= 80) return "deep-orange-darken-3"; // 🟠 Naranja intenso
+      if (usage > 0) return "orange-darken-3";
+      return "grey-darken-1"; // ⚪ Gris oscuro
+    },
+    progressBgColor() {
+      // ✅ Teal para el fondo no utilizado
+      return this.currentUsageAsNumber >= 100 ? "red-lighten-3" : "teal-darken-2";
+    },
     projectedUsage() {
       const usage = this.currentUsageAsNumber;
       return Math.min(100, usage * 1.2);
     },
-     todayDay() {
+    todayDay() {
       return this.now.getDate(); // Forma simple y segura
     },
 
@@ -1270,22 +1416,22 @@ export default {
 
     // Fecha formateada: "lunes, 5 de abril de 2025"
     fullDate() {
-       const locale = this.$i18n.locale.value;
-    const dateLocale = { es: 'es-ES', en: 'en-US', pt: 'pt-PT' }[locale] || 'es-ES';
-    return this.now.toLocaleDateString(dateLocale, {
-      weekday: 'long',
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric'
-    });
+      const locale = this.$i18n.locale.value;
+      const dateLocale = { es: "es-ES", en: "en-US", pt: "pt-PT" }[locale] || "es-ES";
+      return this.now.toLocaleDateString(dateLocale, {
+        weekday: "long",
+        year: "numeric",
+        month: "long",
+        day: "numeric",
+      });
     },
     fullMonth() {
-       const locale = this.$i18n.locale.value;
-    const dateLocale = { es: 'es-ES', en: 'en-US', pt: 'pt-PT' }[locale] || 'es-ES';
-    return this.now.toLocaleDateString(dateLocale, {
-      year: 'numeric',
-      month: 'long',
-    });
+      const locale = this.$i18n.locale.value;
+      const dateLocale = { es: "es-ES", en: "en-US", pt: "pt-PT" }[locale] || "es-ES";
+      return this.now.toLocaleDateString(dateLocale, {
+        year: "numeric",
+        month: "long",
+      });
     },
     selectedSuggestedTasksCount() {
       return this.suggestedTasks?.filter((task) => task.selected).length || 0;
@@ -1357,57 +1503,57 @@ export default {
     imgedit() {
       return this.imgMiniatura;
     },
-     switchColor() {
-      return this.budget_type === 'Personal' ? '#03626C' : '#FB8C00';
+    switchColor() {
+      return this.budget_type === "Personal" ? "#03626C" : "#FB8C00";
     },
     getCurrentName() {
-      const type = this.types.find(t => t.id === this.budget_type);
+      const type = this.types.find((t) => t.id === this.budget_type);
       return type ? type.name : this.budget_type;
     },
     filteredBudgets() {
-    if (!this.editedItem.type) return this.budgets; // Si no hay tipo seleccionado, mostrar todos
+      if (!this.editedItem.type) return this.budgets; // Si no hay tipo seleccionado, mostrar todos
 
-    // Suponiendo que "types" tiene objetos con { id, name }, y editedItem.type es el ID
-    // Necesitamos obtener el "name" del tipo seleccionado para compararlo con budget_type
-    /*const selectedType = this.types.find(t => t.id === this.editedItem.type);
+      // Suponiendo que "types" tiene objetos con { id, name }, y editedItem.type es el ID
+      // Necesitamos obtener el "name" del tipo seleccionado para compararlo con budget_type
+      /*const selectedType = this.types.find(t => t.id === this.editedItem.type);
     const typeName = selectedType ? selectedType.name : null;
 
     if (!typeName) return [];*/
 
-    // Filtrar budgets cuyo budget_type coincida con el nombre del tipo seleccionado
-    return this.budgets.filter(budget => budget.budget_type === this.editedItem.type);
-  },
+      // Filtrar budgets cuyo budget_type coincida con el nombre del tipo seleccionado
+      return this.budgets.filter((budget) => budget.budget_type === this.editedItem.type);
+    },
     availableAmount() {
-    if (!this.editedItem.type || !this.balance) return 0;
-    return this.editedItem.type === 'Personal'
-      ? this.balance.personal.available
-      : this.balance.home?.available || 0;
-  },
-  availableAmountDynamic() {
-  if (!this.editedItem.type || !this.balance) return 0;
+      if (!this.editedItem.type || !this.balance) return 0;
+      return this.editedItem.type === "Personal"
+        ? this.balance.personal.available
+        : this.balance.home?.available || 0;
+    },
+    availableAmountDynamic() {
+      if (!this.editedItem.type || !this.balance) return 0;
 
-  const spent = parseFloat(this.editedItem.spent) || 0;
+      const spent = parseFloat(this.editedItem.spent) || 0;
 
-  if (this.editedItem.type === 'Personal') {
-    const income = this.balance.personal.available || 0;
-    return income - spent;
-  } else {
-    const income = this.balance.home?.available || 0;
-    return income - spent;
-  }
-},
-   spentHint() {
-    const amount = this.availableAmountDynamic;
-    const formatted = this.formatCurrency(amount);
-    return `Disponible: ${formatted}`;
-  }
+      if (this.editedItem.type === "Personal") {
+        const income = this.balance.personal.available || 0;
+        return income - spent;
+      } else {
+        const income = this.balance.home?.available || 0;
+        return income - spent;
+      }
+    },
+    spentHint() {
+      const amount = this.availableAmountDynamic;
+      const formatted = this.formatCurrency(amount);
+      return `Disponible: ${formatted}`;
+    },
   },
   mounted() {
     this.person_id = JSON.parse(LocalStorageService.getItem("person_id"));
     this.home_id = JSON.parse(LocalStorageService.getItem("home_id"));
     this.initialize();
   },
-   watch: {
+  watch: {
     budget_type(newVal) {
       // Actualiza budget_type según el valor del switch
       //this.budget_type = newVal === 'Hogar' ? 'Hogar' : 'Personal';
@@ -1415,42 +1561,56 @@ export default {
       // Llama al método de inicialización
       this.initialize();
     },
+    dialog(val) {
+      if (val) this.updateFullscreenMode();
+      },
+    isDesktop() {
+      this.updateFullscreenMode();
+    },
   },
   methods: {
+    updateFullscreenMode() {
+      this.$nextTick(() => {
+        this.isFullscreen = this.isDesktop;
+      });
+    },
     validateSpent(value) {
-    if (value === null || value === undefined || value === '') {
-      return 'Este campo es requerido.';
-    }
+      if (value === null || value === undefined || value === "") {
+        return "Este campo es requerido.";
+      }
 
-    const numValue = parseFloat(value);
-    if (isNaN(numValue)) {
-      return 'Debe ser un número válido.';
-    }
+      const numValue = parseFloat(value);
+      if (isNaN(numValue)) {
+        return "Debe ser un número válido.";
+      }
 
-    if (numValue < 0) {
-      return 'El gasto no puede ser negativo.';
-    }
+      if (numValue < 0) {
+        return "El gasto no puede ser negativo.";
+      }
 
-    // Validar contra el disponible según el tipo
-    if (!this.editedItem.type) {
-      return 'Selecciona un tipo primero.';
-    }
+      // Validar contra el disponible según el tipo
+      if (!this.editedItem.type) {
+        return "Selecciona un tipo primero.";
+      }
 
-    if (!this.balance) {
-      return 'Cargando balance...';
-    }
+      if (!this.balance) {
+        return "Cargando balance...";
+      }
 
-    const available = this.editedItem.type === 'Personal'
-      ? this.balance.personal.available
-      : this.balance.home?.available || 0;
+      const available =
+        this.editedItem.type === "Personal"
+          ? this.balance.personal.available
+          : this.balance.home?.available || 0;
 
-    if (numValue > available) {
-      return `No puedes gastar más de lo disponible (${this.formatCurrency(available)}).`;
-    }
+      if (numValue > available) {
+        return `No puedes gastar más de lo disponible (${this.formatCurrency(
+          available
+        )}).`;
+      }
 
-    return true; // ✅ válido
-  },
-     /*handleGenerateDemo() {
+      return true; // ✅ válido
+    },
+    /*handleGenerateDemo() {
       // Lógica para generar datos demo
       console.log('Generando datos demo...');
       this.customIncomeData = Array.from({ length: 12 }, () => 
@@ -1805,25 +1965,25 @@ export default {
       };
     },*/
     formatCurrency(value) {
-  // Convertir a número si es string
-      if (typeof value === 'string') {
+      // Convertir a número si es string
+      if (typeof value === "string") {
         // Eliminar cualquier caracter no numérico excepto punto y signo menos
-        value = value.trim().replace(/[^\d.-]/g, '');
+        value = value.trim().replace(/[^\d.-]/g, "");
         value = parseFloat(value);
       }
 
       // Validar si es numérico válido
       if (value === null || value === undefined || isNaN(value)) {
-        return '0.00';
+        return "0.00";
       }
 
       // Redondear a 2 decimales con protección contra errores de punto flotante
       value = Math.round((value + Number.EPSILON) * 100) / 100;
 
       // Formatear con 2 decimales siempre, usando formato en-US
-      return value.toLocaleString('en-US', {
+      return value.toLocaleString("en-US", {
         minimumFractionDigits: 2,
-        maximumFractionDigits: 2
+        maximumFractionDigits: 2,
       });
     },
     clearFields() {
@@ -1898,7 +2058,7 @@ export default {
       try {
         this.data = {};
         this.data.home_id = this.home_id;
-        this.data.type = this.budget_type || 'Personal'
+        this.data.type = this.budget_type || "Personal";
         //this.data.type = 'Todas';
         this.loading = true;
         this.initializated = false;
@@ -1917,8 +2077,10 @@ export default {
           this.statusuggestions = result.data?.statusuggestions || [];
           this.movent = result.data?.movementsCard || {};
           //this.budget = result.data?.budgetCard || [];
-          this.customIncomeData = result.data?.financeData.customIncomeData || Array(12).fill(0);
-          this.customSpentData = result.data?.financeData.customSpentData || Array(12).fill(0);
+          this.customIncomeData =
+            result.data?.financeData.customIncomeData || Array(12).fill(0);
+          this.customSpentData =
+            result.data?.financeData.customSpentData || Array(12).fill(0);
           console.log("customIncomeData:", this.customIncomeData);
           console.log("movent:", this.movent);
           this.initializated = true;
@@ -2130,15 +2292,15 @@ export default {
         "type",
         "method",
         "budget_id",
-        "available"
+        "available",
       ];
       const updatedBalance = this.calculateNewAvailable(
-          this.balance,
-          this.editedItem,
-          "create",
-          this.originalItem
-        );
-        this.editedItem.available = updatedBalance;
+        this.balance,
+        this.editedItem,
+        "create",
+        this.originalItem
+      );
+      this.editedItem.available = updatedBalance;
       let updatedFields = Object.keys(this.editedItem)
         .filter(
           (key) =>
@@ -2285,7 +2447,54 @@ export default {
 };
 </script>
 
-<style>
+<style scoped>
+.fullscreen-dialog {
+	display: flex;
+	flex-direction: column;
+	height: 100%;
+	overflow-y: auto;
+	}
+.text-truncate {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.desktop-table {
+  table-layout: fixed;
+}
+
+.mobile-table {
+  table-layout: auto;
+}
+.responsive-data-table-wrapper {
+  width: 100%;
+}
+
+/* Solo en móvil: activar scroll horizontal */
+.responsive-data-table-wrapper.mobile-scroll {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* En móvil: forzar ancho mínimo para que haya algo que scrollear */
+.responsive-data-table-wrapper.mobile-scroll :deep(.v-data-table) {
+  min-width: 800px;
+}
+
+/* En desktop: asegurar que no haya scroll innecesario */
+@media (min-width: 960px) {
+  .responsive-data-table-wrapper :deep(.v-data-table) {
+    min-width: auto;
+    overflow-x: hidden;
+  }
+}
+
+.tools-bar {
+  overflow-x: auto;
+  white-space: nowrap;
+  gap: 8px;
+}
+
 .has-negative-hint .v-field__hint {
   color: #f44336 !important;
 }

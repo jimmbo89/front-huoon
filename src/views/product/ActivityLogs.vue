@@ -19,194 +19,230 @@
       </v-col>
     </v-row>
   </v-snackbar>
-      <v-card class="pa-0" elevation="1" rounded="lg" style="
-    position: relative;
-    overflow: visible;
-    z-index: auto;
-  ">
-      <!-- Encabezado con foto y datos -->
-      <v-card-text>
-          <v-card-title class="d-flex flex-wrap align-center pb-2">
-  <!-- Spacer (solo visible en md+) -->
-  <v-spacer class="d-none d-md-block"></v-spacer>
+  <v-card
+    class="pa-0"
+    elevation="1"
+    rounded="lg"
+    style="position: relative; overflow: visible; z-index: auto"
+  >
+    <!-- Encabezado con foto y datos -->
+    <v-card-text>
+      <v-card-title class="d-flex flex-wrap align-center pb-2">
+        <!-- Spacer (solo visible en md+) -->
+        <v-spacer class="d-none d-md-block"></v-spacer>
 
-  <!-- Campo de búsqueda global -->
-  <div class="flex-grow-1" style="max-width: 300px">
-    <v-text-field
-      v-model="search"
-      density="compact"
-      :label="$t('dataTable.search')"
-      prepend-inner-icon="mdi-magnify"
-      variant="solo-filled"
-      hide-details
-      single-line
-      flat
-    ></v-text-field>
-  </div>
-</v-card-title>
-
-<v-data-table
-  :headers="headers"
-  :items="activities"
-  :search="search"
-  :items-per-page-text="$t('dataTable.itemsPerPageText')"
-  :no-data-text="$t('dataTable.noDataText')"
-  :loading-text="$t('dataTable.loadingText')"
-  :loading="loading"
-  :hide-default-header="true"
-  style="
-    max-height: 68vh;
-    overflow-y: auto;
-    background: transparent;
-    border: none !important;
-    outline: none !important;
-    box-shadow: none !important;
-    padding: 0;
-  "
->
-  <!-- Encabezado fijo -->
-  <template v-slot:top>
-    <v-card
-      :elevation="1"
-      flat
-      class="mb-2 mx-1 rounded-lg"
-      style="border: 1px solid #ECEFF1; height: 40px; min-height: 40px; display: flex; align-items: center; transition: none !important"
-    >
-      <v-card-text
-        class="d-flex pa-2"
-        style="width: 100%; min-width: 0; height: 100%; padding: 0 16px !important; display: flex; align-items: center"
+        <!-- Campo de búsqueda global -->
+        <div class="flex-grow-1" style="max-width: 300px">
+          <v-text-field
+            v-model="search"
+            density="compact"
+            :label="$t('dataTable.search')"
+            prepend-inner-icon="mdi-magnify"
+            variant="solo-filled"
+            hide-details
+            single-line
+            flat
+          ></v-text-field>
+        </div>
+      </v-card-title>
+      <div
+        class="ma-0 pa-0 responsive-data-table-wrapper"
+        :class="isMobile ? 'mobile-scroll' : ''"
       >
-        <!-- Fecha / Periodo (7%) -->
-        <div style="width: 7%; min-width: 0" class="text-left">
-          {{ $t('activity.date') }}
-        </div>
-
-        <!-- Descripción + Severidad (34%) -->
-        <div style="width: 20%; min-width: 0" class="text-left">
-          {{ $t('activity.product') }}
-        </div>
-
-        <!-- Estado (15%) -->
-        <div style="width: 20%; min-width: 0" class="text-left">
-          {{ $t('activity.origin_warehouse') }}
-        </div>
-
-        <div style="width: 20%; min-width: 0" class="text-left">
-          {{ $t('activity.destination_warehouse') }}
-        </div>
-
-        <!-- Detalles (34%) -->
-        <div style="width: 7%; min-width: 0" class="text-left">
-          {{ $t('activity.quantity') }}
-        </div>
-
-        <div style="width: 26%; min-width: 0" class="text-left">
-          {{ $t('activity.performed_by') }}
-        </div>
-      </v-card-text>
-    </v-card>
-  </template>
-
-  <!-- Item (fila) -->
-  <template v-slot:item="slotProps">
-    <tr>
-      <td colspan="100%" style="padding: 0; border: none">
-        <v-card
-          class="mb-2 mx-1 rounded-lg"
-          elevation="1"
-          density="comfortable"
-          flat
+        <v-data-table
+          :headers="headers"
+          :items="activities"
+          :search="search"
+          :items-per-page-text="$t('dataTable.itemsPerPageText')"
+          :no-data-text="$t('dataTable.noDataText')"
+          :loading-text="$t('dataTable.loadingText')"
+          :loading="loading"
+          :hide-default-header="true"
+          style="
+            max-height: 68vh;
+            overflow-y: auto;
+            overflow-x: hidden;
+            background: transparent;
+            border: none !important;
+            outline: none !important;
+            box-shadow: none !important;
+          "
         >
-          <v-card-text class="d-flex align-center pa-2" style="width: 100%; min-width: 0">
-            <!-- Fecha / Periodo (7%) -->
-            <div class="d-flex align-center" style="width: 7%; min-width: 0">
-              <v-avatar
-                class="mr-1 icono-concavo"
-                :class="`bg-${getTypeColor(slotProps.item.newData.date)}`"
-                :style="{
-                  'min-height': '48px',
-                  'min-width': '48px',
-                  'border-radius': '8px',
-                  'font-size': '0.90em'
-                }"
+          <!-- Encabezado fijo -->
+          <template v-slot:top>
+            <v-card
+              :elevation="1"
+              flat
+              class="mb-2 mx-1 rounded-lg"
+              style="
+                border: 1px solid #eceff1;
+                height: 40px;
+                min-height: 40px;
+                display: flex;
+                align-items: center;
+                transition: none !important;
+              "
+            >
+              <v-card-text
+                class="d-flex pa-2"
+                style="
+                  width: 100%;
+                  min-width: 0;
+                  height: 100%;
+                  padding: 0 16px !important;
+                  display: flex;
+                  align-items: center;
+                "
               >
-                <div class="text-body-3 font-weight-medium">
-                  {{ formatIntuitiveDate(slotProps.item.newData.date) }}
+                <!-- Fecha / Periodo (7%) -->
+                <div style="width: 7%; min-width: 0" class="text-left">
+                  {{ $t("activity.date") }}
                 </div>
-              </v-avatar>
-            </div>
 
-            <!-- Descripción + Severidad (34%) -->
-            <div style="width: 20%; min-width: 0" class="d-flex align-left">
-               <v-avatar
-                    size="48"
-                    class="mr-1 icono-concavo"
-                    color="grey-lighten-4"
-                    style="flex-shrink: 0"
+                <!-- Descripción + Severidad (34%) -->
+                <div style="width: 20%; min-width: 0" class="text-left">
+                  {{ $t("activity.product") }}
+                </div>
+
+                <!-- Estado (15%) -->
+                <div style="width: 20%; min-width: 0" class="text-left">
+                  {{ $t("activity.origin_warehouse") }}
+                </div>
+
+                <div style="width: 20%; min-width: 0" class="text-left">
+                  {{ $t("activity.destination_warehouse") }}
+                </div>
+
+                <!-- Detalles (34%) -->
+                <div style="width: 7%; min-width: 0" class="text-left">
+                  {{ $t("activity.quantity") }}
+                </div>
+
+                <div style="width: 26%; min-width: 0" class="text-left">
+                  {{ $t("activity.performed_by") }}
+                </div>
+              </v-card-text>
+            </v-card>
+          </template>
+
+          <!-- Item (fila) -->
+          <template v-slot:item="slotProps">
+            <tr
+              style="display: table; width: 100%"
+              :class="isMobile ? 'mobile-table' : 'desktop-table'"
+            >
+              <td colspan="100%" style="padding: 0; border: none">
+                <v-card
+                  class="mb-2 mx-1 rounded-lg"
+                  elevation="1"
+                  density="comfortable"
+                  flat
+                >
+                  <v-card-text
+                    class="d-flex align-center pa-2"
+                    style="width: 100%; min-width: 0"
                   >
-                    <v-img
-                      :src="getImageUrl(slotProps.item.newData.productImage)"
-                      cover
-                      class="icono-concavo"
-                    />
-                  </v-avatar>
-
-                  <!-- Contenedor de texto -->
-                  <div class="d-flex flex-column justify-center" style="min-width: 0">
-                    <div class="font-weight-bold text-body-2 text-truncate">
-                      {{ slotProps.item.newData.productName }}
+                    <!-- Fecha / Periodo (7%) -->
+                    <div class="d-flex align-center" style="width: 7%; min-width: 0">
+                      <v-avatar
+                        class="mr-1 icono-concavo"
+                        :class="`bg-${getTypeColor(slotProps.item.newData.date)}`"
+                        :style="{
+                          'min-height': '48px',
+                          'min-width': '48px',
+                          'border-radius': '8px',
+                          'font-size': '0.90em',
+                        }"
+                      >
+                        <div class="text-body-3 font-weight-medium">
+                          {{ formatIntuitiveDate(slotProps.item.newData.date) }}
+                        </div>
+                      </v-avatar>
                     </div>
-                  </div>
-            </div>
 
-            <!-- Estado (15%) -->
-            <div style="width: 20%; min-width: 0" class="text-body-2 text-truncate">
-              <span>{{ slotProps.item.newData.originalWarehouse || '' }}</span>
-            </div>
+                    <!-- Descripción + Severidad (34%) -->
+                    <div style="width: 20%; min-width: 0" class="d-flex align-left">
+                      <v-avatar
+                        size="48"
+                        class="mr-1 icono-concavo"
+                        color="grey-lighten-4"
+                        style="flex-shrink: 0"
+                      >
+                        <v-img
+                          :src="getImageUrl(slotProps.item.newData.productImage)"
+                          cover
+                          class="icono-concavo"
+                        />
+                      </v-avatar>
 
-            <div style="width: 20%; min-width: 0" class="text-body-2 text-truncate">
-              <span>{{ slotProps.item.newData.destinationWarehouse || '' }}</span>
-            </div>
-            <!-- Detalles (34%) -->
-            <div style="width: 7%; min-width: 0" class="text-body-2 text-truncate">
-              <span>{{ slotProps.item.newData.quantity_moved || '' }}</span>
+                      <!-- Contenedor de texto -->
+                      <div class="d-flex flex-column justify-center" style="min-width: 0">
+                        <div class="font-weight-bold text-body-2 text-truncate">
+                          {{ slotProps.item.newData.productName }}
+                        </div>
+                      </div>
+                    </div>
 
-            </div>
-            <div style="width: 26%; min-width: 0" class="d-flex align-left">
-               <v-avatar
-                    size="48"
-                    class="mr-1 icono-concavo"
-                    color="grey-lighten-4"
-                    style="flex-shrink: 0"
-                  >
-                    <v-img
-                      :src="getImageUrl(slotProps.item.newData.personImage)"
-                      cover
-                      class="icono-concavo"
-                    />
-                  </v-avatar>
+                    <!-- Estado (15%) -->
+                    <div
+                      style="width: 20%; min-width: 0"
+                      class="text-body-2 text-truncate"
+                    >
+                      <span>{{ slotProps.item.newData.originalWarehouse || "" }}</span>
+                    </div>
 
-                  <!-- Contenedor de texto -->
-                  <div class="d-flex flex-column justify-center" style="min-width: 0">
-                    <div class="font-weight-bold text-body-2 text-truncate">
-                      <span>{{ slotProps.item.newData.personName }}</span>
-                      <v-tooltip activator="parent" location="bottom" max-width="350px">
-                      <span style="white-space: normal; word-break: break-word">
+                    <div
+                      style="width: 20%; min-width: 0"
+                      class="text-body-2 text-truncate"
+                    >
+                      <span>{{ slotProps.item.newData.destinationWarehouse || "" }}</span>
+                    </div>
+                    <!-- Detalles (34%) -->
+                    <div
+                      style="width: 7%; min-width: 0"
+                      class="text-body-2 text-truncate"
+                    >
+                      <span>{{ slotProps.item.newData.quantity_moved || "" }}</span>
+                    </div>
+                    <div style="width: 26%; min-width: 0" class="d-flex align-left">
+                      <v-avatar
+                        size="48"
+                        class="mr-1 icono-concavo"
+                        color="grey-lighten-4"
+                        style="flex-shrink: 0"
+                      >
+                        <v-img
+                          :src="getImageUrl(slotProps.item.newData.personImage)"
+                          cover
+                          class="icono-concavo"
+                        />
+                      </v-avatar>
+
+                      <!-- Contenedor de texto -->
+                      <div class="d-flex flex-column justify-center" style="min-width: 0">
+                        <div class="font-weight-bold text-body-2 text-truncate">
+                          <span>{{ slotProps.item.newData.personName }}</span>
+                          <v-tooltip
+                            activator="parent"
+                            location="bottom"
+                            max-width="350px"
+                          >
+                            <span style="white-space: normal; word-break: break-word">
                               {{ slotProps.item.newData.personName }}
                             </span>
                           </v-tooltip>
+                        </div>
+                      </div>
                     </div>
-                  </div>
-            </div>
-
-          </v-card-text>
-        </v-card>
-      </td>
-    </tr>
-  </template>
-</v-data-table>
+                  </v-card-text>
+                </v-card>
+              </td>
+            </tr>
+          </template>
+        </v-data-table>
+      </div>
     </v-card-text>
-    </v-card>
+  </v-card>
 </template>
 
 <script>
@@ -220,11 +256,12 @@ export default {
   props: {
     type: {
       type: String,
-      required: true
+      required: true,
     },
   },
   data: () => ({
     snackbar: false,
+    isFullscreen: false,
     sb_type: "",
     sb_message: "",
     sb_timeout: 2000,
@@ -240,34 +277,52 @@ export default {
     data: {},
     person_id: "",
     headers: [
-      { title: 'Fecha', key: 'newData.date' },
-      { title: 'Producto', key: 'newData.productName' },
-      { title: 'Almacén saliente', key: 'newData.originalWarehouse' },
-      { title: 'Almacén entrante', key: 'newData.destinationWarehouse' },
-      { title: 'Cantidad', key: 'newData.quantity_moved' },
-      { title: 'Realisado', key: 'newData.personName' },
+      { title: "Fecha", key: "newData.date" },
+      { title: "Producto", key: "newData.productName" },
+      { title: "Almacén saliente", key: "newData.originalWarehouse" },
+      { title: "Almacén entrante", key: "newData.destinationWarehouse" },
+      { title: "Cantidad", key: "newData.quantity_moved" },
+      { title: "Realisado", key: "newData.personName" },
     ],
     search: "",
     dateMenu: false,
     dateInput: null,
   }),
   computed: {
-    
+    isMobile() {
+      return this.$vuetify.display.xs || this.$vuetify.display.sm;
+    },
+    isDesktop() {
+      return !this.isMobile;
+    },
+  },
+  watch: {
+    dialog(val) {
+      if (val) this.updateFullscreenMode();
+    },
+    isDesktop() {
+      this.updateFullscreenMode();
+    },
   },
   mounted() {
     this.home_id = JSON.parse(LocalStorageService.getItem("home_id"));
     this.initialize();
   },
   methods: {
-     getImageUrl(imagePath) {
+    updateFullscreenMode() {
+      this.$nextTick(() => {
+        this.isFullscreen = this.isDesktop;
+      });
+    },
+    getImageUrl(imagePath) {
       return `${this.$axios.defaults.baseURL}images/${imagePath}`;
     },
     obtenerFechaLocal() {
-    const hoy = new Date();
-    const year = hoy.getFullYear();
-    const month = String(hoy.getMonth() + 1).padStart(2, '0');
-    const day = String(hoy.getDate()).padStart(2, '0');
-    return `${year}-${month}-${day}`;
+      const hoy = new Date();
+      const year = hoy.getFullYear();
+      const month = String(hoy.getMonth() + 1).padStart(2, "0");
+      const day = String(hoy.getDate()).padStart(2, "0");
+      return `${year}-${month}-${day}`;
     },
     formatIntuitiveDate(dateString) {
       if (!dateString) return "Sin fecha";
@@ -305,7 +360,7 @@ export default {
               weekday: "short",
               day: "numeric",
               month: "short",
-              year: "numeric"
+              year: "numeric",
             })
             .replace(/\./g, "");
       }
@@ -319,13 +374,13 @@ export default {
       return colorMap[type] || "deep-orange"; // Color por defecto
     },
     // Filtra las personas para mostrar en cada card según el rol
-    
+
     async initialize() {
       this.activities = [];
       this.data = {};
       this.data.home_id = this.home_id;
       this.data.type = this.type;
-      this.data.model = "PersonHomeWarehouseProduct"
+      this.data.model = "PersonHomeWarehouseProduct";
       try {
         this.loading = true;
         const result = await handleRequest({
@@ -347,7 +402,7 @@ export default {
         // Captura de errores no controlados
         this.showAlert("error", "Ocurrió un error inesperado al cargar los roles.", 3000);
       } finally {
-        this.updateWarehouseTools();
+        //this.updateWarehouseTools();
         this.loading = false;
       }
     },
@@ -376,6 +431,47 @@ export default {
 };
 </script>
 <style scoped>
+.fullscreen-dialog {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  overflow-y: auto;
+}
+.desktop-table {
+  table-layout: fixed;
+}
+
+.mobile-table {
+  table-layout: auto;
+}
+.responsive-data-table-wrapper {
+  width: 100%;
+}
+
+/* Solo en móvil: activar scroll horizontal */
+.responsive-data-table-wrapper.mobile-scroll {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* En móvil: forzar ancho mínimo para que haya algo que scrollear */
+.responsive-data-table-wrapper.mobile-scroll :deep(.v-data-table) {
+  min-width: 800px;
+}
+
+/* En desktop: asegurar que no haya scroll innecesario */
+@media (min-width: 960px) {
+  .responsive-data-table-wrapper :deep(.v-data-table) {
+    min-width: auto;
+    overflow-x: hidden;
+  }
+}
+
+.tools-bar {
+  overflow-x: auto;
+  white-space: nowrap;
+  gap: 8px;
+}
 .icono-concavo {
   width: 50px;
   height: 50px;

@@ -25,339 +25,417 @@
     rounded="lg"
     style="position: relative; overflow: visible; z-index: auto"
   >
-      <!-- Encabezado con foto y datos -->
-      <v-card-text>
-        <v-card-actions class="pa-3 bg-grey-lighten-5 tools-bar">
-          <v-btn
-            v-for="tool in tools"
-            :key="tool.name"
-            @click="tool.action()"
-            size="small"
-            color="primary"
-            variant="text"
-            prepend-icon="mdi-plus"
-            class="text-capitalize"
-          >
-            {{ tool.name }}
-          </v-btn>
-        </v-card-actions>
-        <v-card-title class="d-flex flex-wrap align-center gap-4 pb-0">
-      <!-- Spacer (solo visible en md+) -->
-      <v-spacer class="d-none d-md-block"></v-spacer>
-      <!-- Campo de búsqueda global -->
-      <div class="flex-grow-1" style="max-width: 300px">
-        <v-text-field
-          v-model="search"
-          density="compact"
-          :label="$t('dataTable.search')"
-          prepend-inner-icon="mdi-magnify"
-          variant="solo-filled"
-          hide-details
-          single-line
-          flat
-          clearable
-        ></v-text-field>
-      </div>
-    </v-card-title>
-  <v-data-table
-  :headers="headers"
-  :items="medications"
-  :search="search"
-  :items-per-page-text="$t('dataTable.itemsPerPageText')"
-  :no-data-text="$t('dataTable.noDataText')"
-  :loading-text="$t('dataTable.loadingText')"
-  :loading="loading"
-  :hide-default-header="true"
-  class="mt-1"
-  style="
-    max-height: 68vh;
-    overflow-y: auto;
-    background: transparent;
-    border: none !important;
-    outline: none !important;
-    box-shadow: none !important;
-    padding: 0;
-  "
->
-  <!-- Header personalizado (simulado) -->
-  <template v-slot:top>
-    <v-card
-      :elevation="1"
-      :hover="false"
-      flat
-      class="mb-2 mx-1 rounded-lg"
-      style="
-        border: 1px solid #eceff1;
-        height: 40px;
-        min-height: 40px;
-        display: flex;
-        align-items: center;
-        transition: none !important;
-      "
-    >
-      <v-card-text
-        class="d-flex pa-2"
-        style="
-          width: 100%;
-          min-width: 0;
-          height: 100%;
-          padding: 0 16px !important;
-          display: flex;
-          align-items: center;
-        "
-      >
-        <div style="width: 7%; min-width: 0" class="text-left">
-          {{ $t("current_medications.fields.start_date") }}
-        </div>
-        <div style="width: 25%; min-width: 0" class="text-left">
-          {{ $t("current_medications.fields.name") }}
-        </div>
-        <div style="width: 10%; min-width: 0" class="text-left">
-          {{ $t("current_medications.fields.type_id") }}
-        </div>
-        <div style="width: 40%; min-width: 0" class="text-left">
-          {{ $t("current_medications.fields.notes") }}
-        </div>
-        <div style="width: 13%; min-width: 0" class="text-left">
-          {{ $t("current_medications.fields.end_date") }}
-        </div>
-        <div style="width: 7%; min-width: 0" class="d-flex justify-end">
-          {{ $t("settings.actions") }}
-        </div>
-      </v-card-text>
-    </v-card>
-  </template>
-
-  <!-- Fila personalizada para cada medicamento -->
-  <template v-slot:item="{ item }">
-    <v-card
-      class="mb-2 mx-1 rounded-lg"
-      elevation="1"
-      density="comfortable"
-      flat
-    >
-      <v-card-text
-        class="d-flex align-center pa-2"
-        style="width: 100%; min-width: 0"
-      >
-        <!-- Columna 1: Fecha de inicio con ícono cóncavo (7%) -->
-        <div style="width: 7%; min-width: 0" class="d-flex align-center justify-left">
-          <div
-            class="icono-concavo d-flex flex-column justify-center align-left"
-            :class="`bg-${getTypeColor('medication')}`"
-            style="min-height: 48px; min-width: 48px; border-radius: 8px;"
-          >
-            <div class="date-display text-center" style="font-size: 0.85rem; line-height: 1.2;">
-              {{ formatIntuitiveDate(item.start_date) }}
-            </div>
-          </div>
-        </div>
-
-        <!-- Columna 2: Nombre del medicamento (25%) -->
-        <div style="width: 25%; min-width: 0" class="d-flex flex-column">
-          <div class="font-weight-bold text-body-2 text-truncate">
-            {{ item.name }}
-          </div>
-          <div class="text-caption text-grey-darken-1 text-truncate">
-            {{ item.dosage }} {{ item.unit }} • {{ item.route }}
-          </div>
-        </div>
-
-        <!-- Columna 3: Tipo (10%) -->
-        <div style="width: 10%; min-width: 0" class="d-flex flex-column">
-          <div class="text-body-2 text-truncate">
-            {{ item.typeNameTranslated }}
-          </div>
-        </div>
-
-        <!-- Columna 5: Observaciones (15%) -->
-        <div style="width: 40%; min-width: 0" class="d-flex flex-column">
-          <div class="text-body-2 text-truncate" style="max-width: 100%;">
-            {{ item.notes }}
-            <v-tooltip activator="parent" location="bottom" max-width="350px">
-              <span style="white-space: normal; word-break: break-word">
-               {{ item.notes }}
-              </span>
-            </v-tooltip>
-          </div>
-        </div>
-
-        <!-- Columna 6: Fecha de fin o "Indefinido" (13%) -->
-        <div style="width: 13%; min-width: 0" class="d-flex flex-column">
-          <div class="text-body-2 text-truncate">
-            {{ formatIntuitiveDate(item.end_date) }}
-          </div>
-        </div>
-
-        <!-- Columna 7: Acciones (15%) -->
-        <div
-          class="d-flex gap-1"
-          style="width: 7%; justify-content: flex-end; flex-wrap: nowrap"
+    <!-- Encabezado con foto y datos -->
+    <v-card-text>
+      <v-card-actions class="pa-3 bg-grey-lighten-5 tools-bar">
+        <v-btn
+          v-for="tool in tools"
+          :key="tool.name"
+          @click="tool.action()"
+          size="small"
+          color="primary"
+          variant="text"
+          prepend-icon="mdi-plus"
+          class="text-capitalize"
         >
-          <v-btn
-            size="35"
-            icon
-            variant="text"
-            color="green-darken-2"
-            @click="editItem(item)"
-            class="flex-shrink-0 mr-1"
-            :title="$t('buttons.edit')"
-          >
-            <v-icon size="20">mdi-pencil</v-icon>
-          </v-btn>
-
-          <v-btn
-            size="35"
-            icon
-            variant="text"
-            color="red-darken-2"
-            @click="deleteItem(item)"
-            class="flex-shrink-0"
-            :title="$t('buttons.delete')"
-          >
-            <v-icon size="20">mdi-delete</v-icon>
-          </v-btn>
+          {{ tool.name }}
+        </v-btn>
+      </v-card-actions>
+      <v-card-title class="d-flex flex-wrap align-center gap-4 pb-0">
+        <!-- Spacer (solo visible en md+) -->
+        <v-spacer class="d-none d-md-block"></v-spacer>
+        <!-- Campo de búsqueda global -->
+        <div class="flex-grow-1" style="max-width: 300px">
+          <v-text-field
+            v-model="search"
+            density="compact"
+            :label="$t('dataTable.search')"
+            prepend-inner-icon="mdi-magnify"
+            variant="solo-filled"
+            hide-details
+            single-line
+            flat
+            clearable
+          ></v-text-field>
         </div>
-      </v-card-text>
-    </v-card>
-  </template>
-</v-data-table>
-
-     </v-card-text>
-    </v-card>
- <v-dialog
-  v-model="dialog"
-  fullscreen
-  persistent
-  transition="dialog-bottom-transition"
-  content-class="fullscreen-dialog"
->
-  <v-form ref="form" v-model="valid" class="h-100">
-    <v-card class="pa-10">
-      <v-card-text class="pt-12">
-        <!-- Encabezado -->
-        <h5 class="text-grey-darken-2 font-weight-medium">
-          {{ $t(`current_medications.formTitle.${editedIndex === -1 ? 'create' : 'edit'}`) }}
-        </h5>
-        <p class="text-grey-lighten-1">{{ $t("current_medications.formInstructions") }}</p>
-
-        <v-row class="mt-12">
-          <!-- Pasos laterales -->
-          <v-col cols="3">
-            <v-timeline align="start" side="end" dense>
-              <v-timeline-item
-                v-for="(s, index) in steps"
-                :key="index"
-                :dot-color="
-                  step > index
-                    ? 'green'
-                    : step === index
-                    ? 'deep-purple'
-                    : 'grey-lighten-1'
+      </v-card-title>
+      <div
+        class="ma-0 pa-0 responsive-data-table-wrapper"
+        :class="isMobile ? 'mobile-scroll' : ''"
+      >
+        <v-data-table
+          :headers="headers"
+          :items="medications"
+          :search="search"
+          :items-per-page-text="$t('dataTable.itemsPerPageText')"
+          :no-data-text="$t('dataTable.noDataText')"
+          :loading-text="$t('dataTable.loadingText')"
+          :loading="loading"
+          :hide-default-header="true"
+          class="mt-1"
+          style="
+            max-height: 68vh;
+            overflow-y: auto;
+            overflow-x: hidden;
+            background: transparent;
+            border: none !important;
+            outline: none !important;
+            box-shadow: none !important;
+          "
+        >
+          <!-- Header personalizado (simulado) -->
+          <template v-slot:top>
+            <v-card
+              :elevation="1"
+              :hover="false"
+              flat
+              class="mb-2 mx-1 rounded-lg"
+              style="
+                border: 1px solid #eceff1;
+                height: 40px;
+                min-height: 40px;
+                display: flex;
+                align-items: center;
+                transition: none !important;
+              "
+            >
+              <v-card-text
+                class="d-flex pa-2"
+                style="
+                  width: 100%;
+                  min-width: 0;
+                  height: 100%;
+                  padding: 0 16px !important;
+                  display: flex;
+                  align-items: center;
                 "
-                :icon="
-                  step >= index
-                    ? step === index
-                      ? `mdi-numeric-${index + 1}`
-                      : 'mdi-check'
-                    : null
-                "
-                size="large"
               >
-                <template #opposite>
-                  <div class="text-end">
-                    <strong>{{ $t(`current_medications.steps.${s.key}.title`) }}</strong>
-                    <div class="text-caption text-grey">
-                      {{ $t(`current_medications.steps.${s.key}.subtitle`) }}
+                <div style="width: 7%; min-width: 0" class="text-left">
+                  {{ $t("current_medications.fields.start_date") }}
+                </div>
+                <div style="width: 25%; min-width: 0" class="text-left">
+                  {{ $t("current_medications.fields.name") }}
+                </div>
+                <div style="width: 10%; min-width: 0" class="text-left">
+                  {{ $t("current_medications.fields.type_id") }}
+                </div>
+                <div style="width: 40%; min-width: 0" class="text-left">
+                  {{ $t("current_medications.fields.notes") }}
+                </div>
+                <div style="width: 13%; min-width: 0" class="text-left">
+                  {{ $t("current_medications.fields.end_date") }}
+                </div>
+                <div style="width: 7%; min-width: 0" class="d-flex justify-end">
+                  {{ $t("settings.actions") }}
+                </div>
+              </v-card-text>
+            </v-card>
+          </template>
+
+          <!-- Fila personalizada para cada medicamento -->
+          <template v-slot:item="{ item }">
+          <tr
+          style="display: table; width: 100%;"
+          :class="isMobile ? 'mobile-table' : 'desktop-table'"
+        >
+          <td colspan="100%" style="padding: 0; border: none">
+            <v-card class="mb-2 mx-1 rounded-lg" elevation="1" density="comfortable" flat>
+              <v-card-text
+                class="d-flex align-center pa-2"
+                style="width: 100%; min-width: 0"
+              >
+                <!-- Columna 1: Fecha de inicio con ícono cóncavo (7%) -->
+                <div
+                  style="width: 7%; min-width: 0"
+                  class="d-flex align-center justify-left"
+                >
+                  <div
+                    class="icono-concavo d-flex flex-column justify-center align-left"
+                    :class="`bg-${getTypeColor('medication')}`"
+                    style="min-height: 48px; min-width: 48px; border-radius: 8px"
+                  >
+                    <div
+                      class="date-display text-center"
+                      style="font-size: 0.85rem; line-height: 1.2"
+                    >
+                      {{ formatIntuitiveDate(item.start_date) }}
                     </div>
                   </div>
-                </template>
-              </v-timeline-item>
-            </v-timeline>
-          </v-col>
+                </div>
 
-          <!-- Contenido dinámico según paso -->
-          <v-col cols="9">
-            <h3 class="text-deep-purple-accent-3 mb-8">
-              {{ $t(`current_medications.steps.${steps[step].key}.title`) }}
-            </h3>
+                <!-- Columna 2: Nombre del medicamento (25%) -->
+                <div style="width: 25%; min-width: 0" class="d-flex flex-column">
+                  <div class="font-weight-bold text-body-2 text-truncate">
+                    {{ item.name }}
+                  </div>
+                  <div class="text-caption text-grey-darken-1 text-truncate">
+                    {{ item.dosage }} {{ item.unit }} • {{ item.route }}
+                  </div>
+                </div>
 
-            <!-- Paso 1: Información básica -->
-            <v-row dense v-if="step === 0">
-              <v-col cols="12" md="8">
-                <v-text-field
-                  v-model="editedItem.name"
-                  :label="$t('current_medications.fields.name')"
-                  variant="underlined"
-                  :rules="[
-                    v => !!v || $t('current_medications.validation.required', { field: $t('current_medications.fields.name') })
-                  ]"
-                ></v-text-field>
-              </v-col>
+                <!-- Columna 3: Tipo (10%) -->
+                <div style="width: 10%; min-width: 0" class="d-flex flex-column">
+                  <div class="text-body-2 text-truncate">
+                    {{ item.typeNameTranslated }}
+                  </div>
+                </div>
 
-              <v-col cols="12" md="4">
-                <v-text-field
-                  v-model="editedItem.dosage"
-                  :label="$t('current_medications.fields.dosage')"
-                  variant="underlined"
-                  type="number"
-                  :rules="[
-                    v => !!v || $t('current_medications.validation.required', { field: $t('current_medications.fields.dosage') }),
-                    v => v >= 0.01 || $t('current_medications.validation.min_dosage', { min: '0.01' }),
-                    v => v <= 9999 || $t('current_medications.validation.max_dosage', { max: '9999' })
-                  ]"
-                ></v-text-field>
-              </v-col>
+                <!-- Columna 5: Observaciones (15%) -->
+                <div style="width: 40%; min-width: 0" class="d-flex flex-column">
+                  <div class="text-body-2 text-truncate" style="max-width: 100%">
+                    {{ item.notes }}
+                    <v-tooltip activator="parent" location="bottom" max-width="350px">
+                      <span style="white-space: normal; word-break: break-word">
+                        {{ item.notes }}
+                      </span>
+                    </v-tooltip>
+                  </div>
+                </div>
 
-              <v-col cols="12" md="8">
-                <v-select v-model="editedItem.route" :items="routes" item-title="name" item-value="id"
-                    :label="$t('current_medications.fields.route')" variant="underlined" :rules="[
-                    v => !!v || $t('current_medications.validation.required', { field: $t('current_medications.fields.route') })
-                  ]">
-                    <template v-slot:item="{ props, item }">
-                    <v-list-item v-bind="props">
-                      <v-list-item-subtitle class="d-flex flex-column">
-                        <v-tooltip bottom>
-                          <template v-slot:activator="{ props: tooltipProps }">
-                            <div 
-                              class="truncate" 
-                              v-bind="tooltipProps"
-                              style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis;"
-                            >
-                              {{ item.raw.description }}
-                            </div>
-                          </template>
-                          <span>{{ item.raw.description }}</span>
-                        </v-tooltip>
-                      </v-list-item-subtitle>
-                    </v-list-item>
+                <!-- Columna 6: Fecha de fin o "Indefinido" (13%) -->
+                <div style="width: 13%; min-width: 0" class="d-flex flex-column">
+                  <div class="text-body-2 text-truncate">
+                    {{ formatIntuitiveDate(item.end_date) }}
+                  </div>
+                </div>
+
+                <!-- Columna 7: Acciones (15%) -->
+                <div
+                  class="d-flex gap-1"
+                  style="width: 7%; justify-content: flex-end; flex-wrap: nowrap"
+                >
+                  <v-btn
+                    size="35"
+                    icon
+                    variant="text"
+                    color="green-darken-2"
+                    @click="editItem(item)"
+                    class="flex-shrink-0 mr-1"
+                    :title="$t('buttons.edit')"
+                  >
+                    <v-icon size="20">mdi-pencil</v-icon>
+                  </v-btn>
+
+                  <v-btn
+                    size="35"
+                    icon
+                    variant="text"
+                    color="red-darken-2"
+                    @click="deleteItem(item)"
+                    class="flex-shrink-0"
+                    :title="$t('buttons.delete')"
+                  >
+                    <v-icon size="20">mdi-delete</v-icon>
+                  </v-btn>
+                </div>
+              </v-card-text>
+            </v-card>
+            </td>
+            </tr>
+          </template>
+        </v-data-table>
+      </div>
+    </v-card-text>
+  </v-card>
+  <v-dialog
+    v-model="dialog"
+       :fullscreen="isFullscreen"
+  :max-width="isMobile ? '100%' : 'none'"
+    persistent
+    transition="dialog-bottom-transition"
+  >
+    <v-form ref="form" v-model="valid" class="h-100">
+       <v-card :class="isMobile ? 'pa-0' : 'pa-10'">
+        <v-card-text class="pt-12">
+          <!-- Encabezado -->
+          <h5 class="text-grey-darken-2 font-weight-medium">
+            {{
+              $t(
+                `current_medications.formTitle.${editedIndex === -1 ? "create" : "edit"}`
+              )
+            }}
+          </h5>
+          <p class="text-grey-lighten-1">
+            {{ $t("current_medications.formInstructions") }}
+          </p>
+
+          <v-container fluid class="pa-0 mt-6">
+            <v-row>
+              <!-- Timeline (solo escritorio) -->
+              <v-col
+                v-if="isDesktop"
+                cols="12"
+                md="3"
+                class="pr-md-6"
+              >
+              <v-timeline align="start" side="end" dense>
+                <v-timeline-item
+                  v-for="(s, index) in steps"
+                  :key="index"
+                  :dot-color="
+                    step > index
+                      ? 'green'
+                      : step === index
+                      ? 'deep-purple'
+                      : 'grey-lighten-1'
+                  "
+                  :icon="
+                    step >= index
+                      ? step === index
+                        ? `mdi-numeric-${index + 1}`
+                        : 'mdi-check'
+                      : null
+                  "
+                  size="large"
+                >
+                  <template #opposite>
+                    <div class="text-end">
+                      <strong>{{
+                        $t(`current_medications.steps.${s.key}.title`)
+                      }}</strong>
+                      <div class="text-caption text-grey">
+                        {{ $t(`current_medications.steps.${s.key}.subtitle`) }}
+                      </div>
+                    </div>
                   </template>
+                </v-timeline-item>
+              </v-timeline>
+            </v-col>
+
+            <!-- Contenido dinámico según paso -->
+            <v-col
+                :cols="12"
+                :md="isMobile ? 12 : 9"
+                :class="{ 'mt-6': isMobile }"
+              >
+                <!-- En móvil: indicador del paso -->
+                <div
+                  v-if="isMobile"
+                  class="d-flex justify-space-between align-center mb-4"
+                >
+                  <v-chip
+                    label
+                    size="small"
+                    color="deep-purple-lighten-4"
+                    class="text-deep-purple"
+                  >
+                    {{ $t(`current_medications.steps.${steps[step].key}.title`) }}
+                  </v-chip>
+                </div>
+
+                <!-- En escritorio: título del paso -->
+                <h3 v-else class="text-deep-purple-accent-3 mb-6">
+                  {{ $t(`current_medications.steps.${steps[step].key}.title`) }}
+                </h3>
+
+              <!-- Paso 1: Información básica -->
+              <v-row dense>
+              <template v-if="step === 0">
+                <v-col cols="12" md="8">
+                  <v-text-field
+                    v-model="editedItem.name"
+                    :label="$t('current_medications.fields.name')"
+                    variant="underlined"
+                    :rules="[
+                      (v) =>
+                        !!v ||
+                        $t('current_medications.validation.required', {
+                          field: $t('current_medications.fields.name'),
+                        }),
+                    ]"
+                  ></v-text-field>
+                </v-col>
+
+                <v-col cols="12" md="4">
+                  <v-text-field
+                    v-model="editedItem.dosage"
+                    :label="$t('current_medications.fields.dosage')"
+                    variant="underlined"
+                    type="number"
+                    :rules="[
+                      (v) =>
+                        !!v ||
+                        $t('current_medications.validation.required', {
+                          field: $t('current_medications.fields.dosage'),
+                        }),
+                      (v) =>
+                        v >= 0.01 ||
+                        $t('current_medications.validation.min_dosage', { min: '0.01' }),
+                      (v) =>
+                        v <= 9999 ||
+                        $t('current_medications.validation.max_dosage', { max: '9999' }),
+                    ]"
+                  ></v-text-field>
+                </v-col>
+
+                <v-col cols="12" md="8">
+                  <v-select
+                    v-model="editedItem.route"
+                    :items="routes"
+                    item-title="name"
+                    item-value="id"
+                    :label="$t('current_medications.fields.route')"
+                    variant="underlined"
+                    :rules="[
+                      (v) =>
+                        !!v ||
+                        $t('current_medications.validation.required', {
+                          field: $t('current_medications.fields.route'),
+                        }),
+                    ]"
+                  >
+                    <template v-slot:item="{ props, item }">
+                      <v-list-item v-bind="props">
+                        <v-list-item-subtitle class="d-flex flex-column">
+                          <v-tooltip bottom>
+                            <template v-slot:activator="{ props: tooltipProps }">
+                              <div
+                                class="truncate"
+                                v-bind="tooltipProps"
+                                style="
+                                  white-space: nowrap;
+                                  overflow: hidden;
+                                  text-overflow: ellipsis;
+                                "
+                              >
+                                {{ item.raw.description }}
+                              </div>
+                            </template>
+                            <span>{{ item.raw.description }}</span>
+                          </v-tooltip>
+                        </v-list-item-subtitle>
+                      </v-list-item>
+                    </template>
                   </v-select>
-              </v-col>
+                </v-col>
 
-              <v-col cols="12" md="4">
-                <v-select
-                  v-model="editedItem.unit"
-                  :items="units"
-                  :label="$t('current_medications.fields.unit')"
-                  variant="underlined"
-                  :rules="[
-                    v => !!v || $t('current_medications.validation.required', { field: $t('current_medications.fields.unit') })
-                  ]"
-                ></v-select>
-              </v-col>
-            </v-row>
+                <v-col cols="12" md="4">
+                  <v-select
+                    v-model="editedItem.unit"
+                    :items="units"
+                    :label="$t('current_medications.fields.unit')"
+                    variant="underlined"
+                    :rules="[
+                      (v) =>
+                        !!v ||
+                        $t('current_medications.validation.required', {
+                          field: $t('current_medications.fields.unit'),
+                        }),
+                    ]"
+                  ></v-select>
+                </v-col>
+              </template>
 
-            <!-- Paso 2: Frecuencia y prescripción -->
-            <v-row dense v-if="step === 1">
-              <v-col cols="12" md="6">
-                <v-autocomplete 
+              <!-- Paso 2: Frecuencia y prescripción -->
+              <template v-if="step === 1">
+                <v-col cols="12" md="6">
+                  <v-autocomplete
                     v-model="editedItem.type_id"
-                    :items="types" 
-                    :label="$t('current_medications.fields.type_id')" 
+                    :items="types"
+                    :label="$t('current_medications.fields.type_id')"
                     item-title="nameTranslated"
-                    item-value="id" 
-                    variant="underlined" 
+                    item-value="id"
+                    variant="underlined"
                     :rules="typeRules"
                   >
                     <template v-slot:item="{ props, item }">
@@ -365,10 +443,14 @@
                         <v-list-item-subtitle class="d-flex flex-column">
                           <v-tooltip bottom>
                             <template v-slot:activator="{ props: tooltipProps }">
-                              <div 
-                                class="truncate" 
+                              <div
+                                class="truncate"
                                 v-bind="tooltipProps"
-                                style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis;"
+                                style="
+                                  white-space: nowrap;
+                                  overflow: hidden;
+                                  text-overflow: ellipsis;
+                                "
                               >
                                 {{ item.raw.descriptionTranslated }}
                               </div>
@@ -379,106 +461,125 @@
                       </v-list-item>
                     </template>
                   </v-autocomplete>
-              </v-col>
+                </v-col>
 
-              <v-col cols="12" md="6">
-                <v-text-field
-                  v-model="editedItem.prescribed_by"
-                  :label="$t('current_medications.fields.prescribed_by')"
-                  variant="underlined"
-                ></v-text-field>
-              </v-col>
+                <v-col cols="12" md="6">
+                  <v-text-field
+                    v-model="editedItem.prescribed_by"
+                    :label="$t('current_medications.fields.prescribed_by')"
+                    variant="underlined"
+                  ></v-text-field>
+                </v-col>
 
-              <v-col cols="12">
-                <v-textarea
-                  v-model="editedItem.notes"
-                  :label="$t('current_medications.fields.notes')"
-                  variant="underlined"
-                  rows="3"
-                ></v-textarea>
-              </v-col>
-            </v-row>
+                <v-col cols="12">
+                  <v-textarea
+                    v-model="editedItem.notes"
+                    :label="$t('current_medications.fields.notes')"
+                    variant="underlined"
+                    rows="3"
+                  ></v-textarea>
+                </v-col>
+              </template>
 
-            <!-- Paso 3: Fechas de tratamiento -->
-            <v-row dense v-if="step === 2">
-              <v-col cols="12" md="6">
-                <v-locale-provider>
-                  <v-menu v-model="menu" :close-on-content-click="false" offset-y min-width="auto" transition="scale-transition" location="end">
-                    <template v-slot:activator="{ props }">
-                      <v-text-field
-                        v-bind="props"
-                        :model-value="editedItem.start_date"
-                        :label="$t('current_medications.fields.start_date')"
-                        variant="underlined"
-                        :rules="[
-                          v => !!v || $t('current_medications.validation.required', { field: $t('current_medications.fields.start_date') })
-                        ]"
-                        readonly
-                      ></v-text-field>
-                    </template>
-                    <v-date-picker
-                      :model-value="parseDateString(editedItem.start_date)"
-                      @update:model-value="updateDate"
-                      format="yyyy-MM-dd"
-                      color="#03626C"
-                    ></v-date-picker>
-                  </v-menu>
-                </v-locale-provider>
-              </v-col>
+              <!-- Paso 3: Fechas de tratamiento -->
+              <template v-if="step === 2">
+                <v-col cols="12" md="6">
+                  <v-locale-provider>
+                    <v-menu
+                      v-model="menu"
+                      :close-on-content-click="true"
+                      offset-y
+                      min-width="auto"
+                      transition="scale-transition"
+                      location="end"
+                    >
+                      <template v-slot:activator="{ props }">
+                        <v-text-field
+                          v-bind="props"
+                          :model-value="input"
+                          :label="$t('current_medications.fields.start_date')"
+                          variant="underlined"
+                          :rules="[
+                            (v) =>
+                              !!v ||
+                              $t('current_medications.validation.required', {
+                                field: $t('current_medications.fields.start_date'),
+                              }),
+                          ]"
+                          readonly
+                        ></v-text-field>
+                      </template>
+                      <v-date-picker
+                        :model-value="input"
+                        @update:model-value="updateDate"
+                        format="yyyy-MM-dd"
+                        color="#03626C"
+                      ></v-date-picker>
+                    </v-menu>
+                  </v-locale-provider>
+                </v-col>
 
-              <v-col cols="12" md="6">
-                <v-locale-provider>
-                  <v-menu v-model="menu2" :close-on-content-click="false" offset-y min-width="auto" transition="scale-transition" location="end">
-                    <template v-slot:activator="{ props }">
-                      <v-text-field
-                        v-bind="props"
-                        :model-value="editedItem.end_date"
-                        :label="$t('current_medications.fields.end_date')"
-                        variant="underlined"
-                        readonly
-                      ></v-text-field>
-                    </template>
-                    <v-date-picker
-                      :model-value="parseDateString(editedItem.end_date)"
-                      @update:model-value="updateDate1"
-                      format="yyyy-MM-dd"
-                      color="#03626C"
-                      :min="editedItem.start_date"
-                    ></v-date-picker>
-                  </v-menu>
-                </v-locale-provider>
-              </v-col>
-            </v-row>
+                <v-col cols="12" md="6">
+                  <v-locale-provider>
+                    <v-menu
+                      v-model="menu2"
+                      :close-on-content-click="false"
+                      offset-y
+                      min-width="auto"
+                      transition="scale-transition"
+                      location="end"
+                    >
+                      <template v-slot:activator="{ props }">
+                        <v-text-field
+                          v-bind="props"
+                          :model-value="input2"
+                          :label="$t('current_medications.fields.end_date')"
+                          variant="underlined"
+                          readonly
+                        ></v-text-field>
+                      </template>
+                      <v-date-picker
+                        :model-value="input2"
+                        @update:model-value="updateDate1"
+                        format="yyyy-MM-dd"
+                        color="#03626C"
+                        :min="input"
+                      ></v-date-picker>
+                    </v-menu>
+                  </v-locale-provider>
+                </v-col>
+              </template>
+              </v-row>
+              <!-- Navegación -->
+              <div class="d-flex justify-space-between mt-8">
+                <v-btn
+                  variant="text"
+                  class="text-grey-darken-1"
+                  @click="step > 0 ? step-- : close()"
+                >
+                  {{ step === 0 ? $t("buttons.close") : $t("buttons.previous") }}
+                </v-btn>
 
-            <!-- Navegación -->
-            <div class="d-flex justify-space-between mt-8">
-              <v-btn
-                variant="text"
-                class="text-grey-darken-1"
-                @click="step > 0 ? step-- : close()"
-              >
-                {{ step === 0 ? $t("buttons.close") : $t("buttons.previous") }}
-              </v-btn>
-
-              <v-btn
-                variant="text"
-                class="text-deep-purple-accent-3"
-                @click="nextStep"
-                :disabled="!validStep"
-              >
-                {{
-                  step === steps.length - 1
-                    ? $t("buttons.saveAndClose")
-                    : $t("buttons.next")
-                }}
-              </v-btn>
-            </div>
-          </v-col>
-        </v-row>
-      </v-card-text>
-    </v-card>
-  </v-form>
-</v-dialog>
+                <v-btn
+                  variant="text"
+                  class="text-deep-purple-accent-3"
+                  @click="nextStep"
+                  :disabled="!validStep"
+                >
+                  {{
+                    step === steps.length - 1
+                      ? $t("buttons.saveAndClose")
+                      : $t("buttons.next")
+                  }}
+                </v-btn>
+              </div>
+            </v-col>
+          </v-row>
+          </v-container>
+        </v-card-text>
+      </v-card>
+    </v-form>
+  </v-dialog>
   <v-dialog v-model="dialogDelete" max-width="500px">
     <v-card>
       <v-toolbar color="#DA7171">
@@ -512,20 +613,17 @@ import LocalStorageService from "@/LocalStorageService";
 import { handleRequest } from "@/utils/api"; // Ruta al archivo
 import { format } from "date-fns";
 export default {
-     props: {
+  props: {
     selectedPet: {
       type: Object,
-      required: true
+      required: true,
     },
   },
   data: () => ({
-     steps: [
-      { key: "basic" },
-      { key: "prescription" },
-      { key: "schedule" }
-    ],
+    steps: [{ key: "basic" }, { key: "prescription" }, { key: "schedule" }],
     units: ["mg", "ml", "g", "gr", "kg", "l"],
     step: 0,
+    isFullscreen: false,
     snackbar: false,
     sb_type: "",
     sb_message: "",
@@ -536,21 +634,21 @@ export default {
     person_id: "",
     loading: false,
     mostrar: false,
-    home_id:"",
+    home_id: "",
     dialog: false,
     dialogDelete: false,
     medications: [],
     types: [],
     routes: [],
     data: {},
-     administrationRoutes: [
+    administrationRoutes: [
       "Oral",
       "Sublingual",
       "Tópica",
       "Inyectable",
       "Rectal",
       "Ótica",
-      "Nasal"
+      "Nasal",
     ],
     editedItem: {
       id: null,
@@ -564,7 +662,7 @@ export default {
       notes: "",
       prescribed_by: "",
       pet_id: "",
-      home_id: ""
+      home_id: "",
     },
     originalItem: {
       id: null,
@@ -578,7 +676,7 @@ export default {
       notes: "",
       prescribed_by: "",
       pet_id: "",
-      home_id: ""
+      home_id: "",
     },
     defaultItem: {
       id: null,
@@ -592,18 +690,18 @@ export default {
       notes: "",
       prescribed_by: "",
       pet_id: "",
-      home_id: ""
+      home_id: "",
     },
     editedIndex: -1,
     headers: [
-  { title: "Fecha inicio", value: "start_date", width: "7%" },
-  { title: "Medicamento", value: "name", width: "25%" },
-  { title: "Tipo", value: "typeNameTranslated", width: "10%" },
-  { title: "Dosis / Vía", value: "dosage_route", width: "15%" },
-  { title: "Observaciones", value: "notes", width: "15%" },
-  { title: "Fecha fin", value: "end_date", width: "13%" },
-  { title: "Acciones", value: "actions", sortable: false, width: "15%" },
-],
+      { title: "Fecha inicio", value: "start_date", width: "7%" },
+      { title: "Medicamento", value: "name", width: "25%" },
+      { title: "Tipo", value: "typeNameTranslated", width: "10%" },
+      { title: "Dosis / Vía", value: "dosage_route", width: "15%" },
+      { title: "Observaciones", value: "notes", width: "15%" },
+      { title: "Fecha fin", value: "end_date", width: "13%" },
+      { title: "Acciones", value: "actions", sortable: false, width: "15%" },
+    ],
     search: "",
     menu: false,
     input: null,
@@ -615,6 +713,7 @@ export default {
       (v) => (v && v.length >= 3) || "El campo debe tener al menos de 3 caracteres",
     ],
     selectRules: [(v) => !!v || "Seleccionar al menos un elemento"],
+    typeRules: [(v) => !!v || "Seleccionar al menos un elemento"],
     priceRules: [
       (v) => !!v || "El precio es obligatorio", // El campo es obligatorio
       (v) =>
@@ -624,16 +723,22 @@ export default {
     ],
   }),
   computed: {
-     validStep() {
-    switch (this.step) {
-      case 0:
-        return !!this.editedItem.name;
-      case 1:
-        return !!this.editedItem.type_id; // Todos los campos son opcionales en el segundo paso
-      default:
-        return true;
-    }
-  },
+    isMobile() {
+			return this.$vuetify.display.xs || this.$vuetify.display.sm;
+		},
+		isDesktop() {
+			return !this.isMobile;
+		},
+    validStep() {
+      switch (this.step) {
+        case 0:
+          return !!this.editedItem.name;
+        case 1:
+          return !!this.editedItem.type_id; // Todos los campos son opcionales en el segundo paso
+        default:
+          return true;
+      }
+    },
     formTitle() {
       return this.editedIndex === -1 ? "Agregar Deseo" : "Editar Deseo";
     },
@@ -661,6 +766,14 @@ export default {
       return this.input1 ? new Date(this.input1) : new Date();
     },
   },
+  watch: {
+    dialog(val) {
+      if (val) this.updateFullscreenMode();
+      },
+    isDesktop() {
+      this.updateFullscreenMode();
+    },
+	},
   created() {
     this.tools = [
       {
@@ -675,65 +788,70 @@ export default {
     this.initialize();
   },
   methods: {
+    updateFullscreenMode() {
+      this.$nextTick(() => {
+        this.isFullscreen = this.isDesktop;
+      });
+    },
     parseDateString(dateString) {
-    if (!dateString) return null;
-    const [year, month, day] = dateString.split('-');
-    return new Date(year, month - 1, day);
-  },
+      if (!dateString) return null;
+      const [year, month, day] = dateString.split("-");
+      return new Date(year, month - 1, day);
+    },
     getTypeColor(type) {
       const colorMap = {
-        Personal: "deep-purple",      // Color morado para asuntos personales
-        Profesional: "indigo",       // Color índigo para temas profesionales
-        Hogar: "teal",               // Color verde azulado para el hogar
+        Personal: "deep-purple", // Color morado para asuntos personales
+        Profesional: "indigo", // Color índigo para temas profesionales
+        Hogar: "teal", // Color verde azulado para el hogar
         // Puedes agregar más tipos si es necesario
-        Regalo: "pink",              // Ejemplo adicional
-        Otro: "blue-grey"            // Color neutral para otros tipos
+        Regalo: "pink", // Ejemplo adicional
+        Otro: "blue-grey", // Color neutral para otros tipos
       };
-      
+
       // Retorna el color correspondiente o un color por defecto (primary)
       return colorMap[type] || "red";
     },
     formatIntuitiveDate(dateString) {
-  if (!dateString) return "Sin fecha";
+      if (!dateString) return "Sin fecha";
 
-  // 1. Parsear la fecha de entrada (formato YYYY-MM-DD)
-  const [year, month, day] = dateString.split("-");
-  const inputDate = new Date(year, month - 1, day); // Mes es 0-based
+      // 1. Parsear la fecha de entrada (formato YYYY-MM-DD)
+      const [year, month, day] = dateString.split("-");
+      const inputDate = new Date(year, month - 1, day); // Mes es 0-based
 
-  // 2. Obtener fecha actual (sin horas/minutos/segundos)
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
+      // 2. Obtener fecha actual (sin horas/minutos/segundos)
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
 
-  // 3. Normalizar ambas fechas a UTC para evitar problemas de zona horaria
-  const inputUTC = Date.UTC(
-    inputDate.getFullYear(),
-    inputDate.getMonth(),
-    inputDate.getDate()
-  );
-  const todayUTC = Date.UTC(today.getFullYear(), today.getMonth(), today.getDate());
+      // 3. Normalizar ambas fechas a UTC para evitar problemas de zona horaria
+      const inputUTC = Date.UTC(
+        inputDate.getFullYear(),
+        inputDate.getMonth(),
+        inputDate.getDate()
+      );
+      const todayUTC = Date.UTC(today.getFullYear(), today.getMonth(), today.getDate());
 
-  // 4. Calcular diferencia en días
-  const diffDays = Math.floor((inputUTC - todayUTC) / (1000 * 60 * 60 * 24));
+      // 4. Calcular diferencia en días
+      const diffDays = Math.floor((inputUTC - todayUTC) / (1000 * 60 * 60 * 24));
 
-  // 5. Determinar el texto a mostrar
-  switch (diffDays) {
-    case 0:
-      return "Hoy";
-    case 1:
-      return "Mañana";
-    case -1:
-      return "Ayer";
-    default:
-      return inputDate
-        .toLocaleDateString("es-ES", {
-          weekday: "short",
-          day: "numeric",
-          month: "short",
-          year: "numeric", // <-- Añadido: muestra el año
-        })
-        .replace(/\./g, ""); // Elimina los puntos de abreviaturas (ej: "mar." → "mar")
-  }
-},
+      // 5. Determinar el texto a mostrar
+      switch (diffDays) {
+        case 0:
+          return "Hoy";
+        case 1:
+          return "Mañana";
+        case -1:
+          return "Ayer";
+        default:
+          return inputDate
+            .toLocaleDateString("es-ES", {
+              weekday: "short",
+              day: "numeric",
+              month: "short",
+              year: "numeric", // <-- Añadido: muestra el año
+            })
+            .replace(/\./g, ""); // Elimina los puntos de abreviaturas (ej: "mar." → "mar")
+      }
+    },
     nextStep() {
       if (this.step < this.steps.length - 1) {
         this.step++;
@@ -741,7 +859,7 @@ export default {
         this.save();
       }
     },
-   formatNumber(value) {
+    formatNumber(value) {
       // Si el valor es menor que 1000, devuelve el valor original con dos decimales
       if (value < 1000) {
         return (Math.round((value + Number.EPSILON) * 100) / 100).toLocaleString(
@@ -761,19 +879,26 @@ export default {
 
       return formattedValue;
     },
+    obtenerFechaLocal() {
+      const hoy = new Date();
+      const year = hoy.getFullYear();
+      const month = String(hoy.getMonth() + 1).padStart(2, "0");
+      const day = String(hoy.getDate()).padStart(2, "0");
+      return `${year}-${month}-${day}`;
+    },
     updateDate(value) {
-    const year = value.getFullYear();
-    const month = String(value.getMonth() + 1).padStart(2, '0');
-    const day = String(value.getDate()).padStart(2, '0');
-    this.input = `${year}-${month}-${day}`;
+      const year = value.getFullYear();
+      const month = String(value.getMonth() + 1).padStart(2, "0");
+      const day = String(value.getDate()).padStart(2, "0");
+      this.input = `${year}-${month}-${day}`;
 
       this.editedItem.start_date = this.input;
       this.menu = false;
     },
     updateDate1(value) {
       const year = value.getFullYear();
-      const month = String(value.getMonth() + 1).padStart(2, '0');
-      const day = String(value.getDate()).padStart(2, '0');
+      const month = String(value.getMonth() + 1).padStart(2, "0");
+      const day = String(value.getDate()).padStart(2, "0");
       this.input2 = `${year}-${month}-${day}`;
 
       this.editedItem.end_date = this.input2;
@@ -782,24 +907,27 @@ export default {
     async showAdd() {
       this.editedIndex = -1;
       this.step = 0;
+      this.close();
+      this.input = this.obtenerFechaLocal();
+      this.editedItem.start_date = this.input;
       this.data = {};
       this.data.type = "Tratamiento";
       try {
         const result = await handleRequest({
-          endpoint: 'get-type-routes',
-          method: 'POST',
-          data: this.data
+          endpoint: "get-type-routes",
+          method: "POST",
+          data: this.data,
         });
 
         if (result.success) {
           this.types = result.data?.types || [];
-          this.routes  = result.data?.routes || [];
+          this.routes = result.data?.routes || [];
         } else {
           this.types = [];
           this.routes = [];
         }
       } catch (error) {
-        this.showAlert('error', 'Ocurrió un error inesperado al cargar los datos.', 3000);
+        this.showAlert("error", "Ocurrió un error inesperado al cargar los datos.", 3000);
       } finally {
         this.dialog = true;
       }
@@ -851,17 +979,17 @@ export default {
       if (this.editedIndex === -1) {
         this.valid = false;
         const fieldsToUpdate = [
-        "name",
-        "dosage",
-        "unit",
-        "type_id",
-        "route",
-        "start_date",
-        "end_date",
-        "notes",
-        "prescribed_by",
-        "pet_id",
-        "home_id"
+          "name",
+          "dosage",
+          "unit",
+          "type_id",
+          "route",
+          "start_date",
+          "end_date",
+          "notes",
+          "prescribed_by",
+          "pet_id",
+          "home_id",
         ];
 
         let updatedFields = Object.keys(this.editedItem)
@@ -914,16 +1042,16 @@ export default {
         this.valid = false;
         const fieldsToUpdate = [
           "name",
-        "dosage",
-        "unit",
-        "type_id",
-        "route",
-        "start_date",
-        "end_date",
-        "notes",
-        "prescribed_by",
-        "pet_id",
-        "home_id"
+          "dosage",
+          "unit",
+          "type_id",
+          "route",
+          "start_date",
+          "end_date",
+          "notes",
+          "prescribed_by",
+          "pet_id",
+          "home_id",
         ];
         let updatedFields = Object.keys(this.editedItem)
           .filter(
@@ -977,26 +1105,26 @@ export default {
       this.step = 0;
       this.originalItem = Object.assign({}, item);
       this.editedItem = Object.assign({}, item);
-        this.input = item.start_date;
+      this.input = item.start_date;
       this.input2 = item.end_date;
       this.data = {};
       this.data.type = "Tratamiento";
       try {
         const result = await handleRequest({
-          endpoint: 'get-type-routes',
-          method: 'POST',
-          data: this.data
+          endpoint: "get-type-routes",
+          method: "POST",
+          data: this.data,
         });
 
         if (result.success) {
           this.types = result.data?.types || [];
-          this.routes  = result.data?.routes || [];
+          this.routes = result.data?.routes || [];
         } else {
           this.types = [];
           this.routes = [];
         }
       } catch (error) {
-        this.showAlert('error', 'Ocurrió un error inesperado al cargar los datos.', 3000);
+        this.showAlert("error", "Ocurrió un error inesperado al cargar los datos.", 3000);
       } finally {
         this.dialog = true;
       }
@@ -1072,6 +1200,49 @@ export default {
 </script>
 
 <style scoped>
+.desktop-table {
+  table-layout: fixed;
+}
+
+.mobile-table {
+  table-layout: auto;
+}
+.responsive-data-table-wrapper {
+  width: 100%;
+}
+
+/* Solo en móvil: activar scroll horizontal */
+.responsive-data-table-wrapper.mobile-scroll {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* En móvil: forzar ancho mínimo para que haya algo que scrollear */
+.responsive-data-table-wrapper.mobile-scroll :deep(.v-data-table) {
+  min-width: 800px;
+}
+
+/* En desktop: asegurar que no haya scroll innecesario */
+@media (min-width: 960px) {
+  .responsive-data-table-wrapper :deep(.v-data-table) {
+    min-width: auto;
+    overflow-x: hidden;
+  }
+}
+
+.tools-bar {
+  overflow-x: auto;
+  white-space: nowrap;
+  gap: 8px;
+}
+
+.fullscreen-dialog {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  overflow-y: auto;
+}
+
 .date-display {
   font-size: 0.85rem; /* Equivale a text-caption */
   line-height: 1.1;
@@ -1103,7 +1274,7 @@ export default {
   overflow: hidden;
   transition: all 0.3s ease;
   cursor: pointer;
-   z-index: 1;
+  z-index: 1;
 }
 
 .icono-concavo::after {

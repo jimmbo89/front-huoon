@@ -304,7 +304,6 @@ import BloodPressure from "./BloodPressure.vue";
 import HeartRate from "./HeartRate.vue";
 import Temperature from "./Temperature.vue";
 import RespiratoryRate from "./RespiratoryRate.vue";
-import Weight from "./Weight.vue";
 
 export default {
   components: {
@@ -313,7 +312,6 @@ export default {
     HeartRate,
     Temperature,
     RespiratoryRate,
-    Weight
   },
    props: {
     selectedPerson: {
@@ -362,107 +360,6 @@ export default {
     module: "",
   }),
   computed: {
-
-    /**Signos Vitales */
-    /*signosVitalesTransformados() {
-      const signosConfig = {
-        bloodPressure: {
-          nombre: this.$t("physicalExam.fields.blood_pressure"),
-          unidad: "mmHg",
-          icon: "mdi-heart-pulse",
-          color: "indigo-darken-2",
-          type: "bloodPressure",
-        },
-        pulse: {
-          nombre: this.$t("physicalExam.fields.pulse"),
-          unidad: "bpm",
-          icon: "mdi-heart",
-          color: "indigo-darken-2",
-          type: "pulse",
-        },
-        temperature: {
-          nombre: this.$t("physicalExam.fields.temperature"),
-          unidad: "°C",
-          icon: "mdi-thermometer",
-          color: "indigo-darken-2",
-          type: "temperature",
-        },
-        respiratoryRate: {
-          nombre: this.$t("physicalExam.fields.respiratory_rate"),
-          unidad: "rpm",
-          icon: "mdi-lungs",
-          color: "indigo-darken-2",
-          type: "respitationRate",
-        },
-        weight: {
-          nombre: this.$t("physicalExam.fields.weight"),
-          unidad: "kg",
-          icon: "mdi-scale-bathroom",
-          color: "indigo-darken-2",
-          type: "weight",
-        },
-      };
-
-      const result = [];
-      const examData = this.physicalExam || {};
-
-      // Transformar cada propiedad relevante, mostrando "No definido" si no hay valor
-      Object.keys(signosConfig).forEach((key) => {
-        const valor = examData[key];
-        const tieneValor = valor !== null && valor !== undefined && valor !== "";
-
-        result.push({
-          ...signosConfig[key],
-          valor: tieneValor ? valor : this.$t("no_definido"),
-          unidad: tieneValor ? signosConfig[key].unidad : "", // No mostrar unidad si no hay valor
-          fecha:
-            examData.examDate ||
-            examData.exam_date ||
-            new Date().toISOString().split("T")[0],
-          originalKey: key,
-        });
-      });
-      // Añadir medicamentos SIEMPRE, incluso si está vacío
-      // 1. Normalizar los tratamientos (asegurar que siempre sea un array)
-      const treatments = Array.isArray(this.treatment)
-        ? this.treatment
-        : [this.treatment || {}];
-
-      // 2. Obtener el primer tratamiento para mostrar en la card
-      const firstTreatment = treatments[0] || {};
-
-      // 3. Construir la información médica (medicamento, dosis, tipo)
-      const medInfo = [
-        firstTreatment.medication,
-        firstTreatment.dosage,
-        firstTreatment.typeName,
-      ]
-        .filter(Boolean)
-        .join(" - ");
-
-      const tieneInfoMedicamento = medInfo.trim() !== "";
-      const isSingleTreatment = treatments.length <= 1;
-
-      // 4. Agregar al resultado final
-      result.push({
-        nombre: isSingleTreatment
-          ? this.$t("treatment.cardMedicamento")
-          : this.$t("treatment.cardMedicamentosPlural", { count: treatments.length }),
-        valor: isSingleTreatment
-          ? tieneInfoMedicamento
-            ? medInfo
-            : this.$t("treatment.no_definido")
-          : this.$t("treatment.medicamentosActivos", { count: treatments.length }),
-        unidad: "",
-        icon: "mdi-pill",
-        color: "purple",
-        fecha: firstTreatment.startDate || new Date().toISOString().split("T")[0],
-        originalKey: "medication",
-        type: "treatment",
-      });
-
-      return result;
-    },*/
   },
   mounted() {
     this.home_id = JSON.parse(LocalStorageService.getItem("home_id"));
@@ -529,8 +426,6 @@ export default {
         return Temperature;
       case "respiratoryRate":
         return RespiratoryRate;
-      case "weight":
-        return Weight;
       case "treatment":
         return Treatment; // Como mencionaste en tu ejemplo
       default:

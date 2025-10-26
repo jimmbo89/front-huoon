@@ -1,6 +1,14 @@
 <template>
-  <v-snackbar class="mt-12" location="right top" :timeout="sb_timeout" :color="sb_type" elevation="24"
-    :multi-line="true" vertical v-model="snackbar">
+  <v-snackbar
+    class="mt-12"
+    location="right top"
+    :timeout="sb_timeout"
+    :color="sb_type"
+    elevation="24"
+    :multi-line="true"
+    vertical
+    v-model="snackbar"
+  >
     <v-row>
       <v-col md="2">
         <v-avatar :icon="sb_icon" color="sb_type" size="40"></v-avatar>
@@ -11,26 +19,34 @@
       </v-col>
     </v-row>
   </v-snackbar>
-  <v-container > 
-  <v-card class="pa-4" elevation="2" rounded="lg" flat>
+  <v-container>
+    <v-card class="pa-4" elevation="2" rounded="lg" flat>
       <!-- Encabezado con foto y datos -->
-      <v-card-text >
-      <v-row align="center" dense>
-        <v-col cols="12" sm="10" md="10" class="d-flex align-center">
-          <v-avatar size="48" class="me-3" color="grey-lighten-4" variant="tonal">
-            <v-icon color="purple">mdi-flag-checkered</v-icon>
-          </v-avatar>
-          <div>
-            <div class="text-body-2 font-weight-bold mb-1">
-              {{ $t("taskForm.titles.homeGoalsTitle") }}
+      <v-card-text>
+        <v-row align="center" dense>
+          <v-col cols="12" sm="10" md="10" class="d-flex align-center">
+            <v-avatar size="48" class="me-3" color="grey-lighten-4" variant="tonal">
+              <v-icon color="purple">mdi-flag-checkered</v-icon>
+            </v-avatar>
+            <div>
+              <div class="text-body-2 font-weight-bold mb-1">
+                {{ $t("taskForm.titles.homeGoalsTitle") }}
+              </div>
+              <div class="text-body-2 text-grey-darken-1"></div>
             </div>
-            <div class="text-body-2 text-grey-darken-1"></div>
-          </div>
-        </v-col>
-        <v-col cols="12" sm="2" md="2">
+          </v-col>
+          <v-col cols="12" sm="2" md="2">
             <div class="d-flex align-right justify-end">
-              <v-switch v-model="editedItem.task_type" true-value="Personal" false-value="Hogar" :base-color="switchColor"
-                :color="switchColor" hide-details inset class="mb-4 font-weight-bold">
+              <v-switch
+                v-model="editedItem.task_type"
+                true-value="Personal"
+                false-value="Hogar"
+                :base-color="switchColor"
+                :color="switchColor"
+                hide-details
+                inset
+                class="mb-4 font-weight-bold"
+              >
                 <template v-slot:label>
                   <span class="text-body-1" :style="{ color: switchColor }">
                     {{ getCurrentName }}
@@ -39,7 +55,7 @@
               </v-switch>
             </div>
           </v-col>
-      </v-row>
+        </v-row>
         <v-divider />
         <v-card-actions class="pa-3 bg-grey-lighten-5 tools-bar">
           <v-btn
@@ -57,192 +73,253 @@
         </v-card-actions>
         <v-row dense class="mt-4">
           <v-col cols="12" sm="12" md="12">
-                  <v-card elevation="2" rounded="lg" border flat>
-                    <v-list-item height="60">
-                      <template v-slot:prepend>
-                        <v-avatar size="40" color="purple">
-                          <v-icon icon="mdi-chart-donut" color="white"></v-icon>
-                        </v-avatar>
-                      </template>
+            <v-card elevation="2" rounded="lg" border flat>
+              <v-list-item height="60">
+                <template v-slot:prepend>
+                  <v-avatar size="40" color="purple">
+                    <v-icon icon="mdi-chart-donut" color="white"></v-icon>
+                  </v-avatar>
+                </template>
 
-                      <template v-slot:title>Estado de las Metas</template>
-                      <template v-slot:subtitle>
-                        {{ currentMonthYear }}
-                      </template>
-                      <template v-slot:append>
-                    <v-tooltip location="top">
-                      <template v-slot:activator="{ props }">
-                        <v-chip
-                          v-bind="props"
-                          class="ma-2"
-                          :color="goalStatus.color"
-                          label
-                          rounded="lg"
-                        >
-                          <v-icon :icon="goalStatus.icon" start></v-icon>
-                          <span class="text-subtitle-2">{{ goalStatus.levelLabel }}</span>
-                        </v-chip>
-                      </template>
-                      <span>{{ goalStatus.message }}</span>
-                    </v-tooltip>
-                  </template>
-                    </v-list-item>
-
-                    <v-divider></v-divider>
-
-                    <v-card-text class="pa-4">
-                      <v-row dense justify="space-between">
-                      <v-col
-                        v-for="category in sumaryData.summary"
-                        :key="category.id"
-                        cols="6"
-                        sm="6"
-                        md="2"
+                <template v-slot:title>Estado de las Metas</template>
+                <template v-slot:subtitle>
+                  {{ currentMonthYear }}
+                </template>
+                <template v-slot:append>
+                  <v-tooltip location="top">
+                    <template v-slot:activator="{ props }">
+                      <v-chip
+                        v-bind="props"
+                        class="ma-2"
+                        :color="goalStatus.color"
+                        label
+                        rounded="lg"
                       >
-                        <v-tooltip top>
-                          <template v-slot:activator="{ props }">
-                            <v-card
-                              class="pa-4 text-center"
-                              rounded="lg"
-                              outlined
-                              v-bind="props"
-                              @click="selectCategory(category)" 
-                              :class="{ 'oscurecer-persistente': selectedCategory?.id === category.id }" 
-                              style="cursor: pointer;"
-                            >
-                              <v-progress-circular
-                                :model-value="category.percentage"
-                                size="80"
-                                width="8"
-                                :color="getCategoryColor(category.id)"
-                              >
-                                <strong>{{ category.totalQuantity }}/{{ sumaryData.totalTasks }}</strong>
-                              </v-progress-circular>
-                              <div class="mt-2 font-weight-medium">{{ category.name }}</div>
-                            </v-card>
-                          </template>
-                          <span>
-                            {{ category.totalQuantity }} de {{ sumaryData.totalTasks }} metas están en estado "{{ category.name }}"
-                            ({{ category.percentage }}%)
-                          </span>
-                        </v-tooltip>
-                      </v-col>
-                    </v-row>
-                    </v-card-text>
+                        <v-icon :icon="goalStatus.icon" start></v-icon>
+                        <span class="text-subtitle-2">{{ goalStatus.levelLabel }}</span>
+                      </v-chip>
+                    </template>
+                    <span>{{ goalStatus.message }}</span>
+                  </v-tooltip>
+                </template>
+              </v-list-item>
 
-                  </v-card>
-                    <v-alert v-if="goalAlerts && goalAlerts.length > 0" color="warning" icon="mdi-alert-circle"  @click="selectCategoryFromAlert(goalAlerts[0])"
-                  variant="outlined" theme="dark" border density="compact" class="py-1 px-4 mt-4" style="cursor: pointer;">
-                  <div class="text-body2 text-black">
-                    {{ goalAlerts[0].message }}
-                  </div>
-                </v-alert>
+              <v-divider></v-divider>
+
+              <v-card-text class="pa-4">
+                <v-row dense justify="space-between">
+                  <v-col
+                    v-for="category in sumaryData.summary"
+                    :key="category.id"
+                    cols="6"
+                    sm="6"
+                    md="2"
+                  >
+                    <v-tooltip top>
+                      <template v-slot:activator="{ props }">
+                        <v-card
+                          class="pa-4 text-center"
+                          rounded="lg"
+                          outlined
+                          v-bind="props"
+                          @click="selectCategory(category)"
+                          :class="{
+                            'oscurecer-persistente': selectedCategory?.id === category.id,
+                          }"
+                          style="cursor: pointer"
+                        >
+                          <v-progress-circular
+                            :model-value="category.percentage"
+                            size="80"
+                            width="8"
+                            :color="getCategoryColor(category.id)"
+                          >
+                            <strong
+                              >{{ category.totalQuantity }}/{{
+                                sumaryData.totalTasks
+                              }}</strong
+                            >
+                          </v-progress-circular>
+                          <div class="mt-2 font-weight-medium">{{ category.name }}</div>
+                        </v-card>
+                      </template>
+                      <span>
+                        {{ category.totalQuantity }} de {{ sumaryData.totalTasks }} metas
+                        están en estado "{{ category.name }}" ({{ category.percentage }}%)
+                      </span>
+                    </v-tooltip>
+                  </v-col>
+                </v-row>
+              </v-card-text>
+            </v-card>
+            <v-alert
+              v-if="goalAlerts && goalAlerts.length > 0"
+              color="warning"
+              icon="mdi-alert-circle"
+              @click="selectCategoryFromAlert(goalAlerts[0])"
+              variant="outlined"
+              theme="dark"
+              border
+              density="compact"
+              class="py-1 px-4 mt-4"
+              style="cursor: pointer"
+            >
+              <div class="text-body2 text-black">
+                {{ goalAlerts[0].message }}
+              </div>
+            </v-alert>
           </v-col>
         </v-row>
 
-    <v-row dense class="mt-4">
-    <v-col cols="12">
-      <span class="text-body-2 font-weight-medium">Metas más importantes</span>
-    </v-col>
+        <v-row dense class="mt-4">
+          <v-col cols="12">
+            <span class="text-body-2 font-weight-medium">Metas más importantes</span>
+          </v-col>
 
-    <v-col
-      v-for="task in topPriorityTasks"
-      :key="task.id"
-      cols="12"
-      md="6"
-      class="d-flex"
-    >
-      <v-card
-        class="mx-auto flex-grow-1 d-flex flex-column"
-        elevation="1"
-        rounded="lg"
-        border
-        flat
-      >
-        <!-- Encabezado -->
-        <v-list-item height="60">
-          <template v-slot:prepend>
-            <v-avatar size="40" color="purple">
-              <v-icon icon="mdi-flag"></v-icon>
-            </v-avatar>
-          </template>
-
-          <template v-slot:title>
-            {{ task.title }}
-          </template>
-          <template v-slot:subtitle>
-            Prioridad: {{ task.namePriority }} • Vence: {{ formatIntuitiveDate(task.endDate) }}
-          </template>
-
-          <template v-slot:append>
-            <v-chip
-              :color="getStatusColor(task.status)"
-              label
-              rounded="lg"
-              size="small"
-              class="text-white"
-            >
-              <v-icon :icon="getStatusIcon(task.status)" start size="small"></v-icon>
-              <span class="text-caption">{{ task.nameStatus }}</span>
-            </v-chip>
-          </template>
-        </v-list-item>
-
-        <v-divider></v-divider>
-
-        <!-- Progreso -->
-        <v-card-text class="pa-4">
-          <div class="text-subtitle-2 font-weight-medium mb-2">
-            Progreso de la meta
-          </div>
-
-          <v-progress-linear
-            :model-value="task.completionPercentage === 0 ? 100 : task.completionPercentage"
-    :color="task.completionPercentage === 0 ? 'grey-lighten-2' : getProgressColor(task.completionPercentage)"
-            bg-color="grey-lighten-3"
-            height="16"
-            rounded
-            class="mt-1"
-            style="height: 16px !important;"
+          <v-col
+            v-for="task in topPriorityTasks"
+            :key="task.id"
+            cols="12"
+            md="6"
+            class="d-flex"
           >
-            <template v-slot:default>
-              <span class="text-caption font-weight-bold">
-                {{ task.completionPercentage || 0 }}%
-              </span>
-            </template>
-          </v-progress-linear>
-        </v-card-text>
-      </v-card>
-    </v-col>
-  </v-row>
-  </v-card-text>
-  </v-card>
+            <v-card
+              class="mx-auto flex-grow-1 d-flex flex-column"
+              elevation="1"
+              rounded="lg"
+              border
+              flat
+            >
+              <!-- Encabezado personalizado (evitamos v-list-item para más control en móvil) -->
+              <div class="d-flex align-center pa-4 pt-3 pb-1 text-truncate">
+                <v-avatar size="40" color="purple">
+                  <v-icon icon="mdi-flag"></v-icon>
+                </v-avatar>
+
+                <div class="ml-3 flex-grow-1 text-truncate">
+                  <!-- Título -->
+                  <div class="text-body-2 font-weight-medium text-truncate">
+                    <span>{{ task.title }}</span>
+                    <v-tooltip activator="parent" location="bottom" max-width="350px">
+                      <span style="white-space: normal; word-break: break-word">
+                        {{ task.title }}
+                      </span>
+                    </v-tooltip>
+                  </div>
+
+                  <!-- Subtítulo (prioridad + vencimiento) -->
+                  <div class="text-caption text-grey-darken-1 mt-1 d-flex flex-wrap">
+                    <span>Prioridad: {{ task.namePriority }}</span>
+                    <span class="mx-1">•</span>
+                    <span>Vence: {{ formatIntuitiveDate(task.endDate) }}</span>
+                  </div>
+                </div>
+
+                <!-- Chip de estado (alineado a la derecha) -->
+                <v-chip
+                  :color="getStatusColor(task.status)"
+                  label
+                  rounded="lg"
+                  size="small"
+                  class="text-white ml-2 d-flex align-center text-truncate"
+                  style="max-width: 100px; overflow: hidden"
+                >
+                  <v-icon
+                    :icon="getStatusIcon(task.status)"
+                    start
+                    size="small"
+                    class="mr-1"
+                  ></v-icon>
+                  <span class="text-caption text-truncate" style="flex-shrink: 1">
+                    {{ task.nameStatus }}
+                  </span>
+                  <v-tooltip activator="parent" location="bottom" max-width="350px">
+                    <span style="white-space: normal; word-break: break-word">
+                      {{ task.nameStatus }}
+                    </span>
+                  </v-tooltip>
+                </v-chip>
+              </div>
+
+              <v-divider></v-divider>
+
+              <!-- Progreso -->
+              <v-card-text class="pa-4">
+                <div class="text-subtitle-2 font-weight-medium mb-2">
+                  Progreso de la meta
+                </div>
+
+                <v-progress-linear
+                  :model-value="
+                    task.completionPercentage === 0 ? 100 : task.completionPercentage
+                  "
+                  :color="
+                    task.completionPercentage === 0
+                      ? 'grey-lighten-2'
+                      : getProgressColor(task.completionPercentage)
+                  "
+                  bg-color="grey-lighten-3"
+                  height="16"
+                  rounded
+                  class="mt-1"
+                  style="height: 16px !important"
+                >
+                  <template v-slot:default>
+                    <span class="text-caption font-weight-bold">
+                      {{ task.completionPercentage || 0 }}%
+                    </span>
+                  </template>
+                </v-progress-linear>
+              </v-card-text>
+            </v-card>
+          </v-col>
+        </v-row>
+      </v-card-text>
+    </v-card>
   </v-container>
-  <v-dialog v-model="dialog" fullscreen persistent transition="dialog-bottom-transition"
-    content-class="fullscreen-dialog">
+  <v-dialog
+    v-model="dialog"
+    :fullscreen="isFullscreen"
+    :max-width="isMobile ? '100%' : 'none'"
+    persistent
+    transition="dialog-bottom-transition"
+  >
     <v-form ref="form" v-model="valid" class="h-100">
-      <v-card class="pa-10">
+      <v-card :class="isMobile ? 'pa-0' : 'pa-10'">
         <v-card-text class="pt-12">
           <!-- Pasos laterales -->
 
           <h5 class="text-grey-darken-2 font-weight-medium">{{ formTitle }}</h5>
           <p class="text-grey-lighten-1">{{ $t("formInstructions") }}</p>
-          <v-row class="mt-12">
-            <v-col cols="3">
+           <v-container fluid class="pa-0 mt-6">
+            <v-row>
+              <!-- Timeline (solo escritorio) -->
+              <v-col
+                v-if="isDesktop"
+                cols="12"
+                md="3"
+                class="pr-md-6"
+              >
               <v-timeline align="start" side="end" dense>
-                <v-timeline-item v-for="(s, index) in steps" :key="index" :dot-color="
+                <v-timeline-item
+                  v-for="(s, index) in steps"
+                  :key="index"
+                  :dot-color="
                     step > index
                       ? 'green'
                       : step === index
                       ? 'deep-purple'
                       : 'grey-lighten-1'
-                  " :icon="
+                  "
+                  :icon="
                     step >= index
                       ? step === index
                         ? `mdi-numeric-${index + 1}`
                         : 'mdi-check'
                       : null
-                  " size="large">
+                  "
+                  size="large"
+                >
                   <template #opposite>
                     <div class="text-end">
                       <strong>{{ $t(`steps.${s.title}.title`) }}</strong>
@@ -256,218 +333,357 @@
             </v-col>
 
             <!-- Contenido dinámico según paso -->
-            <v-col cols="9">
-              <h3 class="text-deep-purple-accent-3 mb-8">
-                {{ $t(`steps.${steps[step].title}.title`) }}
-              </h3>
+            <v-col
+                :cols="12"
+                :md="isMobile ? 12 : 9"
+                :class="{ 'mt-6': isMobile }"
+              >
+                <!-- En móvil: indicador del paso -->
+                <div
+                  v-if="isMobile"
+                  class="d-flex justify-space-between align-center mb-4"
+                >
+                  <v-chip
+                    label
+                    size="small"
+                    color="deep-purple-lighten-4"
+                    class="text-deep-purple"
+                  >
+                    {{ $t(`steps.${steps[step].title}.title`) }}
+                  </v-chip>
+                </div>
 
-              <v-row dense v-if="step === 0">
-                <v-col cols="12" sm="6">
-                  <v-text-field v-model="editedItem.title" :label="$t('taskForm.fields.title')" variant="underlined"
-                    :rules="nameRules" />
-                </v-col>
+                <!-- En escritorio: título del paso -->
+                <h3 v-else class="text-deep-purple-accent-3 mb-6">
+                  {{ $t(`steps.${steps[step].title}.title`) }}
+                </h3>
+            
+              <v-row dense>
+                <template v-if="step === 0">
+                  <v-col cols="12" sm="6">
+                    <v-text-field
+                      v-model="editedItem.title"
+                      :label="$t('taskForm.fields.title')"
+                      variant="underlined"
+                      :rules="nameRules"
+                    />
+                  </v-col>
 
-                <v-col cols="12" sm="6">
-                  <v-select v-model="editedItem.priority_id" :items="priorities" item-title="namePriority"
-                    item-value="id" :label="$t('taskForm.fields.priority')" variant="underlined" required>
-                    <!-- Cómo se muestra en la lista desplegable -->
-                    <template v-slot:item="{ props, item }">
-                      <v-list-item v-bind="props" :title="item.raw.namePriority"
-                        :subtitle="item.raw.descriptionPriority">
-                        <template v-slot:prepend>
-                          <v-icon :color="'#' + item.raw.colorPriority">
-                            mdi-priority-high
-                          </v-icon>
-                        </template>
-                      </v-list-item>
-                    </template>
-                  </v-select>
-                </v-col>
-                <v-col cols="12" md="12">
-                  <v-textarea v-model="editedItem.description" :label="$t('taskForm.fields.description')"
-                    variant="underlined" rows="3"></v-textarea>
-                </v-col>
-              </v-row>
-              <v-row dense v-if="step === 1">
-                <v-col cols="6" v-for="role in roles" :key="role.id">
-                  <v-card class="mx-auto" max-width="98%">
-                    <v-list v-model:selected="selectedItems[role.id]" @update:selected="updateSelection(role, $event)"
-                      select-strategy="leaf" multiple>
-                      <v-list-subheader>{{ role.nameRol }}</v-list-subheader>
-                      <v-list-item v-for="person in filteredPeople(role.id)" :key="`${role.id}-${person.id}`"
-                        :value="person.id" active-class="text-green"
-                        :prepend-avatar="`${$axios.defaults.baseURL}images/${person.imagePerson}`" class="py-3">
-                        <!-- Contenido del ítem - Nueva estructura Vuetify 3 -->
-                        <template v-slot:prepend>
-                          <v-avatar>
-                            <v-img :src="`${$axios.defaults.baseURL}images/${person.imagePerson}`" />
-                          </v-avatar>
-                        </template>
+                  <v-col cols="12" sm="6">
+                    <v-select
+                      v-model="editedItem.priority_id"
+                      :items="priorities"
+                      item-title="namePriority"
+                      item-value="id"
+                      :label="$t('taskForm.fields.priority')"
+                      variant="underlined"
+                      required
+                    >
+                      <!-- Cómo se muestra en la lista desplegable -->
+                      <template v-slot:item="{ props, item }">
+                        <v-list-item
+                          v-bind="props"
+                          :title="item.raw.namePriority"
+                          :subtitle="item.raw.descriptionPriority"
+                        >
+                          <template v-slot:prepend>
+                            <v-icon :color="'#' + item.raw.colorPriority">
+                              mdi-priority-high
+                            </v-icon>
+                          </template>
+                        </v-list-item>
+                      </template>
+                    </v-select>
+                  </v-col>
+                  <v-col cols="12" md="12">
+                    <v-textarea
+                      v-model="editedItem.description"
+                      :label="$t('taskForm.fields.description')"
+                      variant="underlined"
+                      rows="3"
+                    ></v-textarea>
+                  </v-col>
+                </template>
+                <template v-if="step === 1">
+                  <v-col cols="12" sm="6" v-for="role in roles" :key="role.id">
+                    <v-card class="mx-auto" max-width="98%">
+                      <v-list
+                        v-model:selected="selectedItems[role.id]"
+                        @update:selected="updateSelection(role, $event)"
+                        select-strategy="leaf"
+                        multiple
+                      >
+                        <v-list-subheader>{{ role.nameRol }}</v-list-subheader>
+                        <v-list-item
+                          v-for="person in filteredPeople(role.id)"
+                          :key="`${role.id}-${person.id}`"
+                          :value="person.id"
+                          active-class="text-green"
+                          :prepend-avatar="getImageUrl(person.imagePerson)"
+                          class="py-3"
+                        >
+                          <!-- Contenido del ítem - Nueva estructura Vuetify 3 -->
+                          <template v-slot:prepend>
+                            <v-avatar>
+                              <v-img :src="getImageUrl(person.imagePerson)" />
+                            </v-avatar>
+                          </template>
 
-                        <!-- Nombre y rol -->
-                        <v-list-item-title>{{ person.namePerson }}</v-list-item-title>
-                        <v-list-item-subtitle class="mb-1 text-high-emphasis opacity-100">
-                          {{ person.roleName }}
-                        </v-list-item-subtitle>
+                          <!-- Nombre y rol -->
+                          <v-list-item-title>{{ person.namePerson }}</v-list-item-title>
+                          <v-list-item-subtitle
+                            class="mb-1 text-high-emphasis opacity-100"
+                          >
+                            {{ person.roleName }}
+                          </v-list-item-subtitle>
 
-                        <!-- Icono de selección -->
-                        <template v-slot:append>
-                          <v-icon v-if="isPersonSelected(person.id, role.id)" :color="
-                              getRoleIcon(role.id) === 'mdi-star'
-                                ? 'green-darken-3'
-                                : 'green-darken-3'
-                            ">
-                            {{
-                            getRoleIcon(role.id) === "mdi-star"
-                            ? "mdi-star"
-                            : "mdi-circle-slice-8"
-                            }}
-                          </v-icon>
-                          <v-icon v-else class="opacity-30" :color="
-                              getRoleIcon(role.id) === 'mdi-star'
-                                ? 'green-darken-3'
-                                : undefined
-                            ">
-                            {{
-                            getRoleIcon(role.id) === "mdi-star"
-                            ? "mdi-star-outline"
-                            : "mdi-checkbox-blank-circle-outline"
-                            }}
-                          </v-icon>
-                        </template>
-                      </v-list-item>
-                    </v-list>
-                  </v-card>
-                </v-col>
-              </v-row>
-              <v-row dense v-if="step === 2">
-                <v-col cols="12" md="6">
+                          <!-- Icono de selección -->
+                          <template v-slot:append>
+                            <v-icon
+                              v-if="isPersonSelected(person.id, role.id)"
+                              :color="
+                                getRoleIcon(role.id) === 'mdi-star'
+                                  ? 'green-darken-3'
+                                  : 'green-darken-3'
+                              "
+                            >
+                              {{
+                                getRoleIcon(role.id) === "mdi-star"
+                                  ? "mdi-star"
+                                  : "mdi-circle-slice-8"
+                              }}
+                            </v-icon>
+                            <v-icon
+                              v-else
+                              class="opacity-30"
+                              :color="
+                                getRoleIcon(role.id) === 'mdi-star'
+                                  ? 'green-darken-3'
+                                  : undefined
+                              "
+                            >
+                              {{
+                                getRoleIcon(role.id) === "mdi-star"
+                                  ? "mdi-star-outline"
+                                  : "mdi-checkbox-blank-circle-outline"
+                              }}
+                            </v-icon>
+                          </template>
+                        </v-list-item>
+                      </v-list>
+                    </v-card>
+                  </v-col>
+                </template>
+                <template v-if="step === 2">
+                  <v-col cols="12" md="6">
                     <v-locale-provider>
-                  <v-menu v-model="menu" :close-on-content-click="false" :nudge-right="40" transition="scale-transition"
-                    offset-y min-width="290px" location="end">
-                    <template v-slot:activator="{ props }">
-                      <v-text-field v-bind="props" :modelValue="input" variant="underlined"
-                        :label="$t('taskForm.today')"></v-text-field>
-                    </template>
-                      <v-date-picker color="#03626C" :modelValue="input" @update:model-value="updateDate"
-                        format="yyyy-MM-dd"></v-date-picker>
-                  </v-menu>
+                      <v-menu
+                        v-model="menu"
+                        :close-on-content-click="false"
+                        :nudge-right="40"
+                        transition="scale-transition"
+                        offset-y
+                        min-width="290px"
+                        location="end"
+                      >
+                        <template v-slot:activator="{ props }">
+                          <v-text-field
+                            v-bind="props"
+                            :modelValue="input"
+                            variant="underlined"
+                            :label="$t('taskForm.today')"
+                          ></v-text-field>
+                        </template>
+                        <v-date-picker
+                          color="#03626C"
+                          :modelValue="input"
+                          @update:model-value="updateDate"
+                          format="yyyy-MM-dd"
+                        ></v-date-picker>
+                      </v-menu>
                     </v-locale-provider>
-                </v-col>
+                  </v-col>
 
-                <v-col cols="12" md="6">
-                  <v-text-field v-model="editedItem.start_time" :active="timePickerDialog" :focused="timePickerDialog"
-                    :label="$t('taskForm.fields.time')" readonly variant="underlined"
-                    @click="timePickerDialog = true"></v-text-field>
+                  <v-col cols="12" md="6">
+                    <v-text-field
+                      v-model="editedItem.start_time"
+                      :active="timePickerDialog"
+                      :focused="timePickerDialog"
+                      :label="$t('taskForm.fields.time')"
+                      readonly
+                      variant="underlined"
+                      @click="timePickerDialog = true"
+                    ></v-text-field>
 
-                  <v-dialog v-model="timePickerDialog" width="auto">
-                    <v-locale-provider>
-                      <v-time-picker v-model="editedItem.start_time" format="24hr" color="#03626C"
-                        @update:model-value="timePickerDialog = false"></v-time-picker>
-                    </v-locale-provider>
-                  </v-dialog>
-                </v-col>
-                <v-col cols="12" md="6">
-                  <v-text-field v-model="editedItem.estimated_time" type="number"
-                    :label="$t('taskForm.fields.estimatedTime')" variant="underlined"
-                    :rules="[(v) => v > 0 || 'Debe ser un número válido']"></v-text-field>
-                </v-col>
-                <v-col cols="12" md="6">
-                  <v-select v-model="editedItem.recurrence" :items="recurrences" item-title="name" item-value="id"
-                    :label="$t('taskForm.fields.recurrence')" variant="underlined"
-                    :rules="selectRules">
-                  </v-select>
-                </v-col>
-                <v-col cols="12" md="6" v-if="editedIndex !== -1">
-                  <v-autocomplete v-model="editedItem.status_id" :items="status" :label="$t('taskForm.fields.status')"
-                    item-title="nameStatus" item-value="id" variant="underlined" :rules="selectRules">
-                    <!-- Slot para el item seleccionado (en el input) -->
-                    <template v-slot:selection="{ item }">
-                      <div class="d-flex align-center">
-                        <v-avatar size="24" :color="'#' + item.raw.colorStatus" class="mr-2">
-                          <v-icon>{{ item.raw.iconStatus }}</v-icon>
-                        </v-avatar>
-                        <span>{{ item.raw.nameStatus }}</span>
-                      </div>
-                    </template>
-
-                    <!-- Slot para los items del dropdown -->
-                    <template v-slot:item="{ props, item }">
-                      <v-list-item v-bind="props" :style="{
-                          'background-color':
-                            item.props.value === editedItem.status_id
-                              ? `#${item.raw.colorStatus}20` // Aplica opacidad (20 = 12%)
-                              : 'transparent',
-                        }">
-                        <template v-slot:prepend>
-                          <v-avatar size="24" :color="'#' + item.raw.colorStatus">
+                    <v-dialog v-model="timePickerDialog" width="auto">
+                      <v-locale-provider>
+                        <v-time-picker
+                          v-model="editedItem.start_time"
+                          format="24hr"
+                          color="#03626C"
+                          @update:model-value="timePickerDialog = false"
+                        ></v-time-picker>
+                      </v-locale-provider>
+                    </v-dialog>
+                  </v-col>
+                  <v-col cols="12" md="6">
+                    <v-text-field
+                      v-model="editedItem.estimated_time"
+                      type="number"
+                      :label="$t('taskForm.fields.estimatedTime')"
+                      variant="underlined"
+                      :rules="[(v) => v > 0 || 'Debe ser un número válido']"
+                    ></v-text-field>
+                  </v-col>
+                  <v-col cols="12" md="6">
+                    <v-select
+                      v-model="editedItem.recurrence"
+                      :items="recurrences"
+                      item-title="name"
+                      item-value="id"
+                      :label="$t('taskForm.fields.recurrence')"
+                      variant="underlined"
+                      :rules="selectRules"
+                    >
+                    </v-select>
+                  </v-col>
+                  <v-col cols="12" md="6" v-if="editedIndex !== -1">
+                    <v-autocomplete
+                      v-model="editedItem.status_id"
+                      :items="status"
+                      :label="$t('taskForm.fields.status')"
+                      item-title="nameStatus"
+                      item-value="id"
+                      variant="underlined"
+                      :rules="selectRules"
+                    >
+                      <!-- Slot para el item seleccionado (en el input) -->
+                      <template v-slot:selection="{ item }">
+                        <div class="d-flex align-center">
+                          <v-avatar
+                            size="24"
+                            :color="'#' + item.raw.colorStatus"
+                            class="mr-2"
+                          >
                             <v-icon>{{ item.raw.iconStatus }}</v-icon>
                           </v-avatar>
-                        </template>
-                        <v-list-item-subtitle class="d-flex flex-column">
-                          <div>{{ item.raw.descriptionStatus }}</div>
-                        </v-list-item-subtitle>
-                      </v-list-item>
-                    </template>
-                  </v-autocomplete>
-                </v-col>
+                          <span>{{ item.raw.nameStatus }}</span>
+                        </div>
+                      </template>
+
+                      <!-- Slot para los items del dropdown -->
+                      <template v-slot:item="{ props, item }">
+                        <v-list-item
+                          v-bind="props"
+                          :style="{
+                            'background-color':
+                              item.props.value === editedItem.status_id
+                                ? `#${item.raw.colorStatus}20` // Aplica opacidad (20 = 12%)
+                                : 'transparent',
+                          }"
+                        >
+                          <template v-slot:prepend>
+                            <v-avatar size="24" :color="'#' + item.raw.colorStatus">
+                              <v-icon>{{ item.raw.iconStatus }}</v-icon>
+                            </v-avatar>
+                          </template>
+                          <v-list-item-subtitle class="d-flex flex-column">
+                            <div>{{ item.raw.descriptionStatus }}</div>
+                          </v-list-item-subtitle>
+                        </v-list-item>
+                      </template>
+                    </v-autocomplete>
+                  </v-col>
                   <v-col cols="12" md="6">
-                   <v-locale-provider>
-                    <v-menu v-model="menu2" :close-on-content-click="false" :nudge-right="40" transition="scale-transition"
-                    offset-y min-width="290px" location="end">
-                    <template v-slot:activator="{ props }">
-                      <v-text-field v-bind="props" :modelValue="input2" variant="underlined"
-                        :label="$t('taskForm.fields.endDate')"></v-text-field>
-                    </template>
-                      <v-date-picker color="#03626C" :modelValue="input2" @update:model-value="updateDate1"
-                        format="yyyy-MM-dd"></v-date-picker>
-                  </v-menu>
+                    <v-locale-provider>
+                      <v-menu
+                        v-model="menu2"
+                        :close-on-content-click="false"
+                        :nudge-right="40"
+                        transition="scale-transition"
+                        offset-y
+                        min-width="290px"
+                        location="end"
+                      >
+                        <template v-slot:activator="{ props }">
+                          <v-text-field
+                            v-bind="props"
+                            :modelValue="input2"
+                            variant="underlined"
+                            :label="$t('taskForm.fields.endDate')"
+                          ></v-text-field>
+                        </template>
+                        <v-date-picker
+                          color="#03626C"
+                          :modelValue="input2"
+                          @update:model-value="updateDate1"
+                          format="yyyy-MM-dd"
+                        ></v-date-picker>
+                      </v-menu>
                     </v-locale-provider>
                   </v-col>
 
                   <v-col cols="12" md="6">
-                    <v-select v-model="editedItem.end_time" :items="timeSlots" :label="$t('taskForm.fields.endTime')"
-                      variant="underlined"></v-select>
+                    <v-select
+                      v-model="editedItem.end_time"
+                      :items="timeSlots"
+                      :label="$t('taskForm.fields.endTime')"
+                      variant="underlined"
+                    ></v-select>
                   </v-col>
 
-                <v-col cols="12" md="6">
-                  <v-text-field v-model="editedItem.geo_location" :label="$t('taskForm.fields.location')"
-                    variant="underlined"></v-text-field>
-                </v-col>
-                <v-col cols="12" md="6">
-                  <v-select
-                    v-model="editedItem.task_type"
-                    :items="taskTypes"
-                    item-title="name"
-                    item-value="id"
-                    :label="$t('wishes.fields.type')"
-                    variant="underlined"
-                    :rules="[
-                      (v) =>
-                        !!v ||
-                        $t('wishes.validation.required', {
-                          field: $t('wishes.fields.type'),
-                        }),
-                    ]"
-                  ></v-select>
-                </v-col>
+                  <v-col cols="12" md="6">
+                    <v-text-field
+                      v-model="editedItem.geo_location"
+                      :label="$t('taskForm.fields.location')"
+                      variant="underlined"
+                    ></v-text-field>
+                  </v-col>
+                  <v-col cols="12" md="6">
+                    <v-select
+                      v-model="editedItem.task_type"
+                      :items="taskTypes"
+                      item-title="name"
+                      item-value="id"
+                      :label="$t('wishes.fields.type')"
+                      variant="underlined"
+                      :rules="[
+                        (v) =>
+                          !!v ||
+                          $t('wishes.validation.required', {
+                            field: $t('wishes.fields.type'),
+                          }),
+                      ]"
+                    ></v-select>
+                  </v-col>
+                </template>
               </v-row>
 
               <div class="d-flex justify-space-between mt-8">
-                <v-btn variant="text" class="text-grey-darken-1" @click="step > 0 ? step-- : this.close()">
+                <v-btn
+                  variant="text"
+                  class="text-grey-darken-1"
+                  @click="step > 0 ? step-- : this.close()"
+                >
                   {{ step === 0 ? $t("buttons.close") : $t("buttons.previous") }}
                 </v-btn>
 
-                <v-btn variant="text" class="text-deep-purple-accent-3" @click="nextStep" :disabled="!valid">
+                <v-btn
+                  variant="text"
+                  class="text-deep-purple-accent-3"
+                  @click="nextStep"
+                  :disabled="!valid"
+                >
                   {{
-                  step === steps.length - 1
-                  ? $t("buttons.saveAndClose")
-                  : $t("buttons.next")
+                    step === steps.length - 1
+                      ? $t("buttons.saveAndClose")
+                      : $t("buttons.next")
                   }}
                 </v-btn>
               </div>
             </v-col>
           </v-row>
+          </v-container>
         </v-card-text>
       </v-card>
     </v-form>
@@ -476,7 +692,8 @@
     <v-card>
       <v-toolbar color="#DA7171">
         <span class="text-subtitle-2 ml-4">
-          {{ $t("deleteDialog.title", { item: $t(`deleteDialog.items.task`) }) }}</span>
+          {{ $t("deleteDialog.title", { item: $t(`deleteDialog.items.task`) }) }}</span
+        >
       </v-toolbar>
       <v-card-text class="mt-2 mb-2"> {{ $t("deleteDialog.message") }}</v-card-text>
       <v-divider></v-divider>
@@ -484,19 +701,19 @@
         <v-spacer></v-spacer>
         <v-btn color="grey" variant="flat" @click="closeDelete">{{
           $t("taskForm.buttons.cancel")
-          }}</v-btn>
-        <v-btn color="#03626C" variant="flat" :loading="loading" @click="deleteItemConfirm">
-          {{ $t("taskForm.buttons.confirmDelete") }}</v-btn>
+        }}</v-btn>
+        <v-btn
+          color="#03626C"
+          variant="flat"
+          :loading="loading"
+          @click="deleteItemConfirm"
+        >
+          {{ $t("taskForm.buttons.confirmDelete") }}</v-btn
+        >
       </v-card-actions>
     </v-card>
   </v-dialog>
-   <v-dialog
-    v-model="dialogSuggested"
-    max-width="900"
-    persistent
-    scrollable
-  >
-
+  <v-dialog v-model="dialogSuggested" max-width="900" persistent scrollable>
     <v-card>
       <v-card-text class="pa-0">
         <SuggestedTasksList
@@ -516,10 +733,10 @@
       <v-card-text>
         <!-- Aquí pasamos el 'selectedWorker' al componente dentro del diálogo -->
         <Goals
-        ref="goalsComponent"
-        :task_type = "editedItem.task_type"
-        :types="taskTypes"/>
-        
+          ref="goalsComponent"
+          :task_type="editedItem.task_type"
+          :types="taskTypes"
+        />
       </v-card-text>
       <v-divider></v-divider>
       <v-card-actions>
@@ -528,17 +745,21 @@
       </v-card-actions>
     </v-card>
   </v-dialog>
-  <v-dialog v-model="dialogInitiativeGoals" fullscreen transition="dialog-bottom-transition">
+  <v-dialog
+    v-model="dialogInitiativeGoals"
+    fullscreen
+    transition="dialog-bottom-transition"
+  >
     <v-card class="bg-grey-lighten-4">
       <v-card-text>
         <!-- Aquí pasamos el 'selectedWorker' al componente dentro del diálogo -->
         <InitiativeGoal
-        ref="initiativesComponent"
-        :task_type = "editedItem.task_type"
-        :types="taskTypes"
-        @suggested-tasks="handleSuggestedTasks"
-        @save-form="showGoals()"/>
-        
+          ref="initiativesComponent"
+          :task_type="editedItem.task_type"
+          :types="taskTypes"
+          @suggested-tasks="handleSuggestedTasks"
+          @save-form="showGoals()"
+        />
       </v-card-text>
       <v-divider></v-divider>
       <v-card-actions>
@@ -563,20 +784,21 @@ export default {
   components: {
     SuggestedTasksList: markRaw(SuggestedTasksList),
     Goals,
-    InitiativeGoal
+    InitiativeGoal,
   },
   data: () => ({
-    currentView: 'meta',
+    isFullscreen: false,
+    currentView: "meta",
     selectedCategory: null,
-    filteredTask: 'all',
+    filteredTask: "all",
     selected: shallowRef([2]),
     selected2: null,
     dialogSuggested: false,
     suggestedTasks: null,
     step: 0,
     dateMenu: false,
-      searchDate: '',
-      pickerDate: null,
+    searchDate: "",
+    pickerDate: null,
     time: null,
     modal2: false,
     timePickerDialog: false,
@@ -622,24 +844,24 @@ export default {
     timeSlots: [], // Inicialmente vacío
     selectedPerson: null, // Persona seleccionada en el formulario
     selectedRole: null, // Rol seleccionado en el formulario
-   search: "",
-       headers: [
-        { title: "Fecha", key: "start_date", sortable: false },
-        { title: "Título", key: "title", sortable: false },
-        { title: "Descripción", key: "description", sortable: false },
-        { title: "Ubicación", key: "geo_location", sortable: false },
-        { title: "Tipo", key: "typeName", sortable: false },
-        { title: "Recurrencia", key: "recurrence", sortable: false },
-        { title: "Prioridad", key: "namePriority", sortable: false },
-        { title: "Estado", key: "status_id", sortable: false },
-        { title: "Acciones", key: "actions", sortable: false },
-      ],
+    search: "",
+    headers: [
+      { title: "Fecha", key: "start_date", sortable: false },
+      { title: "Título", key: "title", sortable: false },
+      { title: "Descripción", key: "description", sortable: false },
+      { title: "Ubicación", key: "geo_location", sortable: false },
+      { title: "Tipo", key: "typeName", sortable: false },
+      { title: "Recurrencia", key: "recurrence", sortable: false },
+      { title: "Prioridad", key: "namePriority", sortable: false },
+      { title: "Estado", key: "status_id", sortable: false },
+      { title: "Acciones", key: "actions", sortable: false },
+    ],
     headersPeople: [
       { title: "Nombre", value: "name", width: "60%" },
       { title: "Rol", value: "roleName", width: "20%" },
       { title: "Acciones", value: "actions", sortable: false, width: "20%" },
     ],
-    
+
     editedItem: {
       id: "",
       title: "",
@@ -734,28 +956,28 @@ export default {
       { label: "Estado", value: "estado", icon: "mdi-progress-check" },
     ],
     dateRules: [
-      value => {
+      (value) => {
         if (!value) return true;
-        
+
         // Validación directa sin depender de this
-        if (!/^\d{2}-\d{2}-\d{4}$/.test(value)) return 'Formato debe ser DD-MM-YYYY';
-        
-        const [day, month, year] = value.split('-').map(Number);
-        
+        if (!/^\d{2}-\d{2}-\d{4}$/.test(value)) return "Formato debe ser DD-MM-YYYY";
+
+        const [day, month, year] = value.split("-").map(Number);
+
         // Validaciones básicas
-        if (month < 1 || month > 12) return 'Mes inválido';
-        if (day < 1 || day > 31) return 'Día inválido';
-        
+        if (month < 1 || month > 12) return "Mes inválido";
+        if (day < 1 || day > 31) return "Día inválido";
+
         // Validación de días por mes
         const monthLength = [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
-        
+
         // Ajuste para años bisiestos
         if (year % 400 === 0 || (year % 100 !== 0 && year % 4 === 0)) {
           monthLength[1] = 29;
         }
-        
-        return day <= monthLength[month - 1] || 'Fecha inválida para este mes';
-      }
+
+        return day <= monthLength[month - 1] || "Fecha inválida para este mes";
+      },
     ],
     title: "",
     description: "",
@@ -769,8 +991,7 @@ export default {
     dialogInitiativeGoals: false,
   }),
   computed: {
-    
-     todayDay() {
+    todayDay() {
       return this.now.getDate(); // Forma simple y segura
     },
 
@@ -785,27 +1006,27 @@ export default {
 
     // Fecha formateada: "lunes, 5 de abril de 2025"
     fullDate() {
-       const locale = this.$i18n.locale.value;
-    const dateLocale = { es: 'es-ES', en: 'en-US', pt: 'pt-PT' }[locale] || 'es-ES';
-    return this.now.toLocaleDateString(dateLocale, {
-      weekday: 'long',
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric'
-    });
+      const locale = this.$i18n.locale.value;
+      const dateLocale = { es: "es-ES", en: "en-US", pt: "pt-PT" }[locale] || "es-ES";
+      return this.now.toLocaleDateString(dateLocale, {
+        weekday: "long",
+        year: "numeric",
+        month: "long",
+        day: "numeric",
+      });
     },
     fullMonth() {
-       const locale = this.$i18n.locale.value;
-    const dateLocale = { es: 'es-ES', en: 'en-US', pt: 'pt-PT' }[locale] || 'es-ES';
-    return this.now.toLocaleDateString(dateLocale, {
-      year: 'numeric',
-      month: 'long',
-    });
+      const locale = this.$i18n.locale.value;
+      const dateLocale = { es: "es-ES", en: "en-US", pt: "pt-PT" }[locale] || "es-ES";
+      return this.now.toLocaleDateString(dateLocale, {
+        year: "numeric",
+        month: "long",
+      });
     },
-    currentMonthYear(){
-       return new Date().toLocaleDateString('es-ES', {
-        month: 'long',
-        year: 'numeric'
+    currentMonthYear() {
+      return new Date().toLocaleDateString("es-ES", {
+        month: "long",
+        year: "numeric",
       });
     },
     formTitle() {
@@ -822,19 +1043,19 @@ export default {
       return this.imgMiniatura;
     },
     dateFormatted() {
-    const date = this.getLocalDate(this.editedItem.start_date || this.input);
-    const day = date.getDate().toString().padStart(2, "0");
-    const month = (date.getMonth() + 1).toString().padStart(2, "0");
-    const year = date.getFullYear();
-    return `${year}-${month}-${day}`;
-  },
-  dateFormatted2() {
-    const date = this.getLocalDate(this.editedItem.end_date || this.input2);
-    const day = date.getDate().toString().padStart(2, "0");
-    const month = (date.getMonth() + 1).toString().padStart(2, "0");
-    const year = date.getFullYear();
-    return `${year}-${month}-${day}`;
-  },
+      const date = this.getLocalDate(this.editedItem.start_date || this.input);
+      const day = date.getDate().toString().padStart(2, "0");
+      const month = (date.getMonth() + 1).toString().padStart(2, "0");
+      const year = date.getFullYear();
+      return `${year}-${month}-${day}`;
+    },
+    dateFormatted2() {
+      const date = this.getLocalDate(this.editedItem.end_date || this.input2);
+      const day = date.getDate().toString().padStart(2, "0");
+      const month = (date.getMonth() + 1).toString().padStart(2, "0");
+      const year = date.getFullYear();
+      return `${year}-${month}-${day}`;
+    },
     getDate() {
       return this.input ? new Date(this.input) : new Date();
     },
@@ -862,7 +1083,7 @@ export default {
     filteredTasks() {
       return this.tasks.filter((task) => {
         // Si no hay búsqueda, mostrar todo
-        if (!this.searchDate || this.searchDate.trim() === '') {
+        if (!this.searchDate || this.searchDate.trim() === "") {
           return true;
         }
         const search = this.searchDate.trim();
@@ -871,21 +1092,21 @@ export default {
           // Formato esperado en task.start_date: 'YYYY-MM-DD'
           const taskDate = task.start_date; // ej: '2025-04-15'
           // Convertir búsqueda dd[-mm[-yyyy]] a patrón comparable con YYYY-MM-DD
-          const parts = search.split('-');
-          let pattern = '';
+          const parts = search.split("-");
+          let pattern = "";
           if (parts.length === 1) {
             // Solo día: '15' → buscar cualquier fecha que termine en '-15' o '-15'
-            const day = parts[0].padStart(2, '0');
+            const day = parts[0].padStart(2, "0");
             pattern = `-${day}`; // Coincide con cualquier mes que termine en -15
           } else if (parts.length === 2) {
             // Día y mes: '15-04' → convertir a '-04-15'
-            const day = parts[0].padStart(2, '0');
-            const month = parts[1].padStart(2, '0');
+            const day = parts[0].padStart(2, "0");
+            const month = parts[1].padStart(2, "0");
             pattern = `-${month}-${day}`;
           } else if (parts.length === 3) {
             // Completo: '15-04-2025' → convertir a '2025-04-15'
-            const day = parts[0].padStart(2, '0');
-            const month = parts[1].padStart(2, '0');
+            const day = parts[0].padStart(2, "0");
+            const month = parts[1].padStart(2, "0");
             const year = parts[2];
             if (year.length === 4) {
               pattern = `${year}-${month}-${day}`;
@@ -899,30 +1120,36 @@ export default {
           }
         }
         // Búsqueda de texto general en otros campos (opcional)
-        const matchesText = Object.values(task).some(val =>
+        const matchesText = Object.values(task).some((val) =>
           String(val).toLowerCase().includes(search.toLowerCase())
         );
         return matchesText;
       });
     },
 
-     switchColor() {
-      return this.editedItem.task_type === 'Personal' ? '#03626C' : '#FB8C00';
+    switchColor() {
+      return this.editedItem.task_type === "Personal" ? "#03626C" : "#FB8C00";
     },
     getCurrentName() {
-      const type = this.taskTypes.find(t => t.id === this.editedItem.task_type);
+      const type = this.taskTypes.find((t) => t.id === this.editedItem.task_type);
       return type ? type.name : this.editedItem.task_type;
     },
     filteredTasksForGoals() {
-    if (!this.selectedCategory) {
-      return this.tasks;
-    }
+      if (!this.selectedCategory) {
+        return this.tasks;
+      }
 
-    const filtered = this.tasks.filter(task => 
-      this.selectedCategory.taskIds.includes(task.id)
-    );
-    return filtered;
-  }
+      const filtered = this.tasks.filter((task) =>
+        this.selectedCategory.taskIds.includes(task.id)
+      );
+      return filtered;
+    },
+    isMobile() {
+			return this.$vuetify.display.xs || this.$vuetify.display.sm;
+		},
+		isDesktop() {
+			return !this.isMobile;
+		},
   },
   created() {
     this.tools = [
@@ -948,7 +1175,13 @@ export default {
         this.initialize();
       },
       //immediate: true
-    }
+    },
+    dialog(val) {
+      if (val) this.updateFullscreenMode();
+      },
+    isDesktop() {
+      this.updateFullscreenMode();
+    },
   },
   mounted() {
     this.home_id = JSON.parse(LocalStorageService.getItem("home_id"));
@@ -957,31 +1190,47 @@ export default {
     this.timeSlots = this.generateTimeSlots(); // Genera los horarios al montar el componente
   },
   methods: {
+		updateFullscreenMode() {
+      this.$nextTick(() => {
+        this.isFullscreen = this.isDesktop;
+      });
+    },
+    getImageUrl(imagePath) {
+      return `${
+        this.$axios.defaults.baseURL
+      }images/${imagePath}?t=${this.getCacheTimestamp()}`;
+    },
+    getCacheTimestamp() {
+      // Usamos medianoche (00:00:00) del día actual
+      const now = new Date();
+      const startOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+      return startOfDay.getTime(); // Ej: 1714003200000 (cambia una vez al día)
+    },
     getStatusIcon(statusId) {
-    const map = { 
-      'Pendiente': 'mdi-clock-outline',        // Pendiente
-      'En Progreso': 'mdi-progress-clock',       // En Progreso
-      'Completada': 'mdi-check-circle-outline'  // Completada
-    };
-    return map[statusId] || 'mdi-help-circle';
-  },
+      const map = {
+        Pendiente: "mdi-clock-outline", // Pendiente
+        "En Progreso": "mdi-progress-clock", // En Progreso
+        Completada: "mdi-check-circle-outline", // Completada
+      };
+      return map[statusId] || "mdi-help-circle";
+    },
     getStatusColor(statusId) {
-      console.log('statusId');
+      console.log("statusId");
       console.log(statusId);
-  // Ajusta según tus IDs reales
-    const colorMap = {
-      'Pendiente': 'orange',      // Pendiente
-      'En Progreso': 'blue',        // En Progreso
-      'Completada': 'green'        // Completada
-    };
-    return colorMap[statusId] || 'grey';
-  },
-  getProgressColor(percentage) {
-    if (percentage >= 80) return 'green';
-    if (percentage >= 50) return 'blue';
-    if (percentage >= 20) return 'orange';
-    return 'red';
-  },
+      // Ajusta según tus IDs reales
+      const colorMap = {
+        Pendiente: "orange", // Pendiente
+        "En Progreso": "blue", // En Progreso
+        Completada: "green", // Completada
+      };
+      return colorMap[statusId] || "grey";
+    },
+    getProgressColor(percentage) {
+      if (percentage >= 80) return "green";
+      if (percentage >= 50) return "blue";
+      if (percentage >= 20) return "orange";
+      return "red";
+    },
     async handleSuggestedTasks(suggestedTasks) {
       this.loadingSuggested = true;
       this.dialogInitiativeGoals = false;
@@ -1010,16 +1259,24 @@ export default {
           this.suggestedTasks = suggestedTasks;
           this.dialogSuggested = true;
         } else {
-          this.showAlert("info", result.message || "No se pudieron cargar los datos para las sugerencias.", 3000);
+          this.showAlert(
+            "info",
+            result.message || "No se pudieron cargar los datos para las sugerencias.",
+            3000
+          );
         }
       } catch (error) {
-        this.showAlert("error", "Error al cargar los datos necesarios para las sugerencias.", 3000);
+        this.showAlert(
+          "error",
+          "Error al cargar los datos necesarios para las sugerencias.",
+          3000
+        );
       } finally {
         this.loadingSuggested = false;
         this.showGoals();
       }
     },
-    selectedCurrent(select){
+    selectedCurrent(select) {
       this.currentView = select;
     },
     selectCategory(category) {
@@ -1034,28 +1291,30 @@ export default {
       }
     },
     selectCategoryFromAlert(alert) {
-    if (!alert.categoryTarget || !this.sumaryData?.summary) return;
+      if (!alert.categoryTarget || !this.sumaryData?.summary) return;
 
-    // Buscar la categoría en el resumen por su id (ej: "completed", "dueSoon", etc.)
-    const category = this.sumaryData.summary.find(cat => cat.id === alert.categoryTarget);
+      // Buscar la categoría en el resumen por su id (ej: "completed", "dueSoon", etc.)
+      const category = this.sumaryData.summary.find(
+        (cat) => cat.id === alert.categoryTarget
+      );
 
-    if (category) {
-      this.selectCategory(category); // 👈 Reutiliza tu lógica existente
-    }
-  },
+      if (category) {
+        this.selectCategory(category); // 👈 Reutiliza tu lógica existente
+      }
+    },
     getCategoryColor(id) {
       const colorMap = {
-        active: 'blue-darken-2',     // En progreso → azul
-        completed: 'green-darken-2', // Completado → verde
-        delayed: 'red-darken-2',     // Retrasado → rojo
-        dueSoon: 'amber-darken-2',   // Próximo a vencer → ámbar/advertencia
+        active: "blue-darken-2", // En progreso → azul
+        completed: "green-darken-2", // Completado → verde
+        delayed: "red-darken-2", // Retrasado → rojo
+        dueSoon: "amber-darken-2", // Próximo a vencer → ámbar/advertencia
       };
-      return colorMap[id] || 'purple'; // fallback por si aparece un id inesperado
+      return colorMap[id] || "purple"; // fallback por si aparece un id inesperado
     },
-    async handleSkip(){
+    async handleSkip() {
       this.dialogSuggested = false;
     },
-    async handleTaskSelection(selectedTasks){
+    async handleTaskSelection(selectedTasks) {
       try {
         // Preparar datos para enviar al API
         const tasksToCreate = selectedTasks.map((task) => {
@@ -1084,74 +1343,77 @@ export default {
         }
       } catch (error) {
         this.showAlert(
-              "error",
-              "Ocurrió un error inesperado al procesar la solicitud.",
-              3000
-            );
+          "error",
+          "Ocurrió un error inesperado al procesar la solicitud.",
+          3000
+        );
       } finally {
         this.dialogSuggested = false;
       }
     },
-     getLocalDate(dateValue) {
+    getLocalDate(dateValue) {
       if (!dateValue) return new Date();
-      
+
       // Si es string en formato YYYY-MM-DD
-      if (typeof dateValue === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(dateValue)) {
-        const [year, month, day] = dateValue.split('-');
+      if (typeof dateValue === "string" && /^\d{4}-\d{2}-\d{2}$/.test(dateValue)) {
+        const [year, month, day] = dateValue.split("-");
         return new Date(year, month - 1, day);
       }
-      
+
       // Si ya es un objeto Date
       if (dateValue instanceof Date) return dateValue;
-      
+
       // Para otros casos (ISO strings, timestamps, etc.)
       const date = new Date(dateValue);
       return new Date(date.getFullYear(), date.getMonth(), date.getDate());
     },
     isValidDatePartial(dateStr) {
-    const parts = dateStr.split('-');
-    if (parts.length > 3) return false;
-    const day = parts[0];
-    const month = parts[1];
-    const year = parts[2];
-    // Validar día (1-31)
-    if (!/^\d{1,2}$/.test(day) || parseInt(day) < 1 || parseInt(day) > 31) {
-      return false;
-    }
-    // Si hay mes, validar (1-12)
-    if (month && (!/^\d{1,2}$/.test(month) || parseInt(month) < 1 || parseInt(month) > 12)) {
-      return false;
-    }
-    // Si hay año, validar longitud (4 dígitos)
-    if (year && !/^\d{4}$/.test(year)) {
-      return false;
-    }
-    return true;
-  },
-   isValidDate(dateStr) {
-    const rule = this.dateRules[0]; // Usamos la misma regla de validación
-    const result = rule(dateStr);
-    return result === true;
-  },
-  
-  // Resto de tus métodos...
-  handleManualDateInput(value) {
-    if (value && this.isValidDate(value)) {
-      const [day, month, year] = value.split('-');
-      this.pickerDate = new Date(year, month - 1, day);
-    } else {
-      this.pickerDate = null;
-    }
-  },
-  
+      const parts = dateStr.split("-");
+      if (parts.length > 3) return false;
+      const day = parts[0];
+      const month = parts[1];
+      const year = parts[2];
+      // Validar día (1-31)
+      if (!/^\d{1,2}$/.test(day) || parseInt(day) < 1 || parseInt(day) > 31) {
+        return false;
+      }
+      // Si hay mes, validar (1-12)
+      if (
+        month &&
+        (!/^\d{1,2}$/.test(month) || parseInt(month) < 1 || parseInt(month) > 12)
+      ) {
+        return false;
+      }
+      // Si hay año, validar longitud (4 dígitos)
+      if (year && !/^\d{4}$/.test(year)) {
+        return false;
+      }
+      return true;
+    },
+    isValidDate(dateStr) {
+      const rule = this.dateRules[0]; // Usamos la misma regla de validación
+      const result = rule(dateStr);
+      return result === true;
+    },
+
+    // Resto de tus métodos...
+    handleManualDateInput(value) {
+      if (value && this.isValidDate(value)) {
+        const [day, month, year] = value.split("-");
+        this.pickerDate = new Date(year, month - 1, day);
+      } else {
+        this.pickerDate = null;
+      }
+    },
+
     updateSearchDate(value) {
       if (value) {
-        const day = String(value.getDate()).padStart(2, '0');
-        const month = String(value.getMonth() + 1).padStart(2, '0');
+        const day = String(value.getDate()).padStart(2, "0");
+        const month = String(value.getMonth() + 1).padStart(2, "0");
         const year = value.getFullYear();
         this.search = `${year}-${month}-${day}`;
       } else {
-        this.search = '';
+        this.search = "";
       }
       this.dateMenu = false;
     },
@@ -1186,7 +1448,7 @@ export default {
               weekday: "short",
               day: "numeric",
               month: "short",
-              year: 'numeric'
+              year: "numeric",
             })
             .replace(/\./g, "");
       }
@@ -1391,18 +1653,18 @@ export default {
       // En otros casos, devolver un ícono por defecto
       return "mdi-help-circle";
     },
-     updateDate(value) {
-    const year = value.getFullYear();
-    const month = String(value.getMonth() + 1).padStart(2, '0');
-    const day = String(value.getDate()).padStart(2, '0');
-    this.input = `${year}-${month}-${day}`;
+    updateDate(value) {
+      const year = value.getFullYear();
+      const month = String(value.getMonth() + 1).padStart(2, "0");
+      const day = String(value.getDate()).padStart(2, "0");
+      this.input = `${year}-${month}-${day}`;
       this.editedItem.start_date = this.input;
       this.menu = false;
     },
     updateDate1(value) {
       const year = value.getFullYear();
-      const month = String(value.getMonth() + 1).padStart(2, '0');
-      const day = String(value.getDate()).padStart(2, '0');
+      const month = String(value.getMonth() + 1).padStart(2, "0");
+      const day = String(value.getDate()).padStart(2, "0");
       this.input2 = `${year}-${month}-${day}`;
       this.editedItem.end_date = this.input2;
       this.menu2 = false;
@@ -1412,9 +1674,9 @@ export default {
         (this.imgMiniatura = ""),
         (this.showDetails = false),
         (this.data = {});
-        this.input = this.obtenerFechaLocal();
+      this.input = this.obtenerFechaLocal();
       this.editedItem.start_date = this.input;
-       this.input2 = this.obtenerFechaLocal();
+      this.input2 = this.obtenerFechaLocal();
       this.editedItem.end_date = this.input2;
       this.editedItem.home_id = this.home_id;
       this.data.home_id = this.editedItem.home_id;
@@ -1464,10 +1726,9 @@ export default {
       } catch (error) {
         this.showAlert("error", "Ocurrió un error inesperado al cargar los datos.", 3000);
       } finally {
-        if(this.currentView !== 'meta')
-        {
+        if (this.currentView !== "meta") {
           this.initialize();
-          this.currentView = 'meta';
+          this.currentView = "meta";
         }
         this.initializeSelections();
         this.timeSlots = this.generateTimeSlots();
@@ -1502,7 +1763,7 @@ export default {
       const day = String(today.getDate()).padStart(2, "0");
       const formattedDate = `${year}-${month}-${day}`; // Formato "YYYY-MM-DD"
       this.data.task_type = this.editedItem.task_type;
-      this.data.type = 'Meta';
+      this.data.type = "Meta";
       //this.data.start_date = formattedDate;
       try {
         this.loading = true;
@@ -1519,12 +1780,12 @@ export default {
           this.goalStatus = result.data?.goalStatus || {};
           this.goalAlerts = result.data?.alerts || {};
           this.topPriorityTasks = result.data?.topPriorityTasks || [];
-          const tasksWithPeopleNames = tasks.map(task => ({
-      ...task,
-      peopleNames: task.people?.map(p => p.name).join(' ') || ''
-    }));
+          const tasksWithPeopleNames = tasks.map((task) => ({
+            ...task,
+            peopleNames: task.people?.map((p) => p.name).join(" ") || "",
+          }));
 
-    this.tasks = tasksWithPeopleNames;
+          this.tasks = tasksWithPeopleNames;
         } else {
           // Si no hay datos, asignamos un array vacío
           this.tasks = [];
@@ -1656,7 +1917,7 @@ export default {
             // Manejo de la respuesta según el resultado
             if (result.success) {
               this.loading = false;
-              this.showAlert("success", result.message, 3000);
+              this.showAlert("success", result.message || "Meta creada correctamente", 3000);
               if (result.data?.suggestedTasks?.length > 0) {
                 this.suggestedTasks = result.data.suggestedTasks;
                 this.dialogSuggested = true;
@@ -1664,7 +1925,7 @@ export default {
               this.initialize();
             } else {
               this.loading = false;
-              this.showAlert("warning", result.message, 3000);
+              this.showAlert("warning", result.message || "Meta editada correctamente", 3000);
             }
           } catch (error) {
             this.loading = false;
@@ -1701,7 +1962,7 @@ export default {
           "end_time",
           "type",
           "module",
-          "task_type"
+          "task_type",
         ];
         let updatedFields = Object.keys(this.editedItem)
           .filter(
@@ -1934,11 +2195,11 @@ export default {
       };
       reader.readAsDataURL(file);
     },
-    showGoals(){
+    showGoals() {
       this.dialogInitiativeGoals = false;
       this.dialogGoals = true;
     },
-    closeShowGoals(){
+    closeShowGoals() {
       const childTaskType = this.$refs.goalsComponent?.editedItem?.task_type;
       if (childTaskType) {
         this.editedItem.task_type = childTaskType;
@@ -1946,21 +2207,33 @@ export default {
       this.dialogGoals = false;
       this.initialize();
     },
-    showInitiatives(){
+    showInitiatives() {
       this.dialogInitiativeGoals = true;
     },
-    closeShowInitiatives(){
+    closeShowInitiatives() {
       const childTaskType = this.$refs.initiativesComponent?.editedItem?.task_type;
       if (childTaskType) {
         this.editedItem.task_type = childTaskType;
       }
       this.dialogInitiativeGoals = false;
       this.initialize();
-    }
+    },
   },
 };
 </script>
+
 <style scoped>
+.fullscreen-dialog {
+	display: flex;
+	flex-direction: column;
+	height: 100%;
+	overflow-y: auto;
+	}
+.tools-bar {
+  overflow-x: auto;
+  white-space: nowrap;
+  gap: 8px;
+}
 .icono-concavo {
   width: 50px;
   height: 50px;
@@ -2095,8 +2368,8 @@ table.v-table > thead,
 }
 .oscurecer-persistente {
   background-color: rgba(0, 0, 0, 0.04) !important; /* Sutil gris claro */
-  border-color: rgba(0, 0, 0, 0.12) !important;     /* Borde más marcado */
-  transform: translateY(-1px) !important;           /* Efecto leve de elevación */
+  border-color: rgba(0, 0, 0, 0.12) !important; /* Borde más marcado */
+  transform: translateY(-1px) !important; /* Efecto leve de elevación */
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.12) !important;
 }
 

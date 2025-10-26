@@ -53,7 +53,10 @@
           ></v-text-field>
         </div>
       </v-card-title>
-
+      <div
+        class="ma-0 pa-0 responsive-data-table-wrapper"
+        :class="{ 'mobile-scroll': $vuetify.display.xs || $vuetify.display.sm }"
+      >
       <v-data-table
         :headers="headers"
         :items="products"
@@ -67,15 +70,15 @@
         show-select
         class="mt-1"
         style="
-          max-height: 68vh;
-          overflow-y: auto;
-          background: transparent;
-          border: none !important;
-          outline: none !important;
-          box-shadow: none !important;
-          padding: 0;
-        "
-      >
+        max-height: 68vh;
+        overflow-y: auto;
+        overflow-x: hidden;
+        background: transparent;
+        border: none !important;
+        outline: none !important;
+        box-shadow: none !important;
+      "
+    >
         <!-- Header personalizado -->
         <template v-slot:top>
           <v-card
@@ -144,8 +147,11 @@
           </tr>
         </template>-->
         <template v-slot:item="{ item }">
-          <tr style="display: table; width: 100%; table-layout: fixed;">
-            <td colspan="100%" style="padding: 0; border: none">
+          <tr
+          style="display: table; width: 100%;"
+          :class="$vuetify.display.xs || $vuetify.display.sm ? 'mobile-table' : 'desktop-table'"
+        >
+          <td colspan="100%" style="padding: 0; border: none">
               <v-card class="mb-2 mx-1 rounded-lg" elevation="1" flat :class="{ 'oscurecer-persistente': isSelected(item) }">
                 <v-card-text class="d-flex align-center pa-2" style="width: 100%">
                   <!-- Checkbox de selección -->
@@ -186,6 +192,7 @@
           </tr>
         </template>
       </v-data-table>
+      </div>
     </v-card>
   </v-container>
 </template>
@@ -307,6 +314,42 @@ export default {
 </script>
 
 <style scoped>
+.desktop-table {
+  table-layout: fixed;
+}
+
+.mobile-table {
+  table-layout: auto;
+}
+.responsive-data-table-wrapper {
+  width: 100%;
+}
+
+/* Solo en móvil: activar scroll horizontal */
+.responsive-data-table-wrapper.mobile-scroll {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* En móvil: forzar ancho mínimo para que haya algo que scrollear */
+.responsive-data-table-wrapper.mobile-scroll :deep(.v-data-table) {
+  min-width: 800px;
+}
+
+/* En desktop: asegurar que no haya scroll innecesario */
+@media (min-width: 960px) {
+  .responsive-data-table-wrapper :deep(.v-data-table) {
+    min-width: auto;
+    overflow-x: hidden;
+  }
+}
+
+.tools-bar {
+  overflow-x: auto;
+  white-space: nowrap;
+  gap: 8px;
+}
+
 .oscurecer-persistente {
   background-color: rgba(0, 0, 0, 0.04) !important; /* Sutil gris claro */
   border-color: rgba(0, 0, 0, 0.12) !important;     /* Borde más marcado */

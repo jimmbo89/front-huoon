@@ -220,7 +220,10 @@
 
         <template v-else>
 
-        <div class="ma-0 pa-0" style="width: 100%;">
+        <div
+            class="ma-0 pa-0 responsive-data-table-wrapper"
+            :class="{ 'mobile-scroll': $vuetify.display.xs || $vuetify.display.sm }"
+          >
           <v-data-table
             :items="tasks"
             :items-per-page="-1"
@@ -241,7 +244,7 @@
           >
             <!-- Fila personalizada -->
             <template v-slot:item="slotProps">
-            <tr style="display: table; width: 100%; table-layout: fixed;">
+            <tr style="display: table; width: 100%; table-layout: auto;">
           <td colspan="100%" style="padding: 0; border: none">
                     <v-card
                       class="mb-2 ma-0 pa-0 rounded-lg"
@@ -825,94 +828,6 @@ export default {
           color: "amber",
         },
       ],
-      /*cards: [
-        {
-          title: "Deseos",
-          description: "Listas de deseos y compras",
-          icon: "mdi-creation",
-          to: "/desire",
-          color: "secondary",
-        },
-        {
-          title: "Finanzas",
-          description: "Ingresos, gastos y presupuestos",
-          icon: "mdi-finance",
-          to: "/finance",
-          color: "success",
-        },
-        {
-          title: "Tareas",
-          description: "Organiza actividades pendientes",
-          icon: "mdi-calendar-weekend-outline",
-          to: "/task",
-          color: "warning",
-        },
-        {
-          title: "Almacenes",
-          description: "Gestiona inventarios",
-          icon: "mdi-store-outline",
-          to: "/personwarehouse",
-          color: "error",
-        },
-        {
-          title: "Historia Clínica",
-          description: "Registro médico y bienestar",
-          icon: "mdi-heart-pulse",  // Icono de corazón/pulso (típico para salud)
-          to: "/health",            // Ruta sugerida
-          color: "pink",            // Color que asocia con salud
-          // Alternativa de color: "red" para algo más estándar
-        },
-        {
-          title: "Productos",
-          description: "Catálogo de productos",
-          icon: "mdi-package-variant",
-          to: "/product",
-          color: "purple",
-        },
-        {
-          title: "Archivos",
-          description: "Documentos importantes",
-          icon: "mdi-folder-star-outline",
-          to: "/file",
-          color: "indigo",
-        },
-        {
-          title: "Chat",
-          description: "Comunicación con contactos",
-          icon: "mdi-chat",
-          to: "/chat",
-          color: "teal",
-        },
-        {
-          title: "Hogar",
-          description: "Gestión del hogar",
-          icon: "mdi-home",
-          to: "/homes",
-          color: "brown",
-        },
-        {
-          title: "suggestions",
-          description: "Recomendaciones y propuestas",
-          icon: "mdi-lightbulb-on-outline",
-          to: "/suggestions",
-          color: "amber",
-        },
-      ]    {
-          title: 'Mantenedores',
-          icon: 'mdi-progress-wrench',
-          color: 'deep-orange',
-          menu: true,
-          to: '/mantenedoresMenu',
-          items: [
-            { title: 'Categorías', icon: 'mdi-text-box-outline', to: '/category' },
-            { title: 'Almacénes', icon: 'mdi-warehouse', to: '/warehouse' },
-            { title: 'Prioridades', icon: 'mdi-star-circle-outline', to: '/priority' },
-            { title: 'Roles', icon: 'mdi-account-cog-outline', to: '/role' },
-            { title: 'Estados', icon: 'mdi-check-circle-outline', to: '/status' },
-            { title: 'Tipos de Hogar', icon: 'mdi-home-group', to: '/hometype' },
-            { title: 'Tipos de Salud', icon: 'mdi-heart-pulse', to: '/type' }
-          ]
-        }*/
       taskCount: "",
       goalCount: "",
       whishCount: "",
@@ -2056,6 +1971,28 @@ export default {
 </script>
 
 <style scoped>
+.responsive-data-table-wrapper {
+  width: 100%;
+}
+
+/* Solo en móvil: activar scroll horizontal */
+.responsive-data-table-wrapper.mobile-scroll {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* En móvil: forzar ancho mínimo para que haya algo que scrollear */
+.responsive-data-table-wrapper.mobile-scroll :deep(.v-data-table) {
+  min-width: 800px;
+}
+
+/* En desktop: asegurar que no haya scroll innecesario */
+@media (min-width: 960px) {
+  .responsive-data-table-wrapper :deep(.v-data-table) {
+    min-width: auto;
+    overflow-x: hidden;
+  }
+}
 .text-truncate {
   white-space: nowrap;
   overflow: hidden;

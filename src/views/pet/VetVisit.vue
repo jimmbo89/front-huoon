@@ -59,6 +59,10 @@
         ></v-text-field>
       </div>
     </v-card-title>
+    <div
+        class="ma-0 pa-0 responsive-data-table-wrapper"
+        :class="isMobile ? 'mobile-scroll' : ''"
+      >
      <v-data-table
     :headers="headers"
     :items="visits"
@@ -70,15 +74,15 @@
     :hide-default-header="true"
     class="mt-1"
     style="
-      max-height: 68vh;
-      overflow-y: auto;
-      background: transparent;
-      border: none !important;
-      outline: none !important;
-      box-shadow: none !important;
-      padding: 0;
-    "
-  >
+        max-height: 68vh;
+        overflow-y: auto;
+        overflow-x: hidden;
+        background: transparent;
+        border: none !important;
+        outline: none !important;
+        box-shadow: none !important;
+      "
+    >
     <!-- Header personalizado (simulado) -->
     <template v-slot:top>
       <v-card
@@ -136,6 +140,11 @@
 
     <!-- Fila personalizada -->
     <template v-slot:item="{ item }">
+    <tr
+          style="display: table; width: 100%;"
+          :class="isMobile ? 'mobile-table' : 'desktop-table'"
+        >
+          <td colspan="100%" style="padding: 0; border: none">
       <v-card
         class="mb-2 mx-1 rounded-lg"
         elevation="1"
@@ -272,13 +281,17 @@
           </div>
         </v-card-text>
       </v-card>
+      </td>
+      </tr>
     </template>
   </v-data-table>
+  </div>
      </v-card-text>
     </v-card>
-  <v-dialog v-model="dialog" fullscreen persistent transition="dialog-bottom-transition" content-class="fullscreen-dialog">
+  <v-dialog v-model="dialog" persistent transition="dialog-bottom-transition" :fullscreen="isFullscreen"
+  :max-width="isMobile ? '100%' : 'none'">
   <v-form ref="form" v-model="valid" class="h-100">
-    <v-card class="pa-10">
+    <v-card :class="isMobile ? 'pa-0' : 'pa-10'">
       <v-card-text class="pt-12">
         <!-- Encabezado -->
         <h5 class="text-grey-darken-2 font-weight-medium">
@@ -286,9 +299,15 @@
         </h5>
         <p class="text-grey-lighten-1">{{ $t("vet_visits.formInstructions") }}</p>
 
-        <v-row class="mt-12">
-          <!-- Pasos laterales -->
-          <v-col cols="3">
+        <v-container fluid class="pa-0 mt-6">
+            <v-row>
+              <!-- Timeline (solo escritorio) -->
+              <v-col
+                v-if="isDesktop"
+                cols="12"
+                md="3"
+                class="pr-md-6"
+              >
             <v-timeline align="start" side="end" density>
               <v-timeline-item
                 v-for="(s, index) in steps"
@@ -322,13 +341,33 @@
           </v-col>
 
           <!-- Contenido dinámico según paso -->
-          <v-col cols="9">
-            <h3 class="text-deep-purple-accent-3 mb-8">
-              {{ $t(`vet_visits.steps.${steps[step].key}.title`) }}
-            </h3>
+          <v-col
+                :cols="12"
+                :md="isMobile ? 12 : 9"
+                :class="{ 'mt-6': isMobile }"
+              >
+                <!-- En móvil: indicador del paso -->
+                <div
+                  v-if="isMobile"
+                  class="d-flex justify-space-between align-center mb-4"
+                >
+                  <v-chip
+                    label
+                    size="small"
+                    color="deep-purple-lighten-4"
+                    class="text-deep-purple"
+                  >
+                    {{ $t(`vet_visits.steps.${steps[step].key}.title`) }}
+                  </v-chip>
+                </div>
 
+                <!-- En escritorio: título del paso -->
+                <h3 v-else class="text-deep-purple-accent-3 mb-6">
+                  {{ $t(`vet_visits.steps.${steps[step].key}.title`) }}
+                </h3>
+                <v-row dense>
             <!-- Paso 1: Información básica -->
-            <v-row dense v-if="step === 0">
+            <template v-if="step === 0">
             <v-col cols="12" md="6">
                 <v-text-field
                   v-model="editedItem.reason"
@@ -343,11 +382,11 @@
 
               <v-col cols="12" md="6">
                 <v-locale-provider>
-                  <v-menu v-model="menu" :close-on-content-click="false" offset-y min-width="auto" transition="scale-transition" location="end">
+                  <v-menu v-model="menu" :close-on-content-click="true" offset-y min-width="auto" transition="scale-transition" location="end">
                     <template v-slot:activator="{ props }">
                       <v-text-field
                         v-bind="props"
-                        :modelValue="editedItem.date"
+                        :modelValue="input"
                         variant="underlined"
                         :rules="[
                           (v) => !!v || $t('vet_visits.validation.required', { field: $t('vet_visits.fields.date') }),
@@ -358,7 +397,7 @@
                     </template>
                     <v-date-picker
                       color="#03626C"
-                      :modelValue="parseDateString(editedItem.date)"
+                      :modelValue="input"
                       @update:model-value="updateDate"
                       format="yyyy-MM-dd"
                     ></v-date-picker>
@@ -386,10 +425,10 @@
                   ]"
                 ></v-text-field>
               </v-col>
-            </v-row>
+            </template>
 
             <!-- Paso 2: Diagnóstico y tratamiento -->
-            <v-row dense v-if="step === 1">
+            <template v-if="step === 1">
               <v-col cols="12">
                 <v-textarea
                   v-model="editedItem.diagnosis"
@@ -419,28 +458,28 @@
                   rows="3"
                 ></v-textarea>
               </v-col>
-            </v-row>
+            </template>
 
             <!-- Paso 3: Siguiente cita y documento -->
-            <v-row dense v-if="step === 2">
+            <template v-if="step === 2">
               <v-col cols="12">
                 <v-locale-provider>
-                  <v-menu v-model="menu2" :close-on-content-click="false" offset-y min-width="auto" transition="scale-transition" location="end">
+                  <v-menu v-model="menu2" :close-on-content-click="true" offset-y min-width="auto" transition="scale-transition" location="end">
                     <template v-slot:activator="{ props }">
                       <v-text-field
                         v-bind="props"
-                        :model-value="editedItem.next_visit"
+                        :model-value="input2"
                         :label="$t('vet_visits.fields.next_visit')"
                         variant="underlined"
                         readonly
                       ></v-text-field>
                     </template>
                     <v-date-picker
-                      :modelValue="parseDateString(editedItem.next_visit)"
+                      :modelValue="input2"
                       @update:model-value="updateDate1"
                       format="yyyy-MM-dd"
                       color="#03626C"
-                      :min="editedItem.date"
+                      :min="input"
                     ></v-date-picker>
                   </v-menu>
                 </v-locale-provider>
@@ -489,6 +528,7 @@
                   ]"
                 ></v-file-input>
               </v-col>-->
+            </template>
             </v-row>
 
             <!-- Navegación -->
@@ -516,6 +556,7 @@
             </div>
           </v-col>
         </v-row>
+        </v-container>
       </v-card-text>
     </v-card>
   </v-form>
@@ -621,6 +662,7 @@ export default {
       { key: "follow_up" }
     ],
     file: null,
+    isFullscreen: false,
     showImage: false,
     icono: "mdi-file",
     imgMiniatura: "",
@@ -719,6 +761,12 @@ export default {
     ],
   }),
   computed: {
+    isMobile() {
+			return this.$vuetify.display.xs || this.$vuetify.display.sm;
+		},
+		isDesktop() {
+			return !this.isMobile;
+		},
      validStep() {
     switch (this.step) {
       case 0:
@@ -762,6 +810,14 @@ export default {
   return type ? imageTypes.includes(type) : false;
 },*/
   },
+  watch: {
+    dialog(val) {
+      if (val) this.updateFullscreenMode();
+      },
+    isDesktop() {
+      this.updateFullscreenMode();
+    },
+	},
    created() {
     this.tools = [
       {
@@ -776,6 +832,11 @@ export default {
     this.initialize();
   },
   methods: {
+    updateFullscreenMode() {
+      this.$nextTick(() => {
+        this.isFullscreen = this.isDesktop;
+      });
+    },
     isImage(imagePath) {
       console.log("imagenPath:", imagePath);
     const imageTypes = ['jpg', 'jpeg', 'png', 'gif', 'webp', 'bmp', 'svg'];
@@ -852,6 +913,13 @@ export default {
         this.save();
       }
     },
+     obtenerFechaLocal() {
+      const hoy = new Date();
+      const year = hoy.getFullYear();
+      const month = String(hoy.getMonth() + 1).padStart(2, "0");
+      const day = String(hoy.getDate()).padStart(2, "0");
+      return `${year}-${month}-${day}`;
+    },
     updateDate(value) {
     const year = value.getFullYear();
     const month = String(value.getMonth() + 1).padStart(2, '0');
@@ -873,6 +941,9 @@ export default {
     async showAdd() {
       this.editedIndex = -1;
       this.step = 0;
+      this.close();
+      this.input = this.obtenerFechaLocal();
+      this.editedItem.date = this.input;
       this.dialog = true;
     },
     close() {
@@ -1454,6 +1525,49 @@ export default {
 </script>
 
 <style scoped>
+.desktop-table {
+  table-layout: fixed;
+}
+
+.mobile-table {
+  table-layout: auto;
+}
+.responsive-data-table-wrapper {
+  width: 100%;
+}
+
+/* Solo en móvil: activar scroll horizontal */
+.responsive-data-table-wrapper.mobile-scroll {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* En móvil: forzar ancho mínimo para que haya algo que scrollear */
+.responsive-data-table-wrapper.mobile-scroll :deep(.v-data-table) {
+  min-width: 800px;
+}
+
+/* En desktop: asegurar que no haya scroll innecesario */
+@media (min-width: 960px) {
+  .responsive-data-table-wrapper :deep(.v-data-table) {
+    min-width: auto;
+    overflow-x: hidden;
+  }
+}
+
+.tools-bar {
+  overflow-x: auto;
+  white-space: nowrap;
+  gap: 8px;
+}
+
+.fullscreen-dialog {
+	display: flex;
+	flex-direction: column;
+	height: 100%;
+	overflow-y: auto;
+}
+
 .date-display {
   font-size: 0.85rem; /* Equivale a text-caption */
   line-height: 1.1;

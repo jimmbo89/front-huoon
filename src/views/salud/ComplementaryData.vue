@@ -19,7 +19,7 @@
       </v-col>
     </v-row>
   </v-snackbar>
-  <v-container class="pa-4">
+  <v-container :class="isMobile ? 'pa-0' : 'pa-4'" :fluid="isMobile">
     <v-card class="pa-4" elevation="4" rounded="lg">
       <!-- Encabezado con foto y datos -->
       <v-card-text>
@@ -38,7 +38,12 @@
               @click="abrirModal({ type: 'height', ...heightData })"
               style="cursor: pointer"
             >
-              <v-avatar size="40" class="me-3" color="grey-darken-1 lighten-4" variant="tonal">
+              <v-avatar
+                size="40"
+                class="me-3"
+                color="grey-darken-1 lighten-4"
+                variant="tonal"
+              >
                 <v-icon color="grey-darken-1">mdi-human-male-height</v-icon>
               </v-avatar>
 
@@ -60,7 +65,11 @@
                 </v-tooltip>
 
                 <div class="text-caption text-grey-lighten-1 mt-1">
-                  {{ formatoFecha(heightData?.exam_date || new Date().toISOString().split("T")[0]) }}
+                  {{
+                    formatoFecha(
+                      heightData?.exam_date || new Date().toISOString().split("T")[0]
+                    )
+                  }}
                 </div>
               </div>
             </v-card>
@@ -76,7 +85,12 @@
               @click="abrirModal({ type: 'weight', ...weightData })"
               style="cursor: pointer"
             >
-              <v-avatar size="40" class="me-3" color="indigo-darken-2 lighten-4" variant="tonal">
+              <v-avatar
+                size="40"
+                class="me-3"
+                color="indigo-darken-2 lighten-4"
+                variant="tonal"
+              >
                 <v-icon color="indigo-darken-2">mdi-scale-bathroom</v-icon>
               </v-avatar>
 
@@ -98,7 +112,11 @@
                 </v-tooltip>
 
                 <div class="text-caption text-grey-lighten-1 mt-1">
-                  {{ formatoFecha(weightData?.exam_date || new Date().toISOString().split("T")[0]) }}
+                  {{
+                    formatoFecha(
+                      weightData?.exam_date || new Date().toISOString().split("T")[0]
+                    )
+                  }}
                 </div>
               </div>
             </v-card>
@@ -114,8 +132,15 @@
               @click="abrirModal({ type: 'bmi', ...bmiData })"
               style="cursor: pointer"
             >
-              <v-avatar size="40" class="me-3" :color="getImcColor(bmiData?.bmi)" variant="tonal">
-                <v-icon :color="getImcColor(bmiData?.bmi)">mdi-calculator-variant-outline</v-icon>
+              <v-avatar
+                size="40"
+                class="me-3"
+                :color="getImcColor(bmiData?.bmi)"
+                variant="tonal"
+              >
+                <v-icon :color="getImcColor(bmiData?.bmi)"
+                  >mdi-calculator-variant-outline</v-icon
+                >
               </v-avatar>
 
               <div style="min-width: 0; flex: 1">
@@ -136,7 +161,11 @@
                 </v-tooltip>
 
                 <div class="text-caption text-grey-lighten-1 mt-1">
-                  {{ formatoFecha(bmiData?.exam_date || new Date().toISOString().split("T")[0]) }}
+                  {{
+                    formatoFecha(
+                      bmiData?.exam_date || new Date().toISOString().split("T")[0]
+                    )
+                  }}
                 </div>
               </div>
             </v-card>
@@ -152,7 +181,12 @@
               @click="abrirModal({ type: 'vacunacion', ...firstVaccinationData })"
               style="cursor: pointer"
             >
-              <v-avatar size="40" class="me-3" color="green-darken-1 lighten-4" variant="tonal">
+              <v-avatar
+                size="40"
+                class="me-3"
+                color="green-darken-1 lighten-4"
+                variant="tonal"
+              >
                 <v-icon color="green-darken-1">mdi-needle</v-icon>
               </v-avatar>
 
@@ -170,11 +204,18 @@
                       {{ firstVaccinationData?.description || $t("no_definido") }}
                     </div>
                   </template>
-                  <span>{{ firstVaccinationData?.description || $t("no_definido") }}</span>
+                  <span>{{
+                    firstVaccinationData?.description || $t("no_definido")
+                  }}</span>
                 </v-tooltip>
 
                 <div class="text-caption text-grey-lighten-1 mt-1">
-                  {{ formatoFecha(firstVaccinationData?.startDate || new Date().toISOString().split("T")[0]) }}
+                  {{
+                    formatoFecha(
+                      firstVaccinationData?.startDate ||
+                        new Date().toISOString().split("T")[0]
+                    )
+                  }}
                 </div>
               </div>
             </v-card>
@@ -191,7 +232,12 @@
               style="cursor: pointer"
             >
               <!-- Ícono a la izquierda -->
-              <v-avatar size="40" class="me-3" color="red-darken-1 lighten-4" variant="tonal">
+              <v-avatar
+                size="40"
+                class="me-3"
+                color="red-darken-1 lighten-4"
+                variant="tonal"
+              >
                 <v-icon color="red-darken-1">mdi-heart-pulse</v-icon>
               </v-avatar>
 
@@ -209,91 +255,119 @@
                       v-bind="props"
                       class="text-caption text-grey-darken-1 text-truncate"
                     >
-                      {{ `${diagnosisData?.typeName} (${diagnosisData?.cie10Code || $t('sin_codigo')})` || $t('no_definido') }}
+                      {{
+                        `${diagnosisData?.typeName} (${
+                          diagnosisData?.cie10Code || $t("sin_codigo")
+                        })` || $t("no_definido")
+                      }}
                     </div>
                   </template>
-                  <span>{{ `${diagnosisData?.typeName} (${diagnosisData?.cie10Code || $t('sin_codigo')})` || $t('no_definido') }}</span>
+                  <span>{{
+                    `${diagnosisData?.typeName} (${
+                      diagnosisData?.cie10Code || $t("sin_codigo")
+                    })` || $t("no_definido")
+                  }}</span>
                 </v-tooltip>
 
                 <!-- Fecha -->
                 <div class="text-caption text-grey-lighten-1 mt-1">
-                  {{ formatoFecha(diagnosisData?.date || new Date().toISOString().split("T")[0]) }}
+                  {{
+                    formatoFecha(
+                      diagnosisData?.date || new Date().toISOString().split("T")[0]
+                    )
+                  }}
                 </div>
               </div>
             </v-card>
           </v-col>
 
-
           <!-- Consultas médicas -->
-        <v-col cols="12" sm="6" md="3">
-  <v-card
-    class="pa-2 d-flex align-center signo-card"
-    :class="{ 'oscurecer-persistente': selectedView === 'consultation' }"
-    elevation="1"
-    rounded="lg"
-    @click="abrirModal({ type: 'consultation', ...consultationData })"
-    style="cursor: pointer"
-  >
-    <!-- Ícono -->
-    <v-avatar size="40" class="me-3" color="blue-darken-2" variant="tonal">
-      <v-icon color="blue-darken-2">mdi-stethoscope</v-icon>
-    </v-avatar>
+          <v-col cols="12" sm="6" md="3">
+            <v-card
+              class="pa-2 d-flex align-center signo-card"
+              :class="{ 'oscurecer-persistente': selectedView === 'consultation' }"
+              elevation="1"
+              rounded="lg"
+              @click="abrirModal({ type: 'consultation', ...consultationData })"
+              style="cursor: pointer"
+            >
+              <!-- Ícono -->
+              <v-avatar size="40" class="me-3" color="blue-darken-2" variant="tonal">
+                <v-icon color="blue-darken-2">mdi-stethoscope</v-icon>
+              </v-avatar>
 
-    <!-- Contenido -->
-    <div style="min-width: 0; flex: 1">
-      <!-- Título -->
-      <div class="text-body-2 font-weight-medium text-truncate">
-        {{ $t("cardConsultaMedica") }}
-      </div>
+              <!-- Contenido -->
+              <div style="min-width: 0; flex: 1">
+                <!-- Título -->
+                <div class="text-body-2 font-weight-medium text-truncate">
+                  {{ $t("cardConsultaMedica") }}
+                </div>
 
-      <!-- Valor principal + profesional + motivo (dentro del tooltip) -->
-      <v-tooltip location="bottom">
-        <template v-slot:activator="{ props }">
-          <div
-            v-bind="props"
-            class="text-caption text-grey-darken-1 text-truncate"
-          >
-            {{
-              consultationData?.typeName
-                ? `${consultationData.typeName}${consultationData.professional ? ' - ' + $t('consultations.fields.profesional') + ': ' + consultationData.professional : ''}`
-                : $t("no_definido")
-            }}
-          </div>
-        </template>
-        <span>
-          {{
-            consultationData?.typeName
-              ? `${consultationData.typeName}${consultationData.professional ? ' - ' + $t('consultations.fields.profesional') + ': ' + consultationData.professional : ''}`
-              : $t("no_definido")
-          }}
-          <br v-if="consultationData?.reason" />
-          <small class="text-grey-lighten-2">{{ $t('consultations.fields.reason') }}: {{ consultationData.reason }}</small>
-        </span>
-      </v-tooltip>
+                <!-- Valor principal + profesional + motivo (dentro del tooltip) -->
+                <v-tooltip location="bottom">
+                  <template v-slot:activator="{ props }">
+                    <div
+                      v-bind="props"
+                      class="text-caption text-grey-darken-1 text-truncate"
+                    >
+                      {{
+                        consultationData?.typeName
+                          ? `${consultationData.typeName}${
+                              consultationData.professional
+                                ? " - " +
+                                  $t("consultations.fields.profesional") +
+                                  ": " +
+                                  consultationData.professional
+                                : ""
+                            }`
+                          : $t("no_definido")
+                      }}
+                    </div>
+                  </template>
+                  <span>
+                    {{
+                      consultationData?.typeName
+                        ? `${consultationData.typeName}${
+                            consultationData.professional
+                              ? " - " +
+                                $t("consultations.fields.profesional") +
+                                ": " +
+                                consultationData.professional
+                              : ""
+                          }`
+                        : $t("no_definido")
+                    }}
+                    <br v-if="consultationData?.reason" />
+                    <small class="text-grey-lighten-2"
+                      >{{ $t("consultations.fields.reason") }}:
+                      {{ consultationData.reason }}</small
+                    >
+                  </span>
+                </v-tooltip>
 
-      <!-- Fecha -->
-      <div class="text-caption text-grey-lighten-1 mt-1">
-        {{
-          formatoFecha(
-            consultationData?.date || new Date().toISOString().split("T")[0]
-          )
-        }}
-      </div>
-    </div>
-  </v-card>
-</v-col>
+                <!-- Fecha -->
+                <div class="text-caption text-grey-lighten-1 mt-1">
+                  {{
+                    formatoFecha(
+                      consultationData?.date || new Date().toISOString().split("T")[0]
+                    )
+                  }}
+                </div>
+              </div>
+            </v-card>
+          </v-col>
         </v-row>
         <v-row dense class="mt-3">
-        <v-col cols="12">
-          <component
-            :is="getComponentByType(selectedView)"
-            v-if="selectedView"
-            :key="selectedView"
-            :selected-person="selectedPerson"
-            @update-complementary-data="initialize"
-          />
-        </v-col>
-      </v-row>
+          <v-col cols="12">
+            <component
+              :is="getComponentByType(selectedView)"
+              v-if="selectedView"
+              :key="selectedView"
+              :selected-person="selectedPerson"
+              @update-complementary-data="initialize"
+            />
+          </v-col>
+        </v-row>
       </v-card-text>
     </v-card>
   </v-container>
@@ -317,18 +391,19 @@ export default {
     Weight,
     Vaccination,
     Diagnosis,
-    MedicalConsultation
+    MedicalConsultation,
   },
   props: {
     selectedPerson: {
       type: Object,
-      required: true
+      required: true,
     },
   },
   data: () => ({
+     isFullscreen: false,
     selected: shallowRef([2]),
     selected2: null,
-    selectedView: 'height',
+    selectedView: "height",
     time: null,
     modal2: false,
     snackbar: false,
@@ -366,14 +441,32 @@ export default {
     module: "",
   }),
   computed: {
-     firstVaccinationData() {
-    if (!this.personalBackGroundData || !Array.isArray(this.personalBackGroundData) || this.personalBackGroundData.length === 0) {
-      return null;
-    }
-    // Como viene ordenado DESC por startDate,
-    // la vacunación más reciente está en la PRIMERA posición del array.
-    return this.personalBackGroundData[0];
+    firstVaccinationData() {
+      if (
+        !this.personalBackGroundData ||
+        !Array.isArray(this.personalBackGroundData) ||
+        this.personalBackGroundData.length === 0
+      ) {
+        return null;
+      }
+      // Como viene ordenado DESC por startDate,
+      // la vacunación más reciente está en la PRIMERA posición del array.
+      return this.personalBackGroundData[0];
+    },
+    isMobile() {
+      return this.$vuetify.display.xs || this.$vuetify.display.sm;
+    },
+    isDesktop() {
+      return !this.isMobile;
+    },
   },
+  watch: {
+    dialog(val) {
+      if (val) this.updateFullscreenMode();
+    },
+    isDesktop() {
+      this.updateFullscreenMode();
+    },
   },
   mounted() {
     this.home_id = JSON.parse(LocalStorageService.getItem("home_id"));
@@ -382,9 +475,14 @@ export default {
     /*const primerSignoValido = this.signosVitalesTransformados.find(
     (s) => s.valor !== this.$t("no_definido")
   );/*/
-  this.selectedView = "height";
+    this.selectedView = "height";
   },
   methods: {
+    updateFullscreenMode() {
+      this.$nextTick(() => {
+        this.isFullscreen = this.isDesktop;
+      });
+    },
     formatoFecha(fecha) {
       if (!fecha) return "";
 
@@ -410,7 +508,7 @@ export default {
     },
     abrirModal(item) {
       this.selectedView = item.type;
-      console.log('this.selectedView');
+      console.log("this.selectedView");
       console.log(this.selectedView);
     },
     getComponentByType(type) {
@@ -428,9 +526,9 @@ export default {
         bmi: null, // Mejor null que '' para evitar confusión
         vacunacion: Vaccination,
         diagnosis: Diagnosis,
-        consultation: MedicalConsultation
+        consultation: MedicalConsultation,
       };
-      console.log('map[normalized]');
+      console.log("map[normalized]");
       console.log(map[normalized]);
       return map[normalized] || null;
     },
@@ -451,7 +549,7 @@ export default {
     async initialize() {
       this.data = {};
       this.data.home_id = this.home_id;
-      this.data.person_id = this.selectedPerson.id
+      this.data.person_id = this.selectedPerson.id;
       try {
         this.loading = true;
         const result = await handleRequest({
@@ -549,8 +647,8 @@ export default {
 
 .oscurecer-persistente {
   background-color: rgba(0, 0, 0, 0.04) !important; /* Sutil gris claro */
-  border-color: rgba(0, 0, 0, 0.12) !important;     /* Borde más marcado */
-  transform: translateY(-1px) !important;           /* Efecto leve de elevación */
+  border-color: rgba(0, 0, 0, 0.12) !important; /* Borde más marcado */
+  transform: translateY(-1px) !important; /* Efecto leve de elevación */
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.12) !important;
 }
 

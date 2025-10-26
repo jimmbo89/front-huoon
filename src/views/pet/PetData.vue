@@ -12,8 +12,8 @@
         </v-row>
     </v-snackbar>
 
-    <v-container>
-        <v-card class="pa-4" elevation="4" rounded="lg">
+   <v-container :class="isMobile ? 'pa-0' : 'pa-4'" :fluid="isMobile">
+        <v-card elevation="4" rounded="lg">
             <!-- Encabezado con foto y datos -->
             <v-card-text>
                 <v-row dense>
@@ -27,7 +27,7 @@
                             <div style="position: relative; display: inline-block;">
                                 <v-avatar size="60" class="me-4">
                                     <v-img
-                                        :src="`${this.$axios.defaults.baseURL}images/${selectedPet.image}?t=${getCacheTimestamp()}`"
+                                        :src="getImageUrl(selectedPet.image)"
                                         alt="Foto de la mascota" />
                                 </v-avatar>
                                 <!-- Botón de edición superpuesto -->
@@ -360,6 +360,7 @@ export default {
     },
   },
   data: () => ({
+    isFullscreen: false,
     selectedView: "vaccination",
     currentView: null,
     dialogMedication: false,
@@ -455,6 +456,12 @@ export default {
     selectRules: [(v) => !!v || "Seleccionar al menos un elemento"],
   }),
   computed: {
+    isMobile() {
+			return this.$vuetify.display.xs || this.$vuetify.display.sm;
+		},
+		isDesktop() {
+			return !this.isMobile;
+		},
     formTitle() {
       return this.editedIndex === -1
         ? "Agregar Historia Clínica"
@@ -512,6 +519,14 @@ export default {
       return this.imgMiniatura;
     },
   },
+  watch: {
+    dialog(val) {
+      if (val) this.updateFullscreenMode();
+      },
+    isDesktop() {
+      this.updateFullscreenMode();
+    },
+	},
   mounted() {
     this.name = JSON.parse(LocalStorageService.getItem("name"));
     this.imageUrl = LocalStorageService.getItem("image").replace(/['"]+/g, "");
@@ -519,6 +534,11 @@ export default {
     this.initialize();
   },
   methods: {
+    updateFullscreenMode() {
+      this.$nextTick(() => {
+        this.isFullscreen = this.isDesktop;
+      });
+    },
     getComponentByType(type) {
       if (!type) return null;
 
@@ -537,6 +557,11 @@ export default {
       };
 
       return map[normalized] || null;
+    },
+    getImageUrl(imagePath) {
+      return `${
+        this.$axios.defaults.baseURL
+      }images/${imagePath}?t=${this.getCacheTimestamp()}`;
     },
     getCacheTimestamp() {
       // Usamos medianoche (00:00:00) del día actual
@@ -1091,6 +1116,12 @@ export default {
 };
 </script>
 <style scoped>
+.fullscreen-dialog {
+	display: flex;
+	flex-direction: column;
+	height: 100%;
+	overflow-y: auto;
+	}
 .store-card {
   border-radius: 20px;
   cursor: pointer;

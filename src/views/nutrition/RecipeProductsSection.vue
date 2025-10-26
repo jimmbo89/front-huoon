@@ -33,7 +33,10 @@
           ></v-text-field>
         </div>
       </v-card-title>
-
+      <div
+      class="ma-0 pa-0 responsive-data-table-wrapper"
+      :class="{ 'mobile-scroll': $vuetify.display.xs || $vuetify.display.sm }"
+    >
       <v-data-table
         :headers="headers"
         :items="modelValue"
@@ -44,15 +47,15 @@
         :hide-default-header="true"
         class="mt-1"
         style="
-          max-height: 68vh;
-          overflow-y: auto;
-          background: transparent;
-          border: none !important;
-          outline: none !important;
-          box-shadow: none !important;
-          padding: 0;
-        "
-      >
+        max-height: 68vh;
+        overflow-y: auto;
+        overflow-x: hidden;
+        background: transparent;
+        border: none !important;
+        outline: none !important;
+        box-shadow: none !important;
+      "
+    >
         <!-- Encabezado personalizado -->
         <template v-slot:top>
           <v-card
@@ -105,6 +108,11 @@
 
         <!-- Fila personalizada -->
         <template v-slot:item="{ item }">
+        <tr
+          style="display: table; width: 100%;"
+          :class="$vuetify.display.xs || $vuetify.display.sm ? 'mobile-table' : 'desktop-table'"
+        >
+          <td colspan="100%" style="padding: 0; border: none">
           <v-card class="mb-2 mx-1 rounded-lg" elevation="1" flat>
             <v-card-text class="d-flex align-center pa-2" style="width: 100%">
               <!-- Nombre + imagen -->
@@ -168,28 +176,31 @@
               </div>
             </v-card-text>
           </v-card>
+          </td>
+          </tr>
         </template>
       </v-data-table>
+      </div>
     </v-card-text>
 
     <!-- ✅ Diálogo NUEVO: fullscreen con pasos -->
     <v-dialog
       v-model="dialog"
-      style="width: 1000px;"
+      :width="$vuetify.display.xs ? '100%' : '50%'"
       persistent
       transition="dialog-bottom-transition"
     >
       <v-form ref="form" v-model="valid" class="h-100">
-        <v-card class="pa-10">
+        <v-card :class="$vuetify.display.xs ? 'pa-4' : 'pa-10'">
           <v-card-text class="pt-12">
             <h5 class="text-grey-darken-2 font-weight-medium">
               {{ $t(`recipe_product.formTitle.${editIndex === -1 ? 'create' : 'edit'}`) }}
             </h5>
             <p class="text-grey-lighten-1">{{ $t("recipe_product.formInstructions") }}</p>
 
-            <v-row class="mt-12">
-              <!-- Pasos laterales -->
-              <v-col cols="4">
+            <v-row class="mt-6">
+            <!-- Timeline: solo visible en md+ -->
+            <v-col cols="12" md="4" class="d-none d-md-block">
                 <v-timeline align="start" side="end" dense>
                   <v-timeline-item
                     v-for="(step, index) in steps"
@@ -211,13 +222,30 @@
               </v-col>
 
               <!-- Contenido dinámico -->
-              <v-col cols="8">
-                <h3 class="text-deep-purple-accent-3 mb-8">
+             <v-col :cols="12" :md="8" :class="{ 'mt-6': $vuetify.display.xs || $vuetify.display.sm }" >
+              <!-- En móvil: mostrar indicador de paso -->
+              <div
+                v-if="$vuetify.display.xs || $vuetify.display.sm"
+                class="d-flex justify-space-between align-center mb-4"
+              >
+                <v-chip
+                  label
+                  size="small"
+                  color="deep-purple-lighten-4"
+                  class="text-deep-purple"
+                >
                   {{ $t(`recipe_product.steps.${steps[currentStep].key}.title`) }}
-                </h3>
+                </v-chip>
+              </div>
+
+              <!-- Título del paso (solo en desktop) -->
+              <h3 v-else class="text-deep-purple-accent-3 mb-6">
+                {{ $t(`recipe_product.steps.${steps[currentStep].key}.title`) }}
+              </h3>
+              <v-row dense>
 
                 <!-- Paso 1: Selección de producto -->
-                <v-row dense v-if="currentStep === 0">
+                <template v-if="currentStep === 0">
                   <v-col cols="12">
                     <v-autocomplete
                       v-model="selectedProduct"
@@ -259,10 +287,10 @@
                       :rules="textRules"
                     ></v-text-field>
                   </v-col>
-                </v-row>
+                </template>
 
                 <!-- Paso 3: Nutrición por unidad -->
-                <v-row dense v-if="currentStep === 1 && selectedProduct">
+                <template v-if="currentStep === 1 && selectedProduct">
                   <v-col cols="12" md="4">
                     <v-text-field
                       v-model.number="calories_per_unit"
@@ -333,6 +361,8 @@
                       :rules="nutrientRules"
                     ></v-text-field>
                   </v-col>
+                </template>
+
                 </v-row>
 
                 <!-- Navegación -->
@@ -556,3 +586,41 @@ export default defineComponent({
   }
 });
 </script>
+<style scoped>
+.desktop-table {
+  table-layout: fixed;
+}
+
+.mobile-table {
+  table-layout: auto;
+}
+.responsive-data-table-wrapper {
+  width: 100%;
+}
+
+/* Solo en móvil: activar scroll horizontal */
+.responsive-data-table-wrapper.mobile-scroll {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* En móvil: forzar ancho mínimo para que haya algo que scrollear */
+.responsive-data-table-wrapper.mobile-scroll :deep(.v-data-table) {
+  min-width: 800px;
+}
+
+/* En desktop: asegurar que no haya scroll innecesario */
+@media (min-width: 960px) {
+  .responsive-data-table-wrapper :deep(.v-data-table) {
+    min-width: auto;
+    overflow-x: hidden;
+  }
+}
+
+.tools-bar {
+  overflow-x: auto;
+  white-space: nowrap;
+  gap: 8px;
+}
+
+</style>

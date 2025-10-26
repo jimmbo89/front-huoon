@@ -20,7 +20,7 @@
     </v-row>
   </v-snackbar>
 
-  <v-container class="pa-4">
+  <v-container :class="isMobile ? 'pa-0' : 'pa-4'" :fluid="isMobile">
     <v-card elevation="2" rounded="lg" flat>
       <!-- Encabezado con foto y datos -->
       <v-card-text>
@@ -85,6 +85,10 @@
             ></v-text-field>
           </div>
         </v-card-title>
+        <div
+          class="ma-0 pa-0 responsive-data-table-wrapper"
+          :class="{ 'mobile-scroll': isMobile }"
+        >
         <v-data-table
           :headers="headers"
           :items="financialRecords"
@@ -95,15 +99,15 @@
           :loading="loading"
           :hide-default-header="true"
           style="
-            max-height: 68vh;
-            overflow-y: auto;
-            background: transparent;
-            border: none !important;
-            outline: none !important;
-            box-shadow: none !important;
-            padding: 0;
-          "
-        >
+              max-height: 68vh;
+              overflow-y: auto;
+              overflow-x: hidden;
+              background: transparent;
+              border: none !important;
+              outline: none !important;
+              box-shadow: none !important;
+            "
+          >
           <template v-slot:top>
             <v-card
               :elevation="1"
@@ -179,7 +183,10 @@
             </v-card>
           </template>
           <template v-slot:item="slotProps">
-            <tr>
+            <tr
+              style="display: table; width: 100%;"
+              :class="isMobile ? 'mobile-table' : 'desktop-table'"
+            >
               <td colspan="100%" style="padding: 0; border: none">
                 <v-card
                   class="mb-2 mx-1 rounded-lg"
@@ -326,6 +333,7 @@
             </tr>
           </template>
         </v-data-table>
+        </div>
       </v-card-text>
     </v-card>
   </v-container>
@@ -333,13 +341,13 @@
   <!-- Diálogo para agregar/editar ingresos -->
   <v-dialog
     v-model="dialog"
-    fullscreen
+       :fullscreen="isFullscreen"
+  :max-width="isMobile ? '100%' : 'none'"
     persistent
     transition="dialog-bottom-transition"
-    content-class="fullscreen-dialog"
   >
     <v-form ref="form" v-model="valid" class="h-100">
-      <v-card class="pa-10">
+      <v-card :class="isMobile ? 'pa-0' : 'pa-10'">
         <v-card-text class="pt-12">
           <h5 class="text-grey-darken-2 font-weight-medium">{{ formTitle }}</h5>
           <p :class="[isIncome ? 'text-green' : 'text-red', 'text-grey-lighten-1']">
@@ -350,9 +358,15 @@
             }}
           </p>
 
-          <v-row class="mt-12">
-            <!-- Side steps -->
-            <v-col cols="3">
+          <v-container fluid class="pa-0 mt-6">
+            <v-row>
+              <!-- Timeline (solo escritorio) -->
+              <v-col
+                v-if="isDesktop"
+                cols="12"
+                md="3"
+                class="pr-md-6"
+              >
               <v-timeline align="start" side="end" dense>
                 <v-timeline-item
                   v-for="(s, index) in steps"
@@ -386,13 +400,34 @@
             </v-col>
 
             <!-- Contenido dinámico según paso -->
-            <v-col cols="9">
-              <h3 class="text-deep-purple-accent-3 mb-8">
-                {{ $t(`finances.steps.${steps[step].title}.title`) }}
-              </h3>
+            <v-col
+                :cols="12"
+                :md="isMobile ? 12 : 9"
+                :class="{ 'mt-6': isMobile }"
+              >
+                <!-- En móvil: indicador del paso -->
+                <div
+                  v-if="isMobile"
+                  class="d-flex justify-space-between align-center mb-4"
+                >
+                  <v-chip
+                    label
+                    size="small"
+                    color="deep-purple-lighten-4"
+                    class="text-deep-purple"
+                  >
+                    {{ $t(`finances.steps.${steps[step].title}.title`) }}
+                  </v-chip>
+                </div>
+
+                <!-- En escritorio: título del paso -->
+                <h3 v-else class="text-deep-purple-accent-3 mb-6">
+                  {{ $t(`finances.steps.${steps[step].title}.title`) }}
+                </h3>
 
               <!-- Paso 1: Detalles del ingreso -->
-              <v-row dense v-if="step === 0">
+              <v-row dense>
+              <template v-if="step === 0">
                 <v-col cols="12" sm="12">
                   <v-switch
                     v-model="isIncome"
@@ -547,10 +582,10 @@
                     >
                   </v-card>
                 </v-col>
-              </v-row>
+              </template>
 
               <!-- Step 2: Descripción y fecha -->
-              <v-row dense v-if="step === 1">
+              <template v-if="step === 1">
                 <v-col cols="12">
                   <v-textarea
                     v-model="editedItem.description"
@@ -587,6 +622,8 @@
                     ></v-date-picker>
                   </v-menu>
                 </v-col>
+              </template>
+
               </v-row>
 
               <!-- Navegación -->
@@ -614,6 +651,7 @@
               </div>
             </v-col>
           </v-row>
+          </v-container>
         </v-card-text>
       </v-card>
     </v-form>
@@ -695,6 +733,7 @@ export default {
     }
   },
   data: () => ({
+    isFullscreen: false,
     selected: shallowRef([2]),
     selectedType: '',
     selected2: null,
@@ -791,16 +830,13 @@ export default {
     blance: {},
     selectRules: [(v) => !!v || "Seleccionar al menos un elemento"],
   }),
-  watch: {
-    selectedType(newVal) {
-      // Actualiza budget_type según el valor del switch
-      this.editedItem.type = newVal;
-
-      // Llama al método de inicialización
-      this.initialize();
-    }
-  },
   computed: {
+    isMobile() {
+			return this.$vuetify.display.xs || this.$vuetify.display.sm;
+		},
+		isDesktop() {
+			return !this.isMobile;
+		},
     maxDate() {
       const today = new Date();
       const year = today.getFullYear();
@@ -955,6 +991,21 @@ export default {
       return type ? type.name : this.selectedType;
     },
   },
+  watch: {
+    selectedType(newVal) {
+      // Actualiza budget_type según el valor del switch
+      this.editedItem.type = newVal;
+
+      // Llama al método de inicialización
+      this.initialize();
+    },
+    dialog(val) {
+      if (val) this.updateFullscreenMode();
+      },
+    isDesktop() {
+      this.updateFullscreenMode();
+    },
+  },
 
   mounted() {
     this.home_id = JSON.parse(LocalStorageService.getItem("home_id"));
@@ -971,6 +1022,11 @@ export default {
     ];
   },
   methods: {
+    updateFullscreenMode() {
+      this.$nextTick(() => {
+        this.isFullscreen = this.isDesktop;
+      });
+    },
     obtenerFechaLocal() {
       const hoy = new Date();
       const year = hoy.getFullYear();
@@ -1621,7 +1677,49 @@ export default {
 };
 </script>
 
-<style>
+<style scoped>
+.fullscreen-dialog {
+	display: flex;
+	flex-direction: column;
+	height: 100%;
+	overflow-y: auto;
+	}
+.desktop-table {
+  table-layout: fixed;
+}
+
+.mobile-table {
+  table-layout: auto;
+}
+.responsive-data-table-wrapper {
+  width: 100%;
+}
+
+/* Solo en móvil: activar scroll horizontal */
+.responsive-data-table-wrapper.mobile-scroll {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* En móvil: forzar ancho mínimo para que haya algo que scrollear */
+.responsive-data-table-wrapper.mobile-scroll :deep(.v-data-table) {
+  min-width: 800px;
+}
+
+/* En desktop: asegurar que no haya scroll innecesario */
+@media (min-width: 960px) {
+  .responsive-data-table-wrapper :deep(.v-data-table) {
+    min-width: auto;
+    overflow-x: hidden;
+  }
+}
+
+.tools-bar {
+  overflow-x: auto;
+  white-space: nowrap;
+  gap: 8px;
+}
+
 .has-negative-hint .v-field__hint {
   color: #f44336 !important;
 }

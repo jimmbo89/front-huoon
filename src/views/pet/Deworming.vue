@@ -59,6 +59,10 @@
         ></v-text-field>
       </div>
     </v-card-title>
+    <div
+        class="ma-0 pa-0 responsive-data-table-wrapper"
+        :class="isMobile ? 'mobile-scroll' : ''"
+      >
     <v-data-table
     :headers="headers"
     :items="treatments"
@@ -70,15 +74,15 @@
     :hide-default-header="true"
     class="mt-1"
     style="
-      max-height: 68vh;
-      overflow-y: auto;
-      background: transparent;
-      border: none !important;
-      outline: none !important;
-      box-shadow: none !important;
-      padding: 0;
-    "
-  >
+        max-height: 68vh;
+        overflow-y: auto;
+        overflow-x: hidden;
+        background: transparent;
+        border: none !important;
+        outline: none !important;
+        box-shadow: none !important;
+      "
+    >
     <!-- Header personalizado (simulado) -->
     <template v-slot:top>
       <v-card
@@ -130,6 +134,11 @@
 
     <!-- Fila personalizada -->
     <template v-slot:item="{ item }">
+    <tr
+          style="display: table; width: 100%;"
+          :class="isMobile ? 'mobile-table' : 'desktop-table'"
+        >
+          <td colspan="100%" style="padding: 0; border: none">
       <v-card
         class="mb-2 mx-1 rounded-lg"
         elevation="1"
@@ -222,19 +231,21 @@
           </div>
         </v-card-text>
       </v-card>
+      </td>
+      </tr>
     </template>
   </v-data-table>
+  </div>
      </v-card-text>
     </v-card>
   <v-dialog
   v-model="dialog"
-  fullscreen
-  persistent
+  :fullscreen="isFullscreen"
+  :max-width="isMobile ? '100%' : 'none'"
   transition="dialog-bottom-transition"
-  content-class="fullscreen-dialog"
 >
   <v-form ref="form" v-model="valid" class="h-100">
-    <v-card class="pa-10">
+    <v-card :class="isMobile ? 'pa-0' : 'pa-10'">
       <v-card-text class="pt-12">
         <!-- Encabezado -->
         <h5 class="text-grey-darken-2 font-weight-medium">
@@ -242,9 +253,15 @@
         </h5>
         <p class="text-grey-lighten-1">{{ $t("dewormings.formInstructions") }}</p>
 
-        <v-row class="mt-12">
-          <!-- Pasos laterales -->
-          <v-col cols="3">
+        <v-container fluid class="pa-0 mt-6">
+            <v-row>
+              <!-- Timeline (solo escritorio) -->
+              <v-col
+                v-if="isDesktop"
+                cols="12"
+                md="3"
+                class="pr-md-6"
+              >
             <v-timeline align="start" side="end" dense>
               <v-timeline-item
                 v-for="(s, index) in steps"
@@ -278,13 +295,34 @@
           </v-col>
 
           <!-- Contenido dinámico según paso -->
-          <v-col cols="9">
-            <h3 class="text-deep-purple-accent-3 mb-8">
-              {{ $t(`dewormings.steps.${steps[step].key}.title`) }}
-            </h3>
+          <v-col
+                :cols="12"
+                :md="isMobile ? 12 : 9"
+                :class="{ 'mt-6': isMobile }"
+              >
+                <!-- En móvil: indicador del paso -->
+                <div
+                  v-if="isMobile"
+                  class="d-flex justify-space-between align-center mb-4"
+                >
+                  <v-chip
+                    label
+                    size="small"
+                    color="deep-purple-lighten-4"
+                    class="text-deep-purple"
+                  >
+                    {{ $t(`dewormings.steps.${steps[step].key}.title`) }}
+                  </v-chip>
+                </div>
+
+                <!-- En escritorio: título del paso -->
+                <h3 v-else class="text-deep-purple-accent-3 mb-6">
+                  {{ $t(`dewormings.steps.${steps[step].key}.title`) }}
+                </h3>
 
             <!-- Paso 1: Información básica -->
-            <v-row dense v-if="step === 0">
+            <v-row dense>
+            <template v-if="step === 0">
               <v-col cols="12" md="12">
                 <v-text-field
                   v-model="editedItem.name"
@@ -308,10 +346,10 @@
                   rows="3"
                 ></v-textarea>
               </v-col>
-            </v-row>
+            </template>
 
             <!-- Paso 2: Detalles adicionales -->
-            <v-row dense v-if="step === 1">
+            <template v-if="step === 1">
             <v-col cols="12" md="6">
                 <v-text-field
                   v-model="editedItem.dosage"
@@ -345,33 +383,33 @@
               </v-col>
             <v-col cols="12" md="6">
                 <v-locale-provider>
-                  <v-menu v-model="menu" :close-on-content-click="false" offset-y min-width="auto" transition="scale-transition" location="end">
+                  <v-menu v-model="menu" :close-on-content-click="true" offset-y min-width="auto" transition="scale-transition" location="end">
                     <template v-slot:activator="{ props }">
-                      <v-text-field v-bind="props" :modelValue="this.editedItem.date" variant="underlined" :rules="[
+                      <v-text-field v-bind="props" :modelValue="input" variant="underlined" :rules="[
                       v => !!v || $t('dewormings.validation.required', { field: $t('dewormings.fields.date') })
                               ]"
                         :label="$t('dewormings.fields.date')" readonly></v-text-field>
                     </template>
-                      <v-date-picker color="#03626C" :modelValue="parseDateString(this.editedItem.date)" @update:model-value="updateDate"
+                      <v-date-picker color="#03626C" :modelValue="input" @update:model-value="updateDate"
                         format="yyyy-MM-dd"></v-date-picker>
                   </v-menu>
                     </v-locale-provider>
               </v-col>
               <v-col cols="12" md="6">
                 <v-locale-provider>
-                    <v-menu v-model="menu2" :close-on-content-click="false" offset-y min-width="auto" transition="scale-transition" location="end">
+                    <v-menu v-model="menu2" :close-on-content-click="true" offset-y min-width="auto" transition="scale-transition" location="end">
                       <template v-slot:activator="{ props }">
-                        <v-text-field v-bind="props" :model-value="this.editedItem.next_date"
+                        <v-text-field v-bind="props" :model-value="input2"
                           :label="$t('dewormings.fields.next_date')" variant="underlined" readonly></v-text-field>
                       </template>
-                      <v-date-picker :modelValue="parseDateString(this.editedItem.next_date)" @update:model-value="updateDate1"
+                      <v-date-picker :modelValue="input2" @update:model-value="updateDate1"
                         format="yyyy-MM-dd" color="#03626C"
-                        :min="editedItem.date"></v-date-picker>
+                        :min="input"></v-date-picker>
                     </v-menu>
                     </v-locale-provider>
               </v-col>
+            </template>
             </v-row>
-
             <!-- Navegación -->
             <div class="d-flex justify-space-between mt-8">
               <v-btn
@@ -395,6 +433,7 @@
             </div>
           </v-col>
         </v-row>
+        </v-container>
       </v-card-text>
     </v-card>
   </v-form>
@@ -444,6 +483,7 @@ export default {
       { key: "details", title: "Información adicional", subtitle: "Lote y observaciones" }
     ],
     step: 0,
+    isFullscreen: false,
     snackbar: false,
     sb_type: "",
     sb_message: "",
@@ -527,6 +567,12 @@ export default {
     ],
   }),
   computed: {
+    isMobile() {
+			return this.$vuetify.display.xs || this.$vuetify.display.sm;
+		},
+		isDesktop() {
+			return !this.isMobile;
+		},
      validStep() {
     switch (this.step) {
       case 0:
@@ -561,6 +607,14 @@ export default {
       return this.input1 ? new Date(this.input1) : new Date();
     },
   },
+  watch: {
+    dialog(val) {
+      if (val) this.updateFullscreenMode();
+      },
+    isDesktop() {
+      this.updateFullscreenMode();
+    },
+	},
   created() {
     this.tools = [
       {
@@ -575,6 +629,11 @@ export default {
     this.initialize();
   },
   methods: {
+    updateFullscreenMode() {
+      this.$nextTick(() => {
+        this.isFullscreen = this.isDesktop;
+      });
+    },
     parseDateString(dateString) {
     if (!dateString) return null;
     const [year, month, day] = dateString.split('-');
@@ -661,19 +720,27 @@ export default {
 
       return formattedValue;
     },
+    obtenerFechaLocal() {
+      const hoy = new Date();
+      const year = hoy.getFullYear();
+      const month = String(hoy.getMonth() + 1).padStart(2, "0");
+      const day = String(hoy.getDate()).padStart(2, "0");
+      return `${year}-${month}-${day}`;
+    },
     updateDate(value) {
-    const year = value.getFullYear();
-    const month = String(value.getMonth() + 1).padStart(2, '0');
-    const day = String(value.getDate()).padStart(2, '0');
-    this.input = `${year}-${month}-${day}`;
-
+      // value viene como objeto Date desde el date-picker
+      // Convertimos a formato YYYY-MM-DD
+      const year = value.getFullYear();
+      const month = String(value.getMonth() + 1).padStart(2, "0");
+      const day = String(value.getDate()).padStart(2, "0");
+      this.input = `${year}-${month}-${day}`;
       this.editedItem.date = this.input;
       this.menu = false;
     },
     updateDate1(value) {
       const year = value.getFullYear();
-      const month = String(value.getMonth() + 1).padStart(2, '0');
-      const day = String(value.getDate()).padStart(2, '0');
+      const month = String(value.getMonth() + 1).padStart(2, "0");
+      const day = String(value.getDate()).padStart(2, "0");
       this.input2 = `${year}-${month}-${day}`;
 
       this.editedItem.next_date = this.input2;
@@ -682,6 +749,9 @@ export default {
     async showAdd() {
       this.editedIndex = -1;
       this.step = 0;
+      this.editedItem = Object.assign({}, this.defaultItem);
+      this.input = this.obtenerFechaLocal();
+      this.editedItem.date = this.input;
       this.dialog = true;
     },
     close() {
@@ -855,7 +925,7 @@ export default {
       this.step = 0;
       this.originalItem = Object.assign({}, item);
       this.editedItem = Object.assign({}, item);
-        this.input = item.date;
+      this.input = item.date;
       this.input2 = item.next_date;
       this.dialog = true;
     },
@@ -930,6 +1000,49 @@ export default {
 </script>
 
 <style scoped>
+.desktop-table {
+  table-layout: fixed;
+}
+
+.mobile-table {
+  table-layout: auto;
+}
+.responsive-data-table-wrapper {
+  width: 100%;
+}
+
+/* Solo en móvil: activar scroll horizontal */
+.responsive-data-table-wrapper.mobile-scroll {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* En móvil: forzar ancho mínimo para que haya algo que scrollear */
+.responsive-data-table-wrapper.mobile-scroll :deep(.v-data-table) {
+  min-width: 800px;
+}
+
+/* En desktop: asegurar que no haya scroll innecesario */
+@media (min-width: 960px) {
+  .responsive-data-table-wrapper :deep(.v-data-table) {
+    min-width: auto;
+    overflow-x: hidden;
+  }
+}
+
+.tools-bar {
+  overflow-x: auto;
+  white-space: nowrap;
+  gap: 8px;
+}
+
+.fullscreen-dialog {
+	display: flex;
+	flex-direction: column;
+	height: 100%;
+	overflow-y: auto;
+}
+
 .date-display {
   font-size: 0.85rem; /* Equivale a text-caption */
   line-height: 1.1;

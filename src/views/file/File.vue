@@ -68,6 +68,10 @@
         ></v-text-field>
       </div>
     </v-card-title>
+    <div
+        class="ma-0 pa-0 responsive-data-table-wrapper"
+        :class="isMobile ? 'mobile-scroll' : ''"
+      >
     <v-data-table
     :headers="headers" 
     :items="files"
@@ -78,16 +82,16 @@
     :loading="loading"
     :hide-default-header="true"
     class="mt-1"
-    style="
-      max-height: 68vh;
-      overflow-y: auto;
-      background: transparent;
-      border: none !important;
-      outline: none !important;
-      box-shadow: none !important;
-      padding: 0;
-    "
-  >
+   style="
+            max-height: 68vh;
+            overflow-y: auto;
+            overflow-x: hidden;
+            background: transparent;
+            border: none !important;
+            outline: none !important;
+            box-shadow: none !important;
+          "
+        >
     <!-- Header personalizado (simulado) -->
     <template v-slot:top>
       <v-card
@@ -136,6 +140,11 @@
 
     <!-- Fila personalizada -->
     <template v-slot:item="{ item }">
+     <tr
+          style="display: table; width: 100%;"
+          :class="isMobile ? 'mobile-table' : 'desktop-table'"
+        >
+          <td colspan="100%" style="padding: 0; border: none"> 
       <v-card
         class="mb-2 mx-1 rounded-lg"
         elevation="1"
@@ -236,21 +245,24 @@
           </div>
         </v-card-text>
       </v-card>
+      </td>
+      </tr>
     </template>
   </v-data-table>
+  </div>
       </v-card-text>
     </v-card>
   </v-container>
 
   <v-dialog
     v-model="dialog"
-    fullscreen
+    :fullscreen="isFullscreen"
+    :max-width="isMobile ? '100%' : 'none'"
     persistent
     transition="dialog-bottom-transition"
-    content-class="fullscreen-dialog"
   >
     <v-form ref="form" v-model="valid" class="h-100">
-      <v-card class="pa-10">
+      <v-card :class="isMobile ? 'pa-0' : 'pa-10'">
         <v-card-text class="pt-12">
           <!-- Encabezado -->
           <h5 class="text-grey-darken-2 font-weight-medium">
@@ -258,9 +270,10 @@
           </h5>
           <p class="text-grey-lighten-1">{{ $t("files.formInstructions") }}</p>
 
-          <v-row class="mt-12">
-            <!-- Pasos laterales -->
-            <v-col cols="3">
+          <v-container fluid class="pa-0 mt-6">
+            <v-row>
+              <!-- Timeline (solo escritorio) -->
+              <v-col v-if="isDesktop" cols="12" md="3" class="pr-md-6">
               <v-timeline align="start" side="end" dense>
                 <v-timeline-item
                   v-for="(s, index) in steps"
@@ -294,13 +307,30 @@
             </v-col>
 
             <!-- Contenido dinámico según paso -->
-            <v-col cols="9">
-              <h3 class="text-deep-purple-accent-3 mb-8">
-                {{ $t(`files.steps.${steps[step].title}.title`) }}
-              </h3>
+            <v-col :cols="12" :md="isMobile ? 12 : 9" :class="{ 'mt-6': isMobile }">
+                <!-- En móvil: indicador del paso -->
+                <div
+                  v-if="isMobile"
+                  class="d-flex justify-space-between align-center mb-4"
+                >
+                  <v-chip
+                    label
+                    size="small"
+                    color="deep-purple-lighten-4"
+                    class="text-deep-purple"
+                  >
+                   {{ $t(`files.steps.${steps[step].title}.title`) }}
+                  </v-chip>
+                </div>
+
+                <!-- En escritorio: título del paso -->
+                <h3 v-else class="text-deep-purple-accent-3 mb-6">
+                 {{ $t(`files.steps.${steps[step].title}.title`) }}
+                </h3>
 
               <!-- Paso 1: Información básica -->
-              <v-row dense v-if="step === 0">
+              <v-row dense>
+              <template v-if="step === 0">
                 <v-col cols="12" md="6">
                   <v-text-field
                     v-model="editedItem.name"
@@ -351,10 +381,10 @@
                     variant="underlined"
                   ></v-textarea>
                 </v-col>
-              </v-row>
+              </template>
 
               <!-- Paso 2: Detalles adicionales -->
-              <v-row dense v-if="step === 1">
+              <template v-if="step === 1">
                 <v-col cols="12" md="6">
                   <v-select
                     v-model="editedItem.personal"
@@ -413,6 +443,8 @@
                     }}</v-card-subtitle>
                   </v-card>
                 </v-col>
+              </template>
+
               </v-row>
 
               <!-- Navegación -->
@@ -440,6 +472,7 @@
               </div>
             </v-col>
           </v-row>
+          </v-container>
         </v-card-text>
       </v-card>
     </v-form>
@@ -531,6 +564,7 @@ export default {
       { title: "basic" }, // Paso 1: Información básica
       { title: "file_config" }, // Paso 2: Archivo y tipo combinados
     ],
+     isFullscreen: false,
     step: 0,
     snackbar: false,
     sb_type: "",
@@ -652,6 +686,12 @@ export default {
     getDate() {
       return this.input ? new Date(this.input) : new Date();
     },
+    isMobile() {
+      return this.$vuetify.display.xs || this.$vuetify.display.sm;
+    },
+    isDesktop() {
+      return !this.isMobile;
+    }, 
   },
   created() {
     this.tools = [
@@ -661,12 +701,25 @@ export default {
       },
     ];
   },
+   watch: {
+    dialog(val) {
+      if (val) this.updateFullscreenMode();
+    },
+    isDesktop() {
+      this.updateFullscreenMode();
+    },
+  }, 
   mounted() {
     this.person_id = JSON.parse(LocalStorageService.getItem("person_id"));
     this.home_id = JSON.parse(LocalStorageService.getItem("home_id"));
     this.initialize();
   },
   methods: {
+     updateFullscreenMode() {
+      this.$nextTick(() => {
+        this.isFullscreen = this.isDesktop;
+      });
+    }, 
     getTypeColor(type) {
       const colorMap = {
         Tarea: "warning",
@@ -1318,6 +1371,47 @@ export default {
 </script>
 
 <style scoped>
+.fullscreen-dialog {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  overflow-y: auto;
+}
+.desktop-table {
+  table-layout: fixed;
+}
+
+.mobile-table {
+  table-layout: auto;
+}
+.responsive-data-table-wrapper {
+  width: 100%;
+}
+
+/* Solo en móvil: activar scroll horizontal */
+.responsive-data-table-wrapper.mobile-scroll {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* En móvil: forzar ancho mínimo para que haya algo que scrollear */
+.responsive-data-table-wrapper.mobile-scroll :deep(.v-data-table) {
+  min-width: 800px;
+}
+
+/* En desktop: asegurar que no haya scroll innecesario */
+@media (min-width: 960px) {
+  .responsive-data-table-wrapper :deep(.v-data-table) {
+    min-width: auto;
+    overflow-x: hidden;
+  }
+}
+
+.tools-bar {
+  overflow-x: auto;
+  white-space: nowrap;
+  gap: 8px;
+}
 .icono-concavo {
   width: 50px;
   height: 50px;

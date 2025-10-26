@@ -126,6 +126,10 @@
     </v-card-title>
 
     <!-- Tabla de datos -->
+    <div
+        class="ma-0 pa-0 responsive-data-table-wrapper"
+        :class="isMobile ? 'mobile-scroll' : ''"
+      >
     <v-data-table
       :headers="headers"
       :items="filteredProducts"
@@ -137,15 +141,15 @@
       :hide-default-header="true"
       class="mt-1"
       style="
-        max-height: 68vh;
-        overflow-y: auto;
-        background: transparent;
-        border: none !important;
-        outline: none !important;
-        box-shadow: none !important;
-        padding: 0;
-      "
-    >
+            max-height: 68vh;
+            overflow-y: auto;
+            overflow-x: hidden;
+            background: transparent;
+            border: none !important;
+            outline: none !important;
+            box-shadow: none !important;
+          "
+        >
       <!-- Header personalizado (simulado) -->
       <template v-slot:top>
         <v-card
@@ -200,8 +204,11 @@
 
       <!-- Fila personalizada -->
       <template v-slot:item="slotProps">
-        <tr>
-          <td colspan="100%" style="padding: 0; border: none">
+         <tr
+          style="display: table; width: 100%;"
+          :class="isMobile ? 'mobile-table' : 'desktop-table'"
+        >
+          <td colspan="100%" style="padding: 0; border: none"> 
             <v-card
               class="mb-2 mx-1 rounded-lg"
               elevation="1"
@@ -254,14 +261,6 @@
                             </span>
                           </v-tooltip>
                         </div>
-                        <!--<div class="text-body-2 d-flex align-center text-grey-darken-1">
-                          {{ slotProps.item.total_price }}
-                          <v-tooltip activator="parent" location="bottom" max-width="350px">
-                            <span style="white-space: normal; word-break: break-word">
-                              {{ $t("product.fields.total_price") }}: {{ slotProps.item.total_price }}
-                            </span>
-                          </v-tooltip>
-                        </div>-->
                   </div>
                 </div>
 
@@ -329,14 +328,16 @@
         </tr>
       </template>
     </v-data-table>
+    </div>
          </v-card-text>
     </v-card>
 
   <!-- Crear/Editar Producto -->
-  <v-dialog v-model="dialog" fullscreen persistent transition="dialog-bottom-transition"
-    content-class="fullscreen-dialog">
+  <v-dialog v-model="dialog" persistent transition="dialog-bottom-transition"
+    :fullscreen="isFullscreen"
+    :max-width="isMobile ? '100%' : 'none'">
     <v-form ref="form" v-model="valid" class="h-100">
-      <v-card class="pa-10">
+      <v-card :class="isMobile ? 'pa-0' : 'pa-10'">
         <v-card-text class="pt-12">
           <!-- Pasos laterales -->
           <h5 class="text-grey-darken-2 font-weight-medium">
@@ -344,8 +345,10 @@
           </h5>
           <p class="text-grey-lighten-1">{{ $t("product.formInstructions") }}</p>
 
-          <v-row class="mt-12">
-            <v-col cols="3">
+          <v-container fluid class="pa-0 mt-6">
+            <v-row>
+              <!-- Timeline (solo escritorio) -->
+              <v-col v-if="isDesktop" cols="12" md="3" class="pr-md-6">
               <v-timeline align="start" side="end" dense>
                 <v-timeline-item v-for="(s, index) in steps" :key="index" :dot-color="
                       step > index
@@ -373,13 +376,30 @@
             </v-col>
 
             <!-- Contenido dinámico según paso -->
-            <v-col cols="9">
-              <h3 class="text-deep-purple-accent-3 mb-8">
-                {{ $t(`product.steps.${steps[step].title}.title`) }}
-              </h3>
+            <v-col :cols="12" :md="isMobile ? 12 : 9" :class="{ 'mt-6': isMobile }">
+                <!-- En móvil: indicador del paso -->
+                <div
+                  v-if="isMobile"
+                  class="d-flex justify-space-between align-center mb-4"
+                >
+                  <v-chip
+                    label
+                    size="small"
+                    color="deep-purple-lighten-4"
+                    class="text-deep-purple"
+                  >
+                    {{ $t(`product.steps.${steps[step].title}.title`) }}
+                  </v-chip>
+                </div>
+
+                <!-- En escritorio: título del paso -->
+                <h3 v-else class="text-deep-purple-accent-3 mb-6">
+                  {{ $t(`product.steps.${steps[step].title}.title`) }}
+                </h3>
 
               <!-- Paso 1: Información básica -->
-              <v-row dense v-if="step === 0">
+              <v-row dense>
+              <template v-if="step === 0">
                 <v-col cols="12" md="6">
                   <v-text-field v-model="editedItem.name" :label="$t('product.fields.name')" variant="underlined"
                     :rules="validationRules.name"></v-text-field>
@@ -407,10 +427,10 @@
                   <v-textarea v-model="editedItem.purchase_place" :label="$t('product.fields.purchase_place')"
                     variant="underlined" :rows="3"></v-textarea>
                 </v-col>
-              </v-row>
+              </template>
 
               <!-- Paso 2: Información de compra -->
-              <v-row dense v-if="step === 1">
+              <template v-if="step === 1">
                 <v-col cols="12" md="4">
                   <v-text-field v-model="editedItem.unit_price" :label="$t('product.fields.unit_price')"
                     variant="underlined" type="number" :rules="validationRules.unit_price"></v-text-field>
@@ -488,24 +508,8 @@
                     </v-locale-provider>
                   </v-menu>
                 </v-col>
+              </template>
               </v-row>
-
-              <!-- Paso 3: Configuración adicional 
-              <v-row dense v-if="step === 2">
-                <v-col cols="12" md="6">
-                  <v-text-field v-model="editedItem.frequency" :label="$t('product.fields.frequency')"
-                    variant="underlined" type="number" :rules="validationRules.frequency"></v-text-field>
-                </v-col>
-                <v-col cols="12" md="6">
-                  <v-select v-model="editedItem.type" :items="[$t('product.types.winter'), $t('product.types.summer')]"
-                    :label="$t('product.fields.type')" variant="underlined"></v-select>
-                </v-col>
-                <v-col cols="12" md="12">
-                  <v-text-field v-model="editedItem.purchase_place" :label="$t('product.fields.purchase_place')"
-                    variant="underlined"></v-text-field>
-                </v-col>
-              </v-row>-->
-
               <!-- Navegación -->
               <div class="d-flex justify-space-between mt-8">
                 <v-btn variant="text" class="text-grey-darken-1" @click="step > 0 ? step-- : close()">
@@ -520,6 +524,7 @@
               </div>
             </v-col>
           </v-row>
+          </v-container>
         </v-card-text>
       </v-card>
     </v-form>
@@ -543,19 +548,21 @@
   </v-dialog>
 
   <!--Almacén-->
-  <v-dialog v-model="dialogWarehouse" fullscreen persistent transition="dialog-bottom-transition"
-    content-class="fullscreen-dialog">
+  <v-dialog v-model="dialogWarehouse" persistent transition="dialog-bottom-transition"
+    :fullscreen="isFullscreen"
+    :max-width="isMobile ? '100%' : 'none'">
     <v-form ref="form" v-model="valid" class="h-100">
-      <v-card class="pa-10">
+      <v-card :class="isMobile ? 'pa-0' : 'pa-10'">
         <v-card-text class="pt-12">
           <h5 class="text-grey-darken-2 font-weight-medium">{{ formTitleWarehouse }}</h5>
           <p class="text-grey-lighten-1">
             {{ $t("warehouse.formInstructions") }}
           </p>
 
-          <v-row class="mt-12">
-            <!-- Side steps -->
-            <v-col cols="3">
+          <v-container fluid class="pa-0 mt-6">
+            <v-row>
+              <!-- Timeline (solo escritorio) -->
+              <v-col v-if="isDesktop" cols="12" md="3" class="pr-md-6">
               <v-timeline align="start" side="end" dense>
                 <v-timeline-item v-for="(s, index) in stepsW" :key="index" :dot-color="
                     stepW > index
@@ -583,42 +590,30 @@
             </v-col>
 
             <!-- Contenido dinámico según paso -->
-            <v-col cols="9">
-              <h3 class="text-deep-purple-accent-3 mb-8">
-                {{ $t(`warehouse.steps.${stepsW[stepW].title}.title`) }}
-              </h3>
+            <v-col :cols="12" :md="isMobile ? 12 : 9" :class="{ 'mt-6': isMobile }">
+                <!-- En móvil: indicador del paso -->
+                <div
+                  v-if="isMobile"
+                  class="d-flex justify-space-between align-center mb-4"
+                >
+                  <v-chip
+                    label
+                    size="small"
+                    color="deep-purple-lighten-4"
+                    class="text-deep-purple"
+                  >
+                    {{ $t(`warehouse.steps.${stepsW[stepW].title}.title`) }}
+                  </v-chip>
+                </div>
+
+                <!-- En escritorio: título del paso -->
+                <h3 v-else class="text-deep-purple-accent-3 mb-6">
+                  {{ $t(`warehouse.steps.${stepsW[stepW].title}.title`) }}
+                </h3>
 
               <!-- Paso 1: Información básica -->
-              <v-row dense v-if="stepW === 0">
-                <!--<v-col cols="12" md="12" v-show="editedIndex === -1">
-                  <v-autocomplete v-model="editedItemWarehouse.warehouse_id" :items="warehouses"
-                    :label="$t('warehouse.fields.warehouse')" item-title="title" item-value="id" variant="underlined">
-                    <template v-slot:item="{ props, item }">
-                      <v-list-item v-bind="props">
-                        <v-list-item-subtitle class="d-flex flex-column">
-                          <v-tooltip location="top right">
-                            <template v-slot:activator="{ props }">
-                              <div class="description-text" v-bind="props" :title="item.raw.description">
-                                {{ $t("warehouse.fields.description") }}:
-                                {{ item.raw.description }}
-                              </div>
-                            </template>
-                            <span>{{ item.raw.description }}</span>
-                          </v-tooltip>
-                          <v-tooltip location="top right">
-                            <template v-slot:activator="{ props }">
-                              <div class="description-text" v-bind="props" :title="item.raw.location">
-                                {{ $t("warehouse.fields.home_location") }}:
-                                {{ item.raw.location }}
-                              </div>
-                            </template>
-                            <span>{{ item.raw.location }}</span>
-                          </v-tooltip>
-                        </v-list-item-subtitle>
-                      </v-list-item>
-                    </template>
-                  </v-autocomplete>
-                </v-col>-->
+              <v-row dense>
+              <template v-if="stepW === 0">
 
                 <v-col cols="12" md="12">
                   <v-text-field v-model="editedItemWarehouse.title" clearable :label="$t('warehouse.fields.name')"
@@ -630,10 +625,10 @@
                     :label="$t('warehouse.fields.home_location')" variant="underlined"
                     :rules="locationRules"></v-text-field>
                 </v-col>
-              </v-row>
+              </template>
 
               <!-- Paso 2: Configuración adicional -->
-              <v-row dense v-if="stepW === 1">
+              <template v-if="stepW === 1">
                 <v-col cols="12" md="6">
                   <v-select v-model="editedItemWarehouse.status" :items="[
                       { id: 0, label: $t('warehouse.status.public') },
@@ -647,6 +642,7 @@
                     :label="$t('warehouse.fields.description')" variant="underlined"
                     :rules="descriptionRules"></v-textarea>
                 </v-col>
+              </template>
               </v-row>
 
               <div class="d-flex justify-space-between mt-8">
@@ -664,6 +660,7 @@
               </div>
             </v-col>
           </v-row>
+          </v-container>
         </v-card-text>
       </v-card>
     </v-form>
@@ -683,6 +680,7 @@ export default {
   },
   emits: ['warehouse-updated'],
   data: () => ({
+    isFullscreen: false,
     selectedTool: 'products',
     steps: [
       { title: "basic", subtitle: "basic_information" },
@@ -873,32 +871,6 @@ export default {
       (value) => !!value || 'Campo requerido',
       (value) => !value || !isNaN(parseFloat(value)) || 'Debe ser un número'],*/
   }),
-  watch: {
-    "editedItem.unit_price": {
-      handler: "calculateTotalPrice",
-      immediate: true,
-    },
-    "editedItem.quantity": {
-      handler: "calculateTotalPrice",
-      immediate: true,
-    },
-    "editedItemWarehouse.warehouse_id"(newVal) {
-      if (!this.isEditing) {
-        // Si está en modo edición, no ejecutar la lógica del watch
-        return;
-      }
-      const selectedWarehouse = this.warehouses.find((w) => w.id === newVal);
-      if (selectedWarehouse) {
-        this.editedItemWarehouse.title = selectedWarehouse.title;
-        this.editedItemWarehouse.description = selectedWarehouse.description;
-        this.editedItemWarehouse.location = selectedWarehouse.location;
-      } else {
-        this.editedItemWarehouse.title = "";
-        this.editedItemWarehouse.description = "";
-        this.editedItemWarehouse.location = "";
-      }
-    },
-  },
   computed: {
     validationRules() {
       return {
@@ -1156,7 +1128,45 @@ export default {
       default:
         return this.allProducts;
     }
-  }
+  },
+  isMobile() {
+      return this.$vuetify.display.xs || this.$vuetify.display.sm;
+    },
+    isDesktop() {
+      return !this.isMobile;
+    },
+  },
+  watch: {
+    "editedItem.unit_price": {
+      handler: "calculateTotalPrice",
+      immediate: true,
+    },
+    "editedItem.quantity": {
+      handler: "calculateTotalPrice",
+      immediate: true,
+    },
+    "editedItemWarehouse.warehouse_id"(newVal) {
+      if (!this.isEditing) {
+        // Si está en modo edición, no ejecutar la lógica del watch
+        return;
+      }
+      const selectedWarehouse = this.warehouses.find((w) => w.id === newVal);
+      if (selectedWarehouse) {
+        this.editedItemWarehouse.title = selectedWarehouse.title;
+        this.editedItemWarehouse.description = selectedWarehouse.description;
+        this.editedItemWarehouse.location = selectedWarehouse.location;
+      } else {
+        this.editedItemWarehouse.title = "";
+        this.editedItemWarehouse.description = "";
+        this.editedItemWarehouse.location = "";
+      }
+    },
+     dialog(val) {
+      if (val) this.updateFullscreenMode();
+    },
+    isDesktop() {
+      this.updateFullscreenMode();
+    },
   },
   created() {
     this.tools = [
@@ -1174,6 +1184,11 @@ export default {
     this.selectedTool = "products";
   },
   methods: {
+     updateFullscreenMode() {
+      this.$nextTick(() => {
+        this.isFullscreen = this.isDesktop;
+      });
+    },
      normalizeHexColor (color) {
   if (!color) return 'currentColor'; // fallback seguro
   return color.startsWith('#') ? color : `#${color}`;
@@ -1877,6 +1892,47 @@ export default {
 };
 </script>
 <style scoped>
+.fullscreen-dialog {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  overflow-y: auto;
+}
+.desktop-table {
+  table-layout: fixed;
+}
+
+.mobile-table {
+  table-layout: auto;
+}
+.responsive-data-table-wrapper {
+  width: 100%;
+}
+
+/* Solo en móvil: activar scroll horizontal */
+.responsive-data-table-wrapper.mobile-scroll {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* En móvil: forzar ancho mínimo para que haya algo que scrollear */
+.responsive-data-table-wrapper.mobile-scroll :deep(.v-data-table) {
+  min-width: 800px;
+}
+
+/* En desktop: asegurar que no haya scroll innecesario */
+@media (min-width: 960px) {
+  .responsive-data-table-wrapper :deep(.v-data-table) {
+    min-width: auto;
+    overflow-x: hidden;
+  }
+}
+
+.tools-bar {
+  overflow-x: auto;
+  white-space: nowrap;
+  gap: 8px;
+}
 .date-display {
   font-size: 0.85rem; /* Equivale a text-caption */
   line-height: 1.1;

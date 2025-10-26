@@ -37,12 +37,15 @@
             {{ $t("daily_log.formTitle.create") }}
           </h5>
           <p class="text-grey-lighten-1">{{ $t("daily_log.formInstructions") }}</p>
-
-          <v-row class="mt-12">
-            <!-- Timeline lateral -->
-            <v-col cols="3">
+          <v-row class="mt-6">
+            <!-- Timeline: solo visible en md+ -->
+            <v-col cols="12" md="3" class="d-none d-md-block">
               <v-timeline align="start" side="end" dense>
-                <v-timeline-item dot-color="deep-purple" icon="mdi-numeric-1" size="large">
+                <v-timeline-item
+                  dot-color="deep-purple"
+                  icon="mdi-numeric-1"
+                  size="large"
+                >
                   <template #opposite>
                     <div class="text-end">
                       <strong>{{ $t("daily_log.steps.info.title") }}</strong>
@@ -89,91 +92,91 @@
                     </v-locale-provider>
                   </v-menu>
                 </v-col>
-                </v-row>
-                <v-row dense>
+              </v-row>
+              <v-row dense>
                 <!-- Agua -->
                 <v-col cols="12" md="6">
                   <div class="d-flex align-center">
-    <div style="width: 40%; flex-shrink: 0" class="d-flex align-center">
-      <v-checkbox
-        v-model="waterEnabled"
-        :label="$t('daily_log.fields.water_intake')"
-        color="deep-purple"
-        hide-details
-        class="me-2"
-        @update:model-value="toggleField('water')"
-      />
-    </div>
-    <v-text-field
-      v-show="waterEnabled"
-      v-model.number="localItem.water_intake"
-      variant="underlined"
-      type="number"
-      step="1"
-      min="0"
-      style="width: 60%"
-      density="compact"
-      hide-details
-      :rules="positiveRules($t('daily_log.fields.water_intake'))"
-    />
-  </div>
+                    <div style="width: 40%; flex-shrink: 0" class="d-flex align-center">
+                      <v-checkbox
+                        v-model="waterEnabled"
+                        :label="$t('daily_log.fields.water_intake')"
+                        color="deep-purple"
+                        hide-details
+                        class="me-2"
+                        @update:model-value="toggleField('water')"
+                      />
+                    </div>
+                    <v-text-field
+                      v-show="waterEnabled"
+                      v-model.number="localItem.water_intake"
+                      variant="underlined"
+                      type="number"
+                      step="1"
+                      min="0"
+                      style="width: 60%"
+                      density="compact"
+                      hide-details
+                      :rules="positiveRules($t('daily_log.fields.water_intake'))"
+                    />
+                  </div>
                 </v-col>
-                </v-row>
-                <v-row dense>
+              </v-row>
+              <v-row dense>
                 <!-- Sueño -->
                 <v-col cols="12" md="6">
-                   <div class="d-flex align-center">
-    <div style="width: 40%; flex-shrink: 0" class="d-flex align-center">
-      <v-checkbox
-        v-model="sleepEnabled"
-        :label="$t('daily_log.fields.sleep_hours')"
-        color="deep-purple"
-        hide-details
-        class="me-2"
-        @update:model-value="toggleField('sleep')"
-      />
-    </div>
-    <v-text-field
-      v-show="sleepEnabled"
-      v-model.number="localItem.sleep_hours"
-      variant="underlined"
-      type="number"
-      step="1"
-      min="0"
-      style="width: 60%"
-      density="compact"
-      hide-details
-      :rules="positiveRules($t('daily_log.fields.sleep_hours'))"
-    />
-  </div>
+                  <div class="d-flex align-center">
+                    <div style="width: 40%; flex-shrink: 0" class="d-flex align-center">
+                      <v-checkbox
+                        v-model="sleepEnabled"
+                        :label="$t('daily_log.fields.sleep_hours')"
+                        color="deep-purple"
+                        hide-details
+                        class="me-2"
+                        @update:model-value="toggleField('sleep')"
+                      />
+                    </div>
+                    <v-text-field
+                      v-show="sleepEnabled"
+                      v-model.number="localItem.sleep_hours"
+                      variant="underlined"
+                      type="number"
+                      step="1"
+                      min="0"
+                      style="width: 60%"
+                      density="compact"
+                      hide-details
+                      :rules="positiveRules($t('daily_log.fields.sleep_hours'))"
+                    />
+                  </div>
                 </v-col>
-                </v-row>
-                <v-row dense>
+              </v-row>
+              <v-row dense>
                 <!-- Pasos -->
                 <v-col cols="12" md="6">
                   <div class="d-flex align-center">
-    <div style="width: 40%; flex-shrink: 0" class="d-flex align-center">
-      <v-checkbox
-        v-model="stepsEnabled"
-        :label="$t('daily_log.fields.steps')"
-        color="deep-purple"
-        hide-details
-        class="me-2"
-        @update:model-value="toggleField('steps')"
-      />
-    </div>
-    <v-text-field
-      v-show="stepsEnabled"
-      v-model.number="localItem.steps"
-      variant="underlined"
-      type="number"
-      min="0"
-      style="width: 60%"
-      density="compact"
-      hide-details
-      :rules="positiveRules($t('daily_log.fields.steps'))"
-    />
-  </div>
+                    <div style="width: 40%; flex-shrink: 0" class="d-flex align-center">
+                      <v-checkbox
+                        v-model="stepsEnabled"
+                        :label="$t('daily_log.fields.steps')"
+                        color="deep-purple"
+                        hide-details
+                        class="me-2"
+                        @update:model-value="toggleField('steps')"
+                      />
+                    </div>
+                    <v-text-field
+                      v-show="stepsEnabled"
+                      v-model.number="localItem.steps"
+                      variant="underlined"
+                      type="number"
+                      min="0"
+                      style="width: 60%"
+                      density="compact"
+                      hide-details
+                      :rules="positiveRules($t('daily_log.fields.steps'))"
+                    />
+                  </div>
                 </v-col>
 
                 <!-- Notas -->
@@ -249,7 +252,7 @@ export default {
       },
       waterEnabled: false,
       sleepEnabled: false,
-      stepsEnabled: false
+      stepsEnabled: false,
     };
   },
   watch: {
@@ -307,9 +310,9 @@ export default {
     toggleField(field) {
       if (!this[`${field}Enabled`]) {
         // Si se desmarca, limpiar el valor
-        if (field === 'water') this.localItem.water_intake = null;
-        if (field === 'sleep') this.localItem.sleep_hours = null;
-        if (field === 'steps') this.localItem.steps = null;
+        if (field === "water") this.localItem.water_intake = null;
+        if (field === "sleep") this.localItem.sleep_hours = null;
+        if (field === "steps") this.localItem.steps = null;
       }
     },
 

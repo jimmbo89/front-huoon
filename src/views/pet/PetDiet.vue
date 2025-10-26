@@ -59,6 +59,10 @@
         ></v-text-field>
       </div>
     </v-card-title>
+    <div
+        class="ma-0 pa-0 responsive-data-table-wrapper"
+        :class="isMobile ? 'mobile-scroll' : ''"
+      >
     <v-data-table
   :headers="headers"
   :items="diets"
@@ -70,15 +74,15 @@
   :hide-default-header="true"
   class="mt-1"
   style="
-    max-height: 68vh;
-    overflow-y: auto;
-    background: transparent;
-    border: none !important;
-    outline: none !important;
-    box-shadow: none !important;
-    padding: 0;
-  "
->
+        max-height: 68vh;
+        overflow-y: auto;
+        overflow-x: hidden;
+        background: transparent;
+        border: none !important;
+        outline: none !important;
+        box-shadow: none !important;
+      "
+    >
   <!-- Header personalizado (simulado) -->
   <template v-slot:top>
     <v-card
@@ -130,6 +134,11 @@
 
   <!-- Fila personalizada para cada dieta -->
   <template v-slot:item="{ item }">
+  <tr
+          style="display: table; width: 100%;"
+          :class="isMobile ? 'mobile-table' : 'desktop-table'"
+        >
+          <td colspan="100%" style="padding: 0; border: none">
     <v-card
       class="mb-2 mx-1 rounded-lg"
       elevation="1"
@@ -225,19 +234,22 @@
         </div>
       </v-card-text>
     </v-card>
+    </td>
+    </tr>
   </template>
 </v-data-table>
+</div>
      </v-card-text>
     </v-card>
  <v-dialog
   v-model="dialog"
-  fullscreen
+  :fullscreen="isFullscreen"
+  :max-width="isMobile ? '100%' : 'none'"
   persistent
   transition="dialog-bottom-transition"
-  content-class="fullscreen-dialog"
 >
   <v-form ref="form" v-model="valid" class="h-100">
-    <v-card class="pa-10">
+    <v-card :class="isMobile ? 'pa-0' : 'pa-10'">
       <v-card-text class="pt-12">
         <!-- Encabezado -->
         <h5 class="text-grey-darken-2 font-weight-medium">
@@ -245,9 +257,15 @@
         </h5>
         <p class="text-grey-lighten-1">{{ $t("pet_diets.formInstructions") }}</p>
 
-        <v-row class="mt-12">
-          <!-- Pasos laterales (ahora 2 pasos) -->
-          <v-col cols="3">
+        <v-container fluid class="pa-0 mt-6">
+            <v-row>
+              <!-- Timeline (solo escritorio) -->
+              <v-col
+                v-if="isDesktop"
+                cols="12"
+                md="3"
+                class="pr-md-6"
+              >
             <v-timeline align="start" side="end" dense>
               <v-timeline-item
                 v-for="(s, index) in steps"
@@ -281,13 +299,34 @@
           </v-col>
 
           <!-- Contenido dinámico según paso -->
-          <v-col cols="9">
-            <h3 class="text-deep-purple-accent-3 mb-8">
-              {{ $t(`pet_diets.steps.${steps[step].key}.title`) }}
-            </h3>
+          <v-col
+                :cols="12"
+                :md="isMobile ? 12 : 9"
+                :class="{ 'mt-6': isMobile }"
+              >
+                <!-- En móvil: indicador del paso -->
+                <div
+                  v-if="isMobile"
+                  class="d-flex justify-space-between align-center mb-4"
+                >
+                  <v-chip
+                    label
+                    size="small"
+                    color="deep-purple-lighten-4"
+                    class="text-deep-purple"
+                  >
+                   {{ $t(`pet_diets.steps.${steps[step].key}.title`) }}
+                  </v-chip>
+                </div>
+
+                <!-- En escritorio: título del paso -->
+                <h3 v-else class="text-deep-purple-accent-3 mb-6">
+                 {{ $t(`pet_diets.steps.${steps[step].key}.title`) }}
+                </h3>
 
             <!-- Paso 1: Información básica -->
-            <v-row dense v-if="step === 0">
+            <v-row dense>
+            <template v-if="step === 0">
             <v-col cols="12" md="12">
                 <v-text-field
                   v-model="editedItem.name"
@@ -357,10 +396,10 @@
               </v-col>
 
               
-            </v-row>
+            </template>
 
             <!-- Paso 2: Frecuencia y detalles -->
-            <v-row dense v-if="step === 1">
+            <template v-if="step === 1">
               <v-col cols="12" md="12">
                 <v-autocomplete 
                     v-model="editedItem.type_id"
@@ -402,8 +441,8 @@
                   rows="3"
                 ></v-textarea>
               </v-col>
+            </template>
             </v-row>
-
             <!-- Navegación -->
             <div class="d-flex justify-space-between mt-8">
               <v-btn
@@ -429,6 +468,7 @@
             </div>
           </v-col>
         </v-row>
+        </v-container>
       </v-card-text>
     </v-card>
   </v-form>
@@ -478,6 +518,7 @@ export default {
       { key: "schedule" },
     ],
     units: ["mg", "ml", "g", "gr", "kg", "l"],
+    isFullscreen: false,
     step: 0,
     snackbar: false,
     sb_type: "",
@@ -572,6 +613,12 @@ export default {
     ],
   }),
   computed: {
+    isMobile() {
+			return this.$vuetify.display.xs || this.$vuetify.display.sm;
+		},
+		isDesktop() {
+			return !this.isMobile;
+		},
      validStep() {
     switch (this.step) {
       case 0:
@@ -609,6 +656,14 @@ export default {
       return this.input1 ? new Date(this.input1) : new Date();
     },
   },
+  watch: {
+    dialog(val) {
+      if (val) this.updateFullscreenMode();
+      },
+    isDesktop() {
+      this.updateFullscreenMode();
+    },
+	},
   created() {
     this.tools = [
       {
@@ -623,6 +678,11 @@ export default {
     this.initialize();
   },
   methods: {
+    updateFullscreenMode() {
+      this.$nextTick(() => {
+        this.isFullscreen = this.isDesktop;
+      });
+    },
     parseDateString(dateString) {
     if (!dateString) return null;
     const [year, month, day] = dateString.split('-');
@@ -709,6 +769,13 @@ export default {
 
       return formattedValue;
     },
+    obtenerFechaLocal() {
+      const hoy = new Date();
+      const year = hoy.getFullYear();
+      const month = String(hoy.getMonth() + 1).padStart(2, "0");
+      const day = String(hoy.getDate()).padStart(2, "0");
+      return `${year}-${month}-${day}`;
+    },
     updateDate(value) {
     const year = value.getFullYear();
     const month = String(value.getMonth() + 1).padStart(2, '0');
@@ -730,6 +797,9 @@ export default {
     async showAdd() {
       this.editedIndex = -1;
       this.step = 0;
+      this.close();
+      this.input = this.obtenerFechaLocal();
+      this.editedItem.start_date = this.input;
       this.data = {};
       this.data.type = "Tratamiento";
       try {
@@ -1016,6 +1086,49 @@ export default {
 </script>
 
 <style scoped>
+.desktop-table {
+  table-layout: fixed;
+}
+
+.mobile-table {
+  table-layout: auto;
+}
+.responsive-data-table-wrapper {
+  width: 100%;
+}
+
+/* Solo en móvil: activar scroll horizontal */
+.responsive-data-table-wrapper.mobile-scroll {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* En móvil: forzar ancho mínimo para que haya algo que scrollear */
+.responsive-data-table-wrapper.mobile-scroll :deep(.v-data-table) {
+  min-width: 800px;
+}
+
+/* En desktop: asegurar que no haya scroll innecesario */
+@media (min-width: 960px) {
+  .responsive-data-table-wrapper :deep(.v-data-table) {
+    min-width: auto;
+    overflow-x: hidden;
+  }
+}
+
+.tools-bar {
+  overflow-x: auto;
+  white-space: nowrap;
+  gap: 8px;
+}
+
+.fullscreen-dialog {
+	display: flex;
+	flex-direction: column;
+	height: 100%;
+	overflow-y: auto;
+}
+
 .date-display {
   font-size: 0.85rem; /* Equivale a text-caption */
   line-height: 1.1;
