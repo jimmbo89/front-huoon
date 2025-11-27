@@ -643,7 +643,8 @@
     </v-card>
   </v-dialog>
   <v-dialog v-model="dialogPet">
-    <v-card max-width="900px" class="mx-auto">
+    <v-card :fullscreen="!isFullscreen"
+    :max-width="isMobile ? 'none' : '45%'" class="mx-auto">
       <v-card-title class="text-body-2"> Seleccionar Mascota </v-card-title>
       <v-card-text>
         <v-container fluid>
@@ -673,13 +674,24 @@
       </v-card-text>
     </v-card>
   </v-dialog>
-  <VaccinationStatusData
-    v-model="dialogVaccination"
-    :items="vaccinationData"
-    @close="closeModal"
-  />
-  <ControlStatusData v-model="dialogControl" :items="controlData" @close="closeModal" />
-  <VetVisitStatusData v-model="dialogVisit" :items="visitData" @close="closeModal" />
+  <PetStatusDialog
+  v-model="dialogVisit"
+  type="visit"
+  :items="visitData"
+  @close="closeModal"
+/>
+<PetStatusDialog
+  v-model="dialogControl"
+  type="control"
+  :items="controlData"
+  @close="closeModal"
+/>
+<PetStatusDialog
+  v-model="dialogVaccination"
+  type="vaccination"
+  :items="vaccinationData"
+  @close="closeModal"
+/>
 </template>
 
 <script>
@@ -693,6 +705,7 @@ import PetData from "./PetData.vue";
 import VaccinationStatusData from "./VaccinationStatusData.vue";
 import ControlStatusData from "./ControlStatusData.vue";
 import VetVisitStatusData from "./VetVisitStatusData.vue";
+import PetStatusDialog from "./PetStatusDialog.vue";
 export default {
   components: {
     ChatTask,
@@ -701,6 +714,7 @@ export default {
     VaccinationStatusData,
     ControlStatusData,
     VetVisitStatusData,
+    PetStatusDialog
   },
   data: () => ({
     isFullscreen: false,

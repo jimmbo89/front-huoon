@@ -1,11 +1,15 @@
 <!-- src/components/onboarding/BirthdateStep.vue -->
 <template>
-  <div class="onboarding-card rounded-lg pa-4">
-    <h3 class="text-body-2 mb-4">
+  <div class="onboarding-card rounded-lg pa-4" :class="isMobile ? 'pa-2' : 'pa-4'">
+    <h3 class="text-body-2 mb-4 text-center">
       ¡Perfecto! Para adaptar tu experiencia, ¿cuál es tu fecha de nacimiento?
     </h3>
-    <v-card class="pa-2 w-100" elevation="1" style="max-width: 345px;" density="compact">
+    <v-card :class="isMobile ? 'pa-1 w-100' : 'pa-2'" elevation="1" :style="{ maxWidth: isMobile ? '100%' : '345px' }" density="compact">
       <v-locale-provider :locale="locale">
+       <div
+          v-if="isMobile"
+          class="date-picker-scroll-wrapper"
+        >
         <v-date-picker 
         density="compact"
         header="Calendario"       
@@ -13,7 +17,9 @@
           v-model="selectedDate"
           color="#03626C"
           class="pa-0"
+          :width="isMobile ? '100%' : undefined"
         />
+        </div>
       </v-locale-provider>
       <v-card-actions>
       <v-spacer></v-spacer>
@@ -49,7 +55,8 @@ export default {
   },
   data() {
     return {
-      selectedDate: new Date().toISOString().split("T")[0]
+      selectedDate: new Date().toISOString().split("T")[0],
+      isFullscreen: false,
     };
   },
   computed: {
@@ -61,8 +68,27 @@ export default {
       d.setFullYear(d.getFullYear() - 120);
       return d.toISOString().split("T")[0];
     },
+       isMobile() {
+      return this.$vuetify.display.xs || this.$vuetify.display.sm;
+    },
+    isDesktop() {
+      return !this.isMobile;
+    },
+  },
+  watch: {
+    dialog(val) {
+      if (val) this.updateFullscreenMode();
+    },
+    isDesktop() {
+      this.updateFullscreenMode();
+    },
   },
   methods: {
+         updateFullscreenMode() {
+      this.$nextTick(() => {
+        this.isFullscreen = this.isDesktop;
+      });
+    },
     handleAccept() {
       if (this.selectedDate) {
         const formatted = new Date(this.selectedDate).toISOString().split("T")[0];
@@ -80,5 +106,16 @@ export default {
 .onboarding-card {
   width: 100%;
   max-width: 100%;
+}
+/* ✅ Scroll horizontal SOLO para el calendario en móvil */
+.date-picker-scroll-wrapper {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  padding: 0 2px 4px 2px;
+}
+
+.date-picker-scroll-wrapper :deep(.v-date-picker) {
+  min-width: 300px; /* Asegura que los 7 días quepan */
+  width: auto !important;
 }
 </style>

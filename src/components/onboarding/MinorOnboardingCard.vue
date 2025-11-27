@@ -5,28 +5,50 @@
       Solo puedes unirte a un hogar creado por un adulto.
     </h3>
 
-    <v-row class="mb-4">
+    <v-row class="mb-4" >
       <!-- Opción 1: Unirse con código -->
-      <v-col cols="12" md="6">
+      <v-col cols="12" md="6" class="d-flex">
         <v-card
           elevation="1"
           density="comfortable"
-          class="rounded-lg"
+          class="rounded-lg h-100"
           @click="$emit('join-home')"
         >
           <v-card-item class="pa-3">
             <template v-slot:prepend>
               <div class="icono-concavo">
-                <v-icon icon="mdi-key" color="primary" size="x-large"></v-icon>
+                <v-icon icon="mdi-key" color="primary" :size="isMobile ? 'large' : 'x-large'"></v-icon>
               </div>
             </template>
 
             <div>
-              <v-card-title class="text-body-2 font-weight-medium pa-0">
+              <v-card-title class="text-body-2 font-weight-medium pa-0" style="
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    line-height: 1.4;
+    word-break: break-word;
+    white-space: normal;
+    min-width: 0;
+    width: 100%;
+  ">
                 🔑 Unirme a un hogar con código
               </v-card-title>
-              <v-card-subtitle class="text-caption pa-0 mt-1">
-                <span>Ingresa el código que te dio un adulto de tu hogar.</span>
+              <v-card-subtitle class="text-caption pa-0 mt-1" style="
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    line-height: 1.4;
+    word-break: break-word;
+    white-space: normal;
+    min-width: 0;
+    width: 100%;
+  ">
+                Ingresa el código que te dio un adulto de tu hogar.
                 <v-tooltip activator="parent" location="bottom">
                   <span style="white-space: normal; word-break: break-word">
                     Ingresa el código que te dio un adulto de tu hogar.
@@ -39,7 +61,7 @@
       </v-col>
 
       <!-- Opción 2: Enviar invitación a un adulto -->
-      <v-col cols="12" md="6">
+      <v-col cols="12" md="6" class="d-flex">
         <v-card
           elevation="1"
           density="comfortable"
@@ -49,18 +71,38 @@
           <v-card-item class="pa-3">
             <template v-slot:prepend>
               <div class="icono-concavo">
-                <v-icon icon="mdi-account-plus" color="primary" size="x-large"></v-icon>
+                <v-icon icon="mdi-account-plus" color="primary" :size="isMobile ? 'large' : 'x-large'"></v-icon>
               </div>
             </template>
 
             <div>
-              <v-card-title class="text-body-2 font-weight-medium pa-0">
+              <v-card-title class="text-body-2 font-weight-medium pa-0" style="
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    line-height: 1.4;
+    word-break: break-word;
+    white-space: normal;
+    min-width: 0;
+    width: 100%;
+  ">
                 👨👩👧 Enviar invitación a un adulto
               </v-card-title>
-              <v-card-subtitle class="text-caption pa-0 mt-1">
-                <span>
+              <v-card-subtitle class="text-caption pa-0 mt-1" style="
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    line-height: 1.4;
+    word-break: break-word;
+    white-space: normal;
+    min-width: 0;
+    width: 100%;
+  ">
                   Un adulto debe crear el hogar por ti. Envíale una invitación por correo.
-                </span>
                 <v-tooltip activator="parent" location="bottom">
                   <span style="white-space: normal; word-break: break-word">
                     Un adulto debe crear el hogar por ti. Envíale una invitación por correo.
@@ -78,7 +120,35 @@
 <script>
 export default {
   name: 'MinorOnboardingCard',
-  emits: ['join-home', 'invite-adult']
+  emits: ['join-home', 'invite-adult'],
+  data() {
+    return {
+      isFullscreen: false,
+    };
+  },
+  computed: {
+      isMobile() {
+      return this.$vuetify.display.xs || this.$vuetify.display.sm;
+    },
+    isDesktop() {
+      return !this.isMobile;
+    },
+  },
+    watch: {
+    dialog(val) {
+      if (val) this.updateFullscreenMode();
+    },
+    isDesktop() {
+      this.updateFullscreenMode();
+    },
+  },
+  methods: {
+     updateFullscreenMode() {
+      this.$nextTick(() => {
+        this.isFullscreen = this.isDesktop;
+      });
+    },
+  }
 };
 </script>
 

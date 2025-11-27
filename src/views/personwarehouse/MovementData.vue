@@ -142,19 +142,21 @@
     </v-card>
   </v-container>
   <!--Almacén-->
-  <v-dialog v-model="dialogWarehouse" fullscreen persistent transition="dialog-bottom-transition"
-    content-class="fullscreen-dialog">
+  <v-dialog v-model="dialogWarehouse" persistent transition="dialog-bottom-transition"
+    :fullscreen="isFullscreen"
+    :max-width="isMobile ? '100%' : 'none'">
     <v-form ref="form" v-model="valid" class="h-100">
-      <v-card class="pa-10">
+      <v-card :class="isMobile ? 'pa-0' : 'pa-10'">	
         <v-card-text class="pt-12">
           <h5 class="text-grey-darken-2 font-weight-medium">{{ formTitleWarehouse }}</h5>
           <p class="text-grey-lighten-1">
             {{ $t("warehouse.formInstructions") }}
           </p>
 
-          <v-row class="mt-12">
-            <!-- Side steps -->
-            <v-col cols="3">
+          <v-container fluid class="pa-0 mt-6">
+            <v-row>
+              <!-- Timeline (solo escritorio) -->
+              <v-col v-if="isDesktop" cols="12" md="3" class="pr-md-6">
               <v-timeline align="start" side="end" dense>
                 <v-timeline-item v-for="(s, index) in stepsW" :key="index" :dot-color="
                     stepW > index
@@ -182,13 +184,30 @@
             </v-col>
 
             <!-- Contenido dinámico según paso -->
-            <v-col cols="9">
-              <h3 class="text-deep-purple-accent-3 mb-8">
-                {{ $t(`warehouse.steps.${stepsW[stepW].title}.title`) }}
-              </h3>
+            <v-col :cols="12" :md="isMobile ? 12 : 9" :class="{ 'mt-6': isMobile }">
+                <!-- En móvil: indicador del paso -->
+                <div
+                  v-if="isMobile"
+                  class="d-flex justify-space-between align-center mb-4"
+                >
+                  <v-chip
+                    label
+                    size="small"
+                    color="deep-purple-lighten-4"
+                    class="text-deep-purple"
+                  >
+                    {{ $t(`warehouse.steps.${stepsW[stepW].title}.title`) }}
+                  </v-chip>
+                </div>
+
+                <!-- En escritorio: título del paso -->
+                <h3 v-else class="text-deep-purple-accent-3 mb-6">
+                  {{ $t(`warehouse.steps.${stepsW[stepW].title}.title`) }}
+                </h3>
 
               <!-- Paso 1: Información básica -->
-              <v-row dense v-if="stepW === 0">
+              <v-row dense>
+              <template v-if="stepW === 0">
                 <!--<v-col cols="12" md="12" v-show="editedIndex === -1">
                   <v-autocomplete v-model="editedItemWarehouse.warehouse_id" :items="warehouses"
                     :label="$t('warehouse.fields.warehouse')" item-title="title" item-value="id" variant="underlined">
@@ -229,10 +248,10 @@
                     :label="$t('warehouse.fields.home_location')" variant="underlined"
                     :rules="locationRules"></v-text-field>
                 </v-col>
-              </v-row>
+              </template>
 
               <!-- Paso 2: Configuración adicional -->
-              <v-row dense v-if="stepW === 1">
+              <template v-if="stepW === 1">
                 <v-col cols="12" md="6">
                   <v-select v-model="editedItemWarehouse.status" :items="[
                       { id: 0, label: $t('warehouse.status.public') },
@@ -246,6 +265,7 @@
                     :label="$t('warehouse.fields.description')" variant="underlined"
                     :rules="descriptionRules"></v-textarea>
                 </v-col>
+              </template>
               </v-row>
 
               <div class="d-flex justify-space-between mt-8">
@@ -263,6 +283,7 @@
               </div>
             </v-col>
           </v-row>
+          </v-container>
         </v-card-text>
       </v-card>
     </v-form>
@@ -296,6 +317,7 @@ export default {
     ActivityLogs
   },
   data: () => ({
+     isFullscreen: false,
     currentView: 'movement',
     warehouseData: null,
     dialogWarehouse: false,
@@ -355,18 +377,6 @@ export default {
     },
     warehouse: [],
   }),
-  watch: {
-     warehouses: {
-      immediate: true, // Se ejecuta al montar el componente
-      handler(newVal) {
-        if (newVal && newVal.length > 0) {
-          this.warehouseData = newVal[0]; // Asigna el primero por defecto
-        } else {
-          this.warehouseData = null;
-        }
-      },
-    },
-  },
   computed: {
      localType: {
     get() {
@@ -437,6 +447,30 @@ export default {
           }),
       ];
     },
+      isMobile() {
+      return this.$vuetify.display.xs || this.$vuetify.display.sm;
+    },
+    isDesktop() {
+      return !this.isMobile;
+    },
+  },
+  watch: {
+     warehouses: {
+      immediate: true, // Se ejecuta al montar el componente
+      handler(newVal) {
+        if (newVal && newVal.length > 0) {
+          this.warehouseData = newVal[0]; // Asigna el primero por defecto
+        } else {
+          this.warehouseData = null;
+        }
+      },
+    },
+    dialog(val) {
+      if (val) this.updateFullscreenMode();
+    },
+    isDesktop() {
+      this.updateFullscreenMode();
+    },
   },
   
   created() {
@@ -451,6 +485,11 @@ export default {
     this.home_id = LocalStorageService.getItem("home_id");
   },
   methods: {
+     updateFullscreenMode() {
+      this.$nextTick(() => {
+        this.isFullscreen = this.isDesktop;
+      });
+    },
     selectWarehouse(warehouse) {
     this.warehouseData = warehouse;
     this.currentView = 'movement';
@@ -555,6 +594,47 @@ export default {
 };
 </script>
 <style scoped>
+.fullscreen-dialog {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  overflow-y: auto;
+}
+.desktop-table {
+  table-layout: fixed;
+}
+
+.mobile-table {
+  table-layout: auto;
+}
+.responsive-data-table-wrapper {
+  width: 100%;
+}
+
+/* Solo en móvil: activar scroll horizontal */
+.responsive-data-table-wrapper.mobile-scroll {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* En móvil: forzar ancho mínimo para que haya algo que scrollear */
+.responsive-data-table-wrapper.mobile-scroll :deep(.v-data-table) {
+  min-width: 800px;
+}
+
+/* En desktop: asegurar que no haya scroll innecesario */
+@media (min-width: 960px) {
+  .responsive-data-table-wrapper :deep(.v-data-table) {
+    min-width: auto;
+    overflow-x: hidden;
+  }
+}
+
+.tools-bar {
+  overflow-x: auto;
+  white-space: nowrap;
+  gap: 8px;
+}
 .date-display {
   font-size: 0.85rem; /* Equivale a text-caption */
   line-height: 1.1;

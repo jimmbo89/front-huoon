@@ -1,12 +1,13 @@
-<!-- src/components/PetVaccinationStatusDialog.vue -->
+<!-- ./VaccinationStatusData.vue -->
 <template>
   <v-dialog
     v-model="dialog"
-    max-width="45%"
+    :fullscreen="!isFullscreen"
+    :max-width="isMobile ? 'none' : '45%'"
     persistent
     transition="dialog-bottom-transition"
   >
-    <v-card class="pa-1">
+    <v-card :class="isMobile ? 'pa-0' : 'pa-10'">	
       <v-card-title class="text-body-2 font-weight-bold">
         {{ $t("pets.title") }}
       </v-card-title>
@@ -27,7 +28,10 @@
             ></v-text-field>
           </div>
         </v-card-title>
-
+        <div
+        class="ma-0 pa-0 responsive-data-table-wrapper"
+        :class="isMobile ? 'mobile-scroll' : ''"
+      >
         <v-data-table
           :headers="headers"
           :items="items"
@@ -40,11 +44,11 @@
           style="
             max-height: 68vh;
             overflow-y: auto;
+            overflow-x: hidden;
             background: transparent;
             border: none !important;
             outline: none !important;
             box-shadow: none !important;
-            padding: 0;
           "
         >
           <template v-slot:top>
@@ -84,8 +88,11 @@
           </template>
 
           <template v-slot:item="{ item }">
-            <tr>
-              <td colspan="100%" style="padding: 0; border: none">
+             <tr
+          style="display: table; width: 100%;"
+          :class="isMobile ? 'mobile-table' : 'desktop-table'"
+        >
+          <td colspan="100%" style="padding: 0; border: none"> 
                 <v-card
                   class="mb-2 mx-1 rounded-lg"
                   elevation="1"
@@ -265,6 +272,7 @@
             </tr>
           </template>
         </v-data-table>
+        </div>
       </v-card-text>
 
       <v-card-actions class="d-flex justify-end">
@@ -290,6 +298,7 @@ export default defineComponent({
   },
   emits: ["update:modelValue", "close"],
   data: () => ({
+     isFullscreen: false,
     search: "",
     expandedRows: [],
     dialog: true,
@@ -300,8 +309,27 @@ export default defineComponent({
     ],
   }),
   computed: {
+    isMobile() {
+      return this.$vuetify.display.xs || this.$vuetify.display.sm;
+    },
+    isDesktop() {
+      return !this.isMobile;
+    },
+  },
+   watch: {
+    dialog(val) {
+      if (val) this.updateFullscreenMode();
+    },
+    isDesktop() {
+      this.updateFullscreenMode();
+    },
   },
   methods: {
+     updateFullscreenMode() {
+      this.$nextTick(() => {
+        this.isFullscreen = this.isDesktop;
+      });
+    },
     close() {
       this.$emit("close");
     },
@@ -374,5 +402,46 @@ export default defineComponent({
 <style scoped>
 .rotate-180 {
   transform: rotate(180deg);
+}
+.fullscreen-dialog {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  overflow-y: auto;
+}
+.desktop-table {
+  table-layout: fixed;
+}
+
+.mobile-table {
+  table-layout: auto;
+}
+.responsive-data-table-wrapper {
+  width: 100%;
+}
+
+/* Solo en móvil: activar scroll horizontal */
+.responsive-data-table-wrapper.mobile-scroll {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* En móvil: forzar ancho mínimo para que haya algo que scrollear */
+.responsive-data-table-wrapper.mobile-scroll :deep(.v-data-table) {
+  min-width: 800px;
+}
+
+/* En desktop: asegurar que no haya scroll innecesario */
+@media (min-width: 960px) {
+  .responsive-data-table-wrapper :deep(.v-data-table) {
+    min-width: auto;
+    overflow-x: hidden;
+  }
+}
+
+.tools-bar {
+  overflow-x: auto;
+  white-space: nowrap;
+  gap: 8px;
 }
 </style>

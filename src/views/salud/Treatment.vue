@@ -407,7 +407,6 @@
                         :label="$t('treatment.fields.startDate')"
                         :rules="dateRules"
                         readonly
-                        clearable
                       ></v-text-field>
                     </template>
                     <v-locale-provider>
@@ -841,57 +840,57 @@ created() {
     return new Date(date.getFullYear(), date.getMonth(), date.getDate());
   },
     calculateEndDate() {
-  // Validaciones básicas
-  if (!this.editedItem.startDate || !this.editedItem.duration) {
-    this.editedItem.endDate = '';
-    return;
-  }
-
-  try {
-    const durationText = this.editedItem.duration.toLowerCase().trim();
-    const match = durationText.match(/^(\d+)\s*(d[ií]as?|semanas?|mes(es)?)?$/i);
-    
-    if (!match) {
+    // Validaciones básicas
+    if (!this.editedItem.startDate || !this.editedItem.duration) {
       this.editedItem.endDate = '';
       return;
     }
 
-    const durationValue = parseInt(match[1]);
-    let durationUnit = match[2] ? match[2].toLowerCase() : 'días';
-    
-    // Normalizar unidades
-    if (durationUnit.includes('dia') || durationUnit.includes('día')) durationUnit = 'days';
-    else if (durationUnit.includes('semana')) durationUnit = 'weeks';
-    else if (durationUnit.includes('mes')) durationUnit = 'months';
+    try {
+      const durationText = this.editedItem.duration.toLowerCase().trim();
+      const match = durationText.match(/^(\d+)\s*(d[ií]as?|semanas?|mes(es)?)?$/i);
+      
+      if (!match) {
+        this.editedItem.endDate = '';
+        return;
+      }
 
-    const startDate = new Date(this.editedItem.startDate);
-    if (isNaN(startDate.getTime())) {
+      const durationValue = parseInt(match[1]);
+      let durationUnit = match[2] ? match[2].toLowerCase() : 'días';
+      
+      // Normalizar unidades
+      if (durationUnit.includes('dia') || durationUnit.includes('día')) durationUnit = 'days';
+      else if (durationUnit.includes('semana')) durationUnit = 'weeks';
+      else if (durationUnit.includes('mes')) durationUnit = 'months';
+
+      const startDate = new Date(this.editedItem.startDate);
+      if (isNaN(startDate.getTime())) {
+        this.editedItem.endDate = '';
+        return;
+      }
+
+      const endDate = new Date(startDate);
+      
+      switch(durationUnit) {
+        case 'days':
+          endDate.setDate(startDate.getDate() + durationValue);
+          break;
+        case 'weeks':
+          endDate.setDate(startDate.getDate() + (durationValue * 7));
+          break;
+        case 'months':
+          endDate.setMonth(startDate.getMonth() + durationValue);
+          break;
+      }
+
+      // Formatear a YYYY-MM-DD
+      this.editedItem.endDate = endDate.toISOString().split('T')[0];
+      this.endDateInput = endDate.toISOString().split('T')[0];
+    } catch (error) {
+      console.error('Error calculando fecha final:', error);
       this.editedItem.endDate = '';
-      return;
     }
-
-    const endDate = new Date(startDate);
-    
-    switch(durationUnit) {
-      case 'days':
-        endDate.setDate(startDate.getDate() + durationValue);
-        break;
-      case 'weeks':
-        endDate.setDate(startDate.getDate() + (durationValue * 7));
-        break;
-      case 'months':
-        endDate.setMonth(startDate.getMonth() + durationValue);
-        break;
-    }
-
-    // Formatear a YYYY-MM-DD
-    this.editedItem.endDate = endDate.toISOString().split('T')[0];
-    this.endDateInput = endDate.toISOString().split('T')[0];
-  } catch (error) {
-    console.error('Error calculando fecha final:', error);
-    this.editedItem.endDate = '';
-  }
-},
+  },
     formatDate(dateString) {
     const [year, month, day] = dateString.split('-');
     return `${day}-${month}-${year}`;

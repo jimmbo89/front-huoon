@@ -226,7 +226,7 @@
                   </div>
 
                   <!-- Tipo (10%) -->
-                  <div style="width: 10%; min-width: 0" class="text-center">
+                  <div style="width: 8%; min-width: 0" class="text-center">
                     {{ $t("taskForm.fields.recurrence") }}
                   </div>
 
@@ -241,7 +241,7 @@
                   </div>
 
                   <!-- Acciones (5%) -->
-                  <div style="width: 5%; min-width: 0" class="d-flex justify-end">
+                  <div style="width: 7%; min-width: 0" class="d-flex justify-end">
                     {{ $t("settings.actions") }}
                   </div>
                 </v-card-text>
@@ -330,7 +330,7 @@
                       </div>
 
                       <!-- Tipo - 10% -->
-                      <div style="width: 10%; min-width: 0; text-align: center">
+                      <div style="width: 8%; min-width: 0; text-align: center">
                         <!--<v-icon
                     :color="getTypeColor(item.type)"
                     style="font-size: 10px; margin-right: 4px"
@@ -349,7 +349,7 @@
                       </div>
 
                       <!-- Estado - 13% -->
-                      <div style="width: 13%; min-width: 0; text-align: left">
+                      <div style="width: 13%; min-width: 0; text-align: left" >
                         <v-dialog v-model="item.statusDialog" width="400">
                           <template v-slot:activator="{ props }">
                             <v-btn
@@ -386,6 +386,7 @@
                                 >
                                   <v-card
                                     @click="changeTaskStatus(item, statusOption.id)"
+                                    :disabled="isTaskCompleted(item.status_id)"
                                     :class="[
                                       'status-option mx-1',
                                       {
@@ -461,8 +462,21 @@
                       <!-- Acciones - 5% -->
                       <div
                         class="d-flex gap-1"
-                        style="width: 5%; justify-content: flex-end; flex-wrap: nowrap"
+                        style="width: 7%; justify-content: flex-end; flex-wrap: nowrap"
                       >
+                      <v-btn
+                        v-if="item.children && item.children.length > 0"
+                        size="35"
+                        icon
+                        variant="text"
+                        color="blue-darken-1"
+                        @click.stop="toggleExpand(item.id)"
+                        :class="{ 'rotate-180': isExpanded(item.id) }"
+                        style="transition: transform 0.2s"
+                        :title="$t('recipe.expand_ingredients')"
+                      >
+                      <v-icon size="20">mdi-chevron-down</v-icon>
+                    </v-btn>
                         <v-btn
                           size="35"
                           icon
@@ -471,6 +485,7 @@
                           @click="editItem(item)"
                           class="flex-shrink-0 mr-1"
                           :title="$t('buttons.edit')"
+                          :disabled="isTaskCompleted(item.status_id)"
                         >
                           <v-icon size="20">mdi-pencil</v-icon>
                         </v-btn>
@@ -483,6 +498,7 @@
                           @click="deleteItem(item)"
                           class="flex-shrink-0"
                           :title="$t('buttons.delete')"
+                          :disabled="isTaskCompleted(item.status_id)"
                         >
                           <v-icon size="20">mdi-delete</v-icon>
                         </v-btn>
@@ -491,6 +507,243 @@
                   </v-card>
                 </td>
               </tr>
+
+              <tr v-if="isExpanded(item.id) && item.children && item.children.length > 0"  style="display: table; width: 100%;"
+          :class="$vuetify.display.xs || $vuetify.display.sm ? 'mobile-table' : 'desktop-table'">
+            <td colspan="100%" class="pa-0" style="background: #fafafa">
+              <div class="px-2 pb-1">
+                <v-card
+                  v-for="children in item.children"
+                  :key="children.id"
+                  class="mb-2 rounded-lg"
+                  elevation="1"
+                  flat
+                >
+                  <v-card-text class="d-flex align-center pa-2"
+                style="width: 100%; min-width: 0;">
+                     <div style="width: 7%; min-width: 0" class="d-flex align-center">
+                        <div
+                          class="icono-concavo d-flex flex-column justify-center justify-start mr-2"
+                          :class="`bg-${getTypeColor(children.type)}`"
+                          style="min-height: 48px; min-width: 48px; border-radius: 8px"
+                        >
+                          <div class="date-display text-center" style="font-size: 0.95em">
+                            {{ formatIntuitiveDate(children.start_date) }}
+                          </div>
+                          <div
+                            v-if="children.start_time"
+                            class="time-display text-center"
+                            style="font-size: 0.8em; margin-top: 2px"
+                          >
+                            {{ formatTime(children.start_time) }}
+                          </div>
+                        </div>
+                      </div>
+
+                      <!-- Nombre + Descripción - 40% -->
+                      <div style="width: 40%; min-width: 0" class="d-flex flex-column">
+                        <div class="font-weight-bold text-body-2 text-truncate">
+                          {{ children.title }}
+                        </div>
+                        <div class="text-caption text-grey-darken-1 text-truncate">
+                          {{ children.description }}
+                        </div>
+                        <v-tooltip activator="parent" location="bottom" max-width="350px">
+                          <span style="white-space: normal; word-break: break-word">
+                            {{ children.description }}
+                          </span>
+                        </v-tooltip>
+                      </div>
+                       <div
+                        style="width: 15%; min-width: 0"
+                        class="text-body-2 text-truncate"
+                      >
+                        <v-tooltip
+                          v-for="person in children.people"
+                          :key="person.id"
+                          bottom
+                          :open-delay="300"
+                          :close-delay="100"
+                        >
+                          <template v-slot:activator="{ props }">
+                            <v-avatar
+                              class="avatar-item hover-expand"
+                              size="32"
+                              v-bind="props"
+                            >
+                              <v-img :src="getImageUrl(person.image)" alt="avatar" />
+                            </v-avatar>
+                          </template>
+                          <span>{{ person.name }}<br />{{ person.roleName }}</span>
+                        </v-tooltip>
+                      </div>
+
+                      <!-- Tipo - 10% -->
+                      <div style="width: 8%; min-width: 0; text-align: center">
+                        <!--<v-icon
+                    :color="getTypeColor(item.type)"
+                    style="font-size: 10px; margin-right: 4px"
+                    icon="mdi-circle"
+                  ></v-icon>-->
+                        <span class="text-body-2 text-truncate">
+                          {{ children.recurrence }}
+                        </span>
+                      </div>
+
+                      <!-- Prioridad - 10% -->
+                      <div style="width: 10%; min-width: 0; text-align: center">
+                        <span class="text-body-2 text-truncate">
+                          {{ children.namePriority }}
+                        </span>
+                      </div>
+
+                      <!-- Estado - 13% -->
+                      <div style="width: 13%; min-width: 0; text-align: left" >
+                        <v-dialog v-model="children.statusDialog" width="400">
+                          <template v-slot:activator="{ props }">
+                            <v-btn
+                              v-bind="props"
+                              :color="
+                                '#' +
+                                (getStatusById(children.status_id)?.colorStatus || 'grey')
+                              "
+                              variant="text"
+                              size="small"
+                              :prepend-icon="
+                                getStatusById(children.status_id)?.iconStatus ||
+                                'mdi-help-circle'
+                              "
+                              class="text-body-2"
+                            >
+                              {{
+                                getStatusById(children.status_id)?.nameStatus || "Desconocido"
+                              }}
+                            </v-btn>
+                          </template>
+                          <v-card>
+                            <v-card-title class="pa-4 text-center">
+                              {{ $t("taskForm.updateStatus") }}
+                            </v-card-title>
+                            <v-divider></v-divider>
+                            <v-card-text class="pa-0">
+                              <v-row class="px-2 pb-1" dense>
+                                <v-col
+                                  cols="12"
+                                  v-for="(statusOption, i) in status"
+                                  :key="i"
+                                  class="py-1"
+                                >
+                                  <v-card
+                                    @click="changeTaskStatus(children, statusOption.id)"
+                                    :disabled="isTaskCompleted(children.status_id)"
+                                    :class="[
+                                      'status-option mx-1',
+                                      {
+                                        'current-status':
+                                          children.status_id === statusOption.id,
+                                      },
+                                    ]"
+                                    :style="
+                                      children.status_id === statusOption.id
+                                        ? {
+                                            'background-color': `#${statusOption.colorStatus}`,
+                                            'border-color': `#${statusOption.colorStatus}`,
+                                            color: 'white',
+                                          }
+                                        : {}
+                                    "
+                                    variant="outlined"
+                                    :elevation="
+                                      children.status_id === statusOption.id ? 2 : 0
+                                    "
+                                    style="border-radius: 12px; cursor: pointer"
+                                  >
+                                    <v-card-item class="pa-2">
+                                      <div class="d-flex align-center">
+                                        <v-icon
+                                          :color="
+                                            item.status_id === statusOption.id
+                                              ? 'white'
+                                              : '#' + statusOption.colorStatus
+                                          "
+                                          :icon="statusOption.iconStatus"
+                                          size="large"
+                                          class="mr-3"
+                                        ></v-icon>
+                                        <v-card-title
+                                          :style="{
+                                            color:
+                                              children.status_id === statusOption.id
+                                                ? 'white'
+                                                : 'inherit',
+                                            'font-size': '1rem',
+                                          }"
+                                        >
+                                          {{ statusOption.nameStatus }}
+                                        </v-card-title>
+                                        <v-spacer></v-spacer>
+                                        <v-icon
+                                          v-if="children.status_id === statusOption.id"
+                                          color="white"
+                                          icon="mdi-check-circle"
+                                        ></v-icon>
+                                      </div>
+                                    </v-card-item>
+                                  </v-card>
+                                </v-col>
+                              </v-row>
+                            </v-card-text>
+                            <v-divider></v-divider>
+                            <v-card-actions>
+                              <v-spacer></v-spacer>
+                              <v-btn
+                                variant="flat"
+                                color="#03626C"
+                                @click="children.statusDialog = false"
+                              >
+                                {{ $t("buttons.cancel") }}
+                              </v-btn>
+                            </v-card-actions>
+                          </v-card>
+                        </v-dialog>
+                      </div>
+
+                      <!-- Acciones - 5% -->
+                      <div
+                        class="d-flex gap-1"
+                        style="width: 7%; justify-content: flex-end; flex-wrap: nowrap"
+                      >
+                        <v-btn
+                          size="35"
+                          icon
+                          variant="text"
+                          color="green-darken-2"
+                          @click="editItem(children)"
+                          class="flex-shrink-0 mr-1"
+                          :title="$t('buttons.edit')"
+                          :disabled="isTaskCompleted(children.status_id)"
+                        >
+                          <v-icon size="20">mdi-pencil</v-icon>
+                        </v-btn>
+
+                        <v-btn
+                          size="35"
+                          icon
+                          variant="text"
+                          color="red-darken-2"
+                          @click="deleteItem(children)"
+                          class="flex-shrink-0"
+                          :title="$t('buttons.delete')"
+                          :disabled="isTaskCompleted(children.status_id)"
+                        >
+                          <v-icon size="20">mdi-delete</v-icon>
+                        </v-btn>
+                      </div>
+                  </v-card-text>
+                </v-card>
+              </div>
+            </td>
+          </tr>
             </template>
           </v-data-table>
         </div>
@@ -615,7 +868,6 @@
                     </v-col>
                   </template>
                   <template v-if="step === 1">
-                    <
                     <v-col cols="12" sm="6" v-for="role in roles" :key="role.id">
                       <v-card class="mx-auto" max-width="98%">
                         <v-list
@@ -769,6 +1021,7 @@
                         item-value="id"
                         variant="underlined"
                         :rules="selectRules"
+                        :disabled="isTaskCompleted(editedItem.status_id)"
                       >
                         <!-- Slot para el item seleccionado (en el input) -->
                         <template v-slot:selection="{ item }">
@@ -1306,6 +1559,7 @@ export default {
     description: "",
     date: "",
     module: "",
+    expandedRows: [],
   }),
   emits: ["goals-updated", "save-form", "suggested-tasks"],
   computed: {
@@ -1472,6 +1726,25 @@ export default {
     // NO asignes editedItem.task_type aquí → ya lo hace el watcher con `immediate: true`
   },
   methods: {
+     isTaskCompleted(statusId) {
+    const status = this.getStatusById(statusId);
+    // Opción A: por nombre (case-insensitive)
+    return status?.nameStatus?.toLowerCase() === 'completada';
+    
+    // Opción B: por ID (más robusto)
+    // return statusId === 3; // reemplaza 3 con el ID real de "Completada"
+  },
+  toggleExpand(id) {
+    const index = this.expandedRows.indexOf(id);
+    if (index > -1) {
+      this.expandedRows.splice(index, 1);
+    } else {
+      this.expandedRows.push(id);
+    }
+  },
+  isExpanded(id) {
+    return this.expandedRows.includes(id);
+  },
   updateFullscreenMode() {
     this.$nextTick(() => {
       this.isFullscreen = this.isDesktop;
@@ -1635,7 +1908,6 @@ export default {
       this.dateMenu = false;
     },
     formatIntuitiveDate(dateString) {
-      console.log("formatIntuitiveDate", dateString);
       if (!dateString) return "Sin fecha";
       // 1. Parsear la fecha de entrada (formato YYYY-MM-DD)
       const [year, month, day] = dateString.split("-");

@@ -1,7 +1,11 @@
 <template>
-  <div class="onboarding-card rounded-lg">
-    <h3 class="text-body-2 mb-4">Unirme a un hogar existente</h3>
-    
+  <div class="onboarding-card rounded-lg" :class="isMobile ? 'pa-2' : 'pa-4'">
+    <h3
+      class="mb-4 text-center text-body-2"
+    >
+      Unirme a un hogar existente
+    </h3>
+
     <v-form @submit.prevent="submitForm">
       <div class="d-flex justify-center mb-6">
         <v-text-field
@@ -11,27 +15,34 @@
           maxlength="1"
           variant="outlined"
           hide-details
-          class="mx-1 large-centered-input"
-          style="width: 48px;"
+          :class="isMobile ? 'mx-05' : 'mx-1'"
+          :style="{
+            width: isMobile ? '40px' : '48px',
+            fontSize: isMobile ? '18px' : '20px'
+          }"
           bg-color="white"
           :ref="el => { if (el) this.inputRefs[index] = el; }"
           @input="handleInput(index)"
           @keydown="handleKeydown(index, $event)"
           @focus="selectContent($event)"
+          class="large-centered-input"
         ></v-text-field>
       </div>
-      
+
       <div class="d-flex justify-end">
-        <v-btn 
+        <v-btn
           variant="tonal"
-                class="text-grey-darken-1 mr-1"
+          class="text-grey-darken-1"
           @click="$emit('go-back')"
         >
           Volver
         </v-btn>
-        
-        <v-btn 
-           color="cyan-darken-3" class="text-white text-subtitle-1" variant="flat" style="text-transform: none;"
+
+        <v-btn
+          color="cyan-darken-3"
+          class="text-white ml-1"
+          variant="flat"
+          style="text-transform: none;"
           type="submit"
           :loading="loading"
           :disabled="!isCodeComplete"
@@ -50,12 +61,27 @@ export default {
       loading: false,
       code: ['', '', '', '', '', ''],
      inputRefs: [],
+     isFullscreen: false,
     };
   },
   computed: {
     isCodeComplete() {
     return this.code.length === 6 && this.code.every(digit => /^[a-zA-Z0-9]$/.test(digit));
-  }
+  },
+      isMobile() {
+      return this.$vuetify.display.xs || this.$vuetify.display.sm;
+    },
+    isDesktop() {
+      return !this.isMobile;
+    },
+  },
+      watch: {
+    dialog(val) {
+      if (val) this.updateFullscreenMode();
+    },
+    isDesktop() {
+      this.updateFullscreenMode();
+    },
   },
   methods: {
       handleInput(index) {
@@ -72,6 +98,7 @@ export default {
       /*if (index === 5 && this.code[5]?.length === 1) {
         this.submitCode();
       }*/
+     
     },
 
     handleKeydown(index, event) {
@@ -88,7 +115,11 @@ export default {
         });
       }
     },
-
+         updateFullscreenMode() {
+      this.$nextTick(() => {
+        this.isFullscreen = this.isDesktop;
+      });
+    },
     selectContent(event) {
       event.target.select();
     },

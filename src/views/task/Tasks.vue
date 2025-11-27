@@ -292,6 +292,7 @@
                           >
                             <v-card
                               @click="changeTaskStatus(slotProps.item, statusOption.id)"
+                              :disabled="isTaskCompleted(slotProps.item.status_id)"
                               :class="[
                                 'status-option mx-1',
                                 { 'current-status': slotProps.item.status_id === statusOption.id },
@@ -369,6 +370,7 @@
                     @click="editItem(slotProps.item)"
                     class="flex-shrink-0 mr-1"
                     :title="$t('buttons.edit')"
+                    :disabled="isTaskCompleted(slotProps.item.status_id)"
                   >
                     <v-icon size="20">mdi-pencil</v-icon>
                   </v-btn>
@@ -381,6 +383,7 @@
                     @click="deleteItem(slotProps.item)"
                     class="flex-shrink-0"
                     :title="$t('buttons.delete')"
+                    :disabled="isTaskCompleted(slotProps.item.status_id)"
                   >
                     <v-icon size="20">mdi-delete</v-icon>
                   </v-btn>
@@ -607,6 +610,7 @@
                   item-value="id"
                   variant="underlined"
                   :rules="selectRules"
+                  :disabled="isTaskCompleted(editedItem.status_id)"
                 >
                   <template v-slot:selection="{ item }">
                     <div class="d-flex align-center">
@@ -1125,6 +1129,14 @@ export default {
     this.timeSlots = this.generateTimeSlots(); // Genera los horarios al montar el componente
   },
   methods: {
+     isTaskCompleted(statusId) {
+    const status = this.getStatusById(statusId);
+    // Opción A: por nombre (case-insensitive)
+    return status?.nameStatus?.toLowerCase() === 'completada';
+    
+    // Opción B: por ID (más robusto)
+    // return statusId === 3; // reemplaza 3 con el ID real de "Completada"
+  },
     updateFullscreenMode() {
       this.$nextTick(() => {
         this.isFullscreen = this.isDesktop;
@@ -1250,7 +1262,6 @@ export default {
     this.dateMenu = false;
   },
     formatIntuitiveDate(dateString) {
-      console.log("formatIntuitiveDate", dateString);
       if (!dateString) return "Sin fecha";
       // 1. Parsear la fecha de entrada (formato YYYY-MM-DD)
       const [year, month, day] = dateString.split("-");

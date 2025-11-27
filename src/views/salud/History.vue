@@ -24,195 +24,175 @@
     <v-card class="pa-4" elevation="4" rounded="lg">
       <!-- Encabezado con foto y datos -->
       <v-card-text>
-        <v-row dense>
-          <!-- Foto del usuario -->
-          <v-col cols="auto">
-            <!-- Avatar -->
-            <v-avatar size="80" class="me-4">
-              <v-img
-                :src="`${$axios.defaults.baseURL}images/${imageUrl}`"
-                alt="Foto del paciente"
-              />
-            </v-avatar>
-          </v-col>
+        <v-row dense class="align-center">
+          <!-- Contenedor principal: avatar + menu activator + switch -->
+          <v-col cols="12" class="d-flex align-center justify-space-between px-0">
+            <!-- Parte izquierda: avatar + datos (solo en desktop) + ícono menú -->
+            <div class="d-flex align-center" :style="{ gap: '12px' }">
+              <v-menu
+                v-model="menuPerson"
+                :close-on-content-click="false"
+                location="bottom start"
+                offset-y
+                :min-width="null"
+                :max-width="null"
+                class="rounded-lg"
+              >
+                <template #activator="{ props }">
+                  <div
+                    v-bind="props"
+                    class="cursor-pointer d-flex align-center"
+                    :style="{ gap: '12px' }"
+                  >
+                    <!-- Avatar siempre visible -->
+                    <v-avatar size="80" class="flex-shrink-0">
+                      <v-img :src="getImageUrl(imageUrl)" alt="Foto del paciente" />
+                    </v-avatar>
 
-          <!-- Datos del paciente (contenedor principal clickeable) -->
-          <v-col>
-            <v-menu
-              v-model="menuPerson"
-              :close-on-content-click="false"
-              location="bottom start"
-              offset-y
-              :min-width="null"
-              :max-width="null"
-              class="rounded-lg"
-            >
-              <!-- 🔥 ACTIVADOR: Todo el contenedor de datos + avatar + ícono -->
-              <template #activator="{ props }">
-                <div
-                  v-bind="props"
-                  class="cursor-pointer d-flex align-center"
-                  style="max-width: fit-content; gap: 12px"
-                >
-                  <!-- Datos del paciente (apilados verticalmente) -->
-                  <div class="flex-grow-1">
-                    <!-- Nombre -->
-                    <div class="text-body-2 font-weight-bold mb-1">
-                      {{ selectedPerson.name }}
-                    </div>
+                    <!-- Datos del paciente: solo en desktop -->
+                    <div v-if="isDesktop" class="flex-grow-1">
+                      <!-- Nombre -->
+                      <div class="text-body-2 font-weight-bold mb-1">
+                        {{ selectedPerson.name }}
+                      </div>
 
-                    <!-- Edad -->
-                    <div class="d-flex align-center justify-space-between mb-1">
-                      <div class="text-body-2 text-grey-darken-1">
+                      <!-- Edad -->
+                      <div class="text-body-2 text-grey-darken-1 mb-1">
                         {{
                           selectedPerson.age !== null
-                            ? $t("personDetails.age.withValue", {
-                                age: selectedPerson.age,
-                              })
+                            ? $t("personDetails.age.withValue", { age: selectedPerson.age })
                             : $t("personDetails.age.withoutValue")
                         }}
                       </div>
-                    </div>
 
-                    <!-- Tipo de documento -->
-                    <div class="d-flex align-center justify-space-between mb-1">
-                      <div class="text-body-2 text-grey-darken-1">
+                      <!-- Tipo de documento -->
+                      <div class="text-body-2 text-grey-darken-1 mb-1">
                         {{
                           selectedPerson.documentType
-                            ? $t("personDetails.documentType.withValue", {
-                                type: selectedPerson.documentType,
-                              })
+                            ? $t("personDetails.documentType.withValue", { type: selectedPerson.documentType })
                             : $t("personDetails.documentType.withoutValue")
                         }}
                       </div>
-                    </div>
 
-                    <!-- Número de documento (ÚLTIMA LÍNEA) -->
-                    <div class="d-flex align-center justify-space-between">
+                      <!-- Número de documento -->
                       <div class="text-body-2 text-grey-darken-1">
                         {{
                           selectedPerson.documentNumber !== null
-                            ? $t("personDetails.documentNumber.withValue", {
-                                number: selectedPerson.documentNumber,
-                              })
+                            ? $t("personDetails.documentNumber.withValue", { number: selectedPerson.documentNumber })
                             : $t("personDetails.documentNumber.withoutValue")
                         }}
                       </div>
                     </div>
+
+                    <!-- Ícono de menú: siempre visible cuando es tipo 'Hogar' -->
+                    <v-icon
+                      v-if="type === 'Hogar'"
+                      :class="{ rotate: menuPerson }"
+                      class="transition-fast-in-fast-out flex-shrink-0"
+                      size="20"
+                      color="grey"
+                    >
+                      mdi-menu-down
+                    </v-icon>
                   </div>
+                </template>
 
-                  <!-- ✅ ÍCONO DE DESPLIEGUE: A LA DERECHA, CENTRADO VERTICALMENTE CON TODO EL CONTENIDO -->
-                  <v-icon
-                    :class="{ rotate: menuPerson }"
-                    class="transition-fast-in-fast-out ms-2"
-                    size="20"
-                    color="grey"
-                    style="vertical-align: middle; flex-shrink: 0"
-                    v-if="this.type === 'Hogar'"
-                  >
-                    mdi-menu-down
-                  </v-icon>
-                </div>
-              </template>
-
-              <!-- MENÚ DESPLEGABLE -->
-              <v-card
-                max-width="900px"
-                class="mx-auto rounded-lg"
-                v-if="this.type === 'Hogar'"
-              >
-                <v-card-text>
-                  <v-container fluid>
-                    <v-row justify="center">
-                      <!-- TARJETAS UNIFORMES -->
-                      <v-col
-                        v-for="person in homePerson"
-                        :key="person.id"
-                        cols="auto"
-                        min-width="200px"
-                        class="pa-2"
-                      >
-                        <v-card
-                          class="text-center store-card"
-                          elevation="3"
-                          rounded="lg"
-                          width="200px"
-                          height="auto"
-                          @click="selectPerson(person)"
-                          :class="{
-                            'bg-blue-lighten-5': selectedPerson?.id === person.id,
-                          }"
+                <!-- MENÚ DESPLEGABLE -->
+                <v-card
+                  max-width="900px"
+                  class="mx-auto rounded-lg"
+                  v-if="type === 'Hogar'"
+                >
+                  <v-card-text>
+                    <v-container fluid>
+                      <v-row justify="center">
+                        <!-- TARJETAS UNIFORMES -->
+                        <v-col
+                          v-for="person in homePerson"
+                          :key="person.id"
+                          cols="auto"
+                          min-width="200px"
+                          class="pa-2"
                         >
-                          <!-- Imagen ajustada dentro de contenedor fijo -->
-                          <div class="icon-wrapper rounded-lg mb-3">
-                            <v-img
-                              :src="`${$axios.defaults.baseURL}images/${
-                                person.image
-                              }?t=${getCacheTimestamp()}`"
-                              alt="Foto de la persona"
-                              width="100%"
-                              height="130"
-                              cover
-                              class="rounded-lg"
-                            />
-                          </div>
-
-                          <!-- Texto centrado y con espacio fijo -->
-                          <div
-                            class="store-name"
-                            style="
-                              font-size: 0.875rem;
-                              font-weight: 500;
-                              margin-top: 8px;
-                              height: 1.2em;
-                              line-height: 1.2em;
-                              overflow: hidden;
-                              text-overflow: ellipsis;
-                            "
+                          <v-card
+                            class="text-center store-card"
+                            elevation="3"
+                            rounded="lg"
+                            width="200px"
+                            height="auto"
+                            @click="selectPerson(person)"
+                            :class="{
+                              'bg-blue-lighten-5': selectedPerson?.id === person.id,
+                            }"
                           >
-                            {{ person.name }}
-                          </div>
+                            <!-- Imagen ajustada dentro de contenedor fijo -->
+                            <div class="icon-wrapper rounded-lg mb-3">
+                              <v-img
+                                :src="getImageUrl(person.image)"
+                                alt="Foto de la persona"
+                                width="100%"
+                                height="130"
+                                cover
+                                class="rounded-lg"
+                              />
+                            </div>
 
-                          <div
-                            class="store-products"
-                            style="
-                              font-size: 0.75rem;
-                              color: #757575;
-                              margin-top: 4px;
-                              height: 1.2em;
-                              line-height: 1.2em;
-                              overflow: hidden;
-                              text-overflow: ellipsis;
-                            "
-                          >
-                            {{
-                              person.age !== null
-                                ? $t("personDetails.age.withValue", { age: person.age })
-                                : $t("personDetails.age.withoutValue")
-                            }}
-                          </div>
+                            <!-- Texto centrado y con espacio fijo -->
+                            <div
+                              class="store-name"
+                              style="
+                                font-size: 0.875rem;
+                                font-weight: 500;
+                                margin-top: 8px;
+                                height: 1.2em;
+                                line-height: 1.2em;
+                                overflow: hidden;
+                                text-overflow: ellipsis;
+                              "
+                            >
+                              {{ person.name }}
+                            </div>
 
-                          <!-- Check de selección -->
-                          <v-icon
-                            v-if="selectedPerson?.id === person.id"
-                            color="primary"
-                            size="18"
-                            class="position-absolute"
-                            style="top: 8px; right: 8px"
-                          >
-                            mdi-check-circle
-                          </v-icon>
-                        </v-card>
-                      </v-col>
-                    </v-row>
-                  </v-container>
-                </v-card-text>
-              </v-card>
-            </v-menu>
-          </v-col>
+                            <div
+                              class="store-products"
+                              style="
+                                font-size: 0.75rem;
+                                color: #757575;
+                                margin-top: 4px;
+                                height: 1.2em;
+                                line-height: 1.2em;
+                                overflow: hidden;
+                                text-overflow: ellipsis;
+                              "
+                            >
+                              {{
+                                person.age !== null
+                                  ? $t("personDetails.age.withValue", { age: person.age })
+                                  : $t("personDetails.age.withoutValue")
+                              }}
+                            </div>
 
-          <v-col cols="12" sm="6" md="3">
-            <div class="d-flex align-right justify-end pa-2">
+                            <!-- Check de selección -->
+                            <v-icon
+                              v-if="selectedPerson?.id === person.id"
+                              color="primary"
+                              size="18"
+                              class="position-absolute"
+                              style="top: 8px; right: 8px"
+                            >
+                              mdi-check-circle
+                            </v-icon>
+                          </v-card>
+                        </v-col>
+                      </v-row>
+                    </v-container>
+                  </v-card-text>
+                </v-card>
+              </v-menu>
+            </div>
+
+            <!-- Parte derecha: switch -->
+            <div class="d-flex align-center ms-2">
               <v-switch
                 v-model="type"
                 true-value="Personal"
@@ -221,10 +201,11 @@
                 :color="switchColor"
                 hide-details
                 inset
-                class="mb-4 font-weight-bold"
+                density="compact"
+                class="mb-0"
               >
                 <template v-slot:label>
-                  <span class="text-body-1" :style="{ color: switchColor }">
+                  <span class="text-body-2" :style="{ color: switchColor }">
                     {{ getCurrentName }}
                   </span>
                 </template>
@@ -269,8 +250,8 @@
                     {{ healthStatus.level }}
                   </v-chip>
                   <v-tooltip activator="parent" location="bottom">
-                <span>{{ healthStatus.message }}</span>
-              </v-tooltip>
+                    <span>{{ healthStatus.message }}</span>
+                  </v-tooltip>
                 </template>
               </v-list-item>
 
@@ -315,7 +296,7 @@
                                 width="8"
                                 :color="healthyWeightColor"
                               >
-                                <strong >{{ healthyWeightDisplay }}</strong>
+                                <strong>{{ healthyWeightDisplay }}</strong>
                               </v-progress-circular>
                               <div class="mt-2 font-weight-medium">Peso</div>
                             </v-card>
@@ -347,7 +328,7 @@
                               <div class="mt-2 font-weight-medium">Presión</div>
                             </v-card>
                           </template>
-                         <span>{{ bloodPressureTooltip }}</span>
+                          <span>{{ bloodPressureTooltip }}</span>
                         </v-tooltip>
                       </v-col>
 
@@ -367,7 +348,7 @@
                                 :model-value="vaccinationProgress"
                                 size="80"
                                 width="8"
-                                 :color="vaccinationColor"
+                                :color="vaccinationColor"
                               >
                                 <strong>{{ vaccinationDisplay }}</strong>
                               </v-progress-circular>
@@ -398,7 +379,7 @@
                                 width="8"
                                 :color="consultationColor"
                               >
-                               <strong>{{ consultationDisplay }}</strong>
+                                <strong>{{ consultationDisplay }}</strong>
                               </v-progress-circular>
                               <div class="mt-2 font-weight-medium">Citas esta semana</div>
                             </v-card>
@@ -501,47 +482,65 @@
     </v-card>
   </v-dialog>
 
-  <v-dialog v-model="dialogPerson">
-    <v-card max-width="900px" class="mx-auto">
-      <v-card-title class="text-body-2"> Seleccionar Miembro </v-card-title>
-      <v-card-text>
-        <v-container fluid>
-          <v-row justify="center">
-            <v-col
-              v-for="person in homePerson"
-              :key="person.id"
-              cols="auto"
-              min-width="200px"
+<v-dialog v-model="dialogPerson">
+  <v-card
+    :fullscreen="!isFullscreen"
+    :max-width="isMobile ? 'none' : '45%'"
+    class="mx-auto"
+  >
+    <v-card-title class="text-body-2">Seleccionar Miembro</v-card-title>
+    <v-card-text>
+      <v-container fluid>
+        <v-row justify="center" class="pa-0 ma-0">
+          <v-col
+            v-for="person in homePerson"
+            :key="person.id"
+            :cols="isMobile ? 6 : 'auto'"
+            :min-width="isMobile ? null : '200px'"
+            class="d-flex justify-center pa-2"
+          >
+            <v-card
+              class="text-center store-card"
+              elevation="2"
+              rounded="lg"
+              @click="selectPerson(person)"
+              :style="{ width: isMobile ? '100%' : '200px' }"
             >
-              <v-card
-                class="text-center store-card"
-                elevation="3"
-                rounded="lg"
-                @click="selectPerson(person)"
+              <div class="icon-wrapper mb-2">
+                <v-img
+                  :src="getImageUrl(person.image)"
+                  alt="Foto de la persona"
+                  width="100%"
+                  :height="isMobile ? 100 : 150"
+                  cover
+                  class="rounded-lg"
+                />
+              </div>
+              <div
+                class="font-weight-bold"
+                :class="isMobile ? 'text-caption' : 'text-body-2'"
+                style="line-height: 1.3em; padding: 0 4px;"
               >
-                <div class="icon-wrapper mb-3">
-                  <v-img
-                    :src="`${$axios.defaults.baseURL}images/${
-                      person.image
-                    }?t=${getCacheTimestamp()}`"
-                    alt="Foto de Mascota"
-                    width="100%"
-                    height="150"
-                    contain
-                  />
-                </div>
-                <div class="store-name">{{ person.name }}</div>
-                <div class="store-products">{{ person.breed }}</div>
-              </v-card>
-            </v-col>
-          </v-row>
-        </v-container>
-      </v-card-text>
-    </v-card>
-  </v-dialog>
+                {{ person.name }}
+              </div>
+              <div
+                class="text-grey-darken-1"
+                :class="isMobile ? 'text-caption' : 'text-body-2'"
+                style="line-height: 1.3em; padding: 0 4px; margin-top: 2px;"
+              >
+                {{ person.breed }}
+              </div>
+            </v-card>
+          </v-col>
+        </v-row>
+      </v-container>
+    </v-card-text>
+  </v-card>
+</v-dialog>
   <v-dialog
     v-model="dialogWeight"
-    max-width="55%"
+   :fullscreen="!isFullscreen"
+    :max-width="isMobile ? 'none' : '45%'"
     persistent
     transition="dialog-bottom-transition"
   >
@@ -567,7 +566,10 @@
             ></v-text-field>
           </div>
         </v-card-title>
-
+        <div
+        class="ma-0 pa-0 responsive-data-table-wrapper"
+        :class="isMobile ? 'mobile-scroll' : ''"
+      >
         <v-data-table
           :headers="headersWeight"
           :items="weightData"
@@ -577,14 +579,14 @@
           :loading-text="$t('dataTable.loadingText')"
           :loading="loading"
           :hide-default-header="true"
-          style="
+         style="
             max-height: 68vh;
             overflow-y: auto;
+            overflow-x: hidden;
             background: transparent;
             border: none !important;
             outline: none !important;
             box-shadow: none !important;
-            padding: 0;
           "
         >
           <!-- Encabezado fijo -->
@@ -642,8 +644,11 @@
 
           <!-- Item (fila) -->
           <template v-slot:item="slotProps">
-            <tr>
-              <td colspan="100%" style="padding: 0; border: none">
+            <tr
+          style="display: table; width: 100%;"
+          :class="isMobile ? 'mobile-table' : 'desktop-table'"
+        >
+          <td colspan="100%" style="padding: 0; border: none"> 
                 <v-card
                   class="mb-2 mx-1 rounded-lg"
                   elevation="1"
@@ -717,22 +722,18 @@
                         justify-content: center;
                       "
                     >
-                        <v-icon
+                      <v-icon
                         :color="slotProps.item.isHealthyWeight ? 'success' : 'red'"
                         size="25"
                         class="mr-1"
                       >
                         {{
                           slotProps.item.isHealthyWeight
-                            ? 'mdi-check-circle-outline'
-                            : 'mdi-alert-circle-outline'
+                            ? "mdi-check-circle-outline"
+                            : "mdi-alert-circle-outline"
                         }}
                       </v-icon>
-                      <v-tooltip
-                        activator="parent"
-                        location="bottom"
-                        max-width="350px"
-                      >
+                      <v-tooltip activator="parent" location="bottom" max-width="350px">
                         <span style="white-space: normal; word-break: break-word">
                           {{
                             slotProps.item.isHealthyWeight
@@ -748,6 +749,7 @@
             </tr>
           </template>
         </v-data-table>
+        </div>
       </v-card-text>
 
       <v-card-actions class="d-flex justify-end">
@@ -759,7 +761,8 @@
   </v-dialog>
   <v-dialog
     v-model="dialogBloodPresure"
-    max-width="45%"
+    :fullscreen="!isFullscreen"
+    :max-width="isMobile ? 'none' : '45%'"
     persistent
     transition="dialog-bottom-transition"
   >
@@ -785,7 +788,10 @@
             ></v-text-field>
           </div>
         </v-card-title>
-
+        <div
+        class="ma-0 pa-0 responsive-data-table-wrapper"
+        :class="isMobile ? 'mobile-scroll' : ''"
+      >
         <v-data-table
           :headers="headersBloodPresure"
           :items="bloodPresureData"
@@ -798,11 +804,11 @@
           style="
             max-height: 68vh;
             overflow-y: auto;
+            overflow-x: hidden;
             background: transparent;
             border: none !important;
             outline: none !important;
             box-shadow: none !important;
-            padding: 0;
           "
         >
           <!-- Encabezado fijo -->
@@ -841,7 +847,6 @@
                   {{ $t("physicalExam.fields.blood_pressure") }}
                 </div>
 
-
                 <!-- Detalles (34%) -->
                 <div style="width: 10%; min-width: 0" class="text-center">
                   {{ $t("taskForm.fields.status") }}
@@ -852,8 +857,11 @@
 
           <!-- Item (fila) -->
           <template v-slot:item="slotProps">
-            <tr>
-              <td colspan="100%" style="padding: 0; border: none">
+            <tr
+          style="display: table; width: 100%;"
+          :class="isMobile ? 'mobile-table' : 'desktop-table'"
+        >
+          <td colspan="100%" style="padding: 0; border: none"> 
                 <v-card
                   class="mb-2 mx-1 rounded-lg"
                   elevation="1"
@@ -913,22 +921,18 @@
                         justify-content: center;
                       "
                     >
-                     <v-icon
+                      <v-icon
                         :color="slotProps.item.isNormalBloodPressure ? 'success' : 'red'"
                         size="25"
                         class="mr-1"
                       >
                         {{
                           slotProps.item.isNormalBloodPressure
-                            ? 'mdi-check-circle-outline'
-                            : 'mdi-alert-circle-outline'
+                            ? "mdi-check-circle-outline"
+                            : "mdi-alert-circle-outline"
                         }}
                       </v-icon>
-                      <v-tooltip
-                        activator="parent"
-                        location="bottom"
-                        max-width="350px"
-                      >
+                      <v-tooltip activator="parent" location="bottom" max-width="350px">
                         <span style="white-space: normal; word-break: break-word">
                           {{
                             slotProps.item.isNormalBloodPressure
@@ -944,6 +948,7 @@
             </tr>
           </template>
         </v-data-table>
+        </div>
       </v-card-text>
 
       <v-card-actions class="d-flex justify-end">
@@ -955,7 +960,8 @@
   </v-dialog>
   <v-dialog
     v-model="dialogConsultation"
-    max-width="45%"
+    :fullscreen="!isFullscreen"
+    :max-width="isMobile ? 'none' : '45%'"
     persistent
     transition="dialog-bottom-transition"
   >
@@ -981,126 +987,141 @@
             ></v-text-field>
           </div>
         </v-card-title>
-
-        <v-data-table
-        :headers="headersConsultation"
-        :items="membersConsultation"
-        :search="searchConsultation"
-        :items-per-page-text="$t('dataTable.itemsPerPageText')"
-        :no-data-text="$t('dataTable.noDataText')"
-        :loading-text="$t('dataTable.loadingText')"
-        :loading="loading"
-        :hide-default-header="true"
-        style="
-          max-height: 68vh;
-          overflow-y: auto;
-          background: transparent;
-          border: none !important;
-          outline: none !important;
-          box-shadow: none !important;
-          padding: 0;
-        "
+        <div
+        class="ma-0 pa-0 responsive-data-table-wrapper"
+        :class="isMobile ? 'mobile-scroll' : ''"
       >
-        <!-- Encabezado fijo (sin cambios) -->
-        <template v-slot:top>
-          <v-card
-            :elevation="1"
-            flat
-            class="mb-2 mx-1 rounded-lg"
-            style="
-              border: 1px solid #eceff1;
-              height: 40px;
-              min-height: 40px;
-              display: flex;
-              align-items: center;
-              transition: none !important;
-            "
-          >
-            <v-card-text
-              class="d-flex pa-2 font-weight-bold"
+        <v-data-table
+          :headers="headersConsultation"
+          :items="membersConsultation"
+          :search="searchConsultation"
+          :items-per-page-text="$t('dataTable.itemsPerPageText')"
+          :no-data-text="$t('dataTable.noDataText')"
+          :loading-text="$t('dataTable.loadingText')"
+          :loading="loading"
+          :hide-default-header="true"
+          style="
+            max-height: 68vh;
+            overflow-y: auto;
+            overflow-x: hidden;
+            background: transparent;
+            border: none !important;
+            outline: none !important;
+            box-shadow: none !important;
+          "
+        >
+          <!-- Encabezado fijo (sin cambios) -->
+          <template v-slot:top>
+            <v-card
+              :elevation="1"
+              flat
+              class="mb-2 mx-1 rounded-lg"
               style="
-                width: 100%;
-                min-width: 0;
-                height: 100%;
-                padding: 0 16px !important;
+                border: 1px solid #eceff1;
+                height: 40px;
+                min-height: 40px;
                 display: flex;
                 align-items: center;
+                transition: none !important;
               "
             >
-              <div style="width: 75%; min-width: 0" class="text-left">
-                {{ $t("home.membersTable.name") }}
-              </div>
-              <div style="width: 20%; min-width: 0" class="text-center">
-                {{ $t("taskForm.fields.status") }}
-              </div>
-              <div style="width: 5%; min-width: 0" class="text-left">
-                
-              </div>
-            </v-card-text>
-          </v-card>
-        </template>
-
-        <!-- Fila principal -->
-        <template v-slot:item="{ item }">
-        <tr>
-          <td colspan="100%" style="padding: 0; border: none">
-            <v-card
-              class="mb-2 mx-1 rounded-lg"
-              elevation="1"
-              density="comfortable"
-              flat
-            >
-              <v-card-text class="d-flex align-center pa-2 font-weight-bold" style="width: 100%; min-width: 0">
-                <!-- Nombre + imagen -->
-                <div style="width: 75%; min-width: 0" class="d-flex align-center">
-                  <v-avatar
-                    size="48"
-                    class="mr-1 icono-concavo"
-                    color="grey-lighten-4"
-                    style="flex-shrink: 0"
-                  >
-                    <v-img
-                      :src="getImageUrl(item.image)"
-                      cover
-                      class="icono-concavo"
-                    />
-                  </v-avatar>
-
-                  <div class="d-flex flex-column justify-center" style="min-width: 0">
-                    <div class="text-body-2 text-truncate">
-                      <span>{{ item.name }}</span>
-                      <v-tooltip activator="parent" location="bottom" max-width="350px">
-                        <span style="white-space: normal; word-break: break-word">
-                          {{ item.name }}
-                        </span>
-                      </v-tooltip>
-                    </div>
-                    <div class="text-caption text--secondary">
-                      {{ item.totalConsultations }} consulta{{ item.totalConsultations !== 1 ? 's' : '' }}
-                    </div>
-                  </div>
+              <v-card-text
+                class="d-flex pa-2 font-weight-bold"
+                style="
+                  width: 100%;
+                  min-width: 0;
+                  height: 100%;
+                  padding: 0 16px !important;
+                  display: flex;
+                  align-items: center;
+                "
+              >
+                <div style="width: 75%; min-width: 0" class="text-left">
+                  {{ $t("home.membersTable.name") }}
                 </div>
+                <div style="width: 20%; min-width: 0" class="text-center">
+                  {{ $t("taskForm.fields.status") }}
+                </div>
+                <div style="width: 5%; min-width: 0" class="text-left"></div>
+              </v-card-text>
+            </v-card>
+          </template>
 
-                <!-- Switch de estado -->
-                <div
-                  style="width: 20%; min-width: 0; display: flex; align-items: center; justify-content: center"
+          <!-- Fila principal -->
+          <template v-slot:item="{ item }">
+           <tr
+          style="display: table; width: 100%;"
+          :class="isMobile ? 'mobile-table' : 'desktop-table'"
+        >
+          <td colspan="100%" style="padding: 0; border: none"> 
+                <v-card
+                  class="mb-2 mx-1 rounded-lg"
+                  elevation="1"
+                  density="comfortable"
+                  flat
                 >
-                 <v-icon
+                  <v-card-text
+                    class="d-flex align-center pa-2 font-weight-bold"
+                    style="width: 100%; min-width: 0"
+                  >
+                    <!-- Nombre + imagen -->
+                    <div style="width: 75%; min-width: 0" class="d-flex align-center">
+                      <v-avatar
+                        size="48"
+                        class="mr-1 icono-concavo"
+                        color="grey-lighten-4"
+                        style="flex-shrink: 0"
+                      >
+                        <v-img
+                          :src="getImageUrl(item.image)"
+                          cover
+                          class="icono-concavo"
+                        />
+                      </v-avatar>
+
+                      <div class="d-flex flex-column justify-center" style="min-width: 0">
+                        <div class="text-body-2 text-truncate">
+                          <span>{{ item.name }}</span>
+                          <v-tooltip
+                            activator="parent"
+                            location="bottom"
+                            max-width="350px"
+                          >
+                            <span style="white-space: normal; word-break: break-word">
+                              {{ item.name }}
+                            </span>
+                          </v-tooltip>
+                        </div>
+                        <div class="text-caption text--secondary">
+                          {{ item.totalConsultations }} consulta{{
+                            item.totalConsultations !== 1 ? "s" : ""
+                          }}
+                        </div>
+                      </div>
+                    </div>
+
+                    <!-- Switch de estado -->
+                    <div
+                      style="
+                        width: 20%;
+                        min-width: 0;
+                        display: flex;
+                        align-items: center;
+                        justify-content: center;
+                      "
+                    >
+                      <v-icon
                         :color="!item.hasConsultations ? 'success' : 'red'"
                         size="25"
                         class="mr-1"
                       >
                         {{
                           !item.hasConsultations
-                            ? 'mdi-check-circle-outline'
-                            : 'mdi-alert-circle-outline'
+                            ? "mdi-check-circle-outline"
+                            : "mdi-alert-circle-outline"
                         }}
                       </v-icon>
-                      <v-tooltip
-                        activator="parent"
-                        location="bottom"
-                        max-width="350px"
-                      >
+                      <v-tooltip activator="parent" location="bottom" max-width="350px">
                         <span style="white-space: normal; word-break: break-word">
                           {{
                             item.hasConsultations
@@ -1109,84 +1130,101 @@
                           }}
                         </span>
                       </v-tooltip>
-                </div>
+                    </div>
 
-                <!-- Ícono de expansión AL FINAL (solo si tiene consultas) -->
-                <div style="width: 5%; min-width: 0; display: flex; justify-content: center">
-                  <v-btn
-                    v-if="item.hasConsultations"
-                    icon
-                    size="small"
-                    variant="text"
-                    @click.stop="toggleExpand(item.id)"
-                    :class="{ 'rotate-180': isExpanded(item.id) }"
-                    style="transition: transform 0.2s"
-                  >
-                    <v-icon size="small">mdi-chevron-down</v-icon>
-                  </v-btn>
-                </div>
-              </v-card-text>
-            </v-card>
-          </td>
-        </tr>
-
-          <!-- Fila expandida -->
-          <tr v-if="isExpanded(item.id) && item.hasConsultations">
-            <td colspan="100%" class="pa-0" style="background: #fafafa">
-              <div class="px-2 pb-4">
-                <v-card
-                  v-for="consultation in item.consultations"
-                  :key="consultation.id"
-                  class="mb-2 mx-1 rounded-lg"
-                  elevation="1"
-                  density="comfortable"
-                  flat
-                >
-                  <v-card-text class="d-flex flex-wrap align-center pa-2" style="width: 100%">
-                    <div style="width: 7%" class="text-body-2">
-                      <v-avatar
-                            class="mr-2 icono-concavo"
-                            :class="`bg-${getTypeColor(consultation.typeName)}`"
-                            :style="{
-                              'min-height': '48px',
-                              'min-width': '48px',
-                              'border-radius': '8px',
-                              'font-size': '0.90em'
-                            }"
-                          >
-                            <div class="text-body-3 font-weight-medium">
-                              {{ formatIntuitiveDate(consultation.date) }}
-                            </div>
-                          </v-avatar>
-                    </div>
-                    <div style="width: 63%" class="text-body-2 text-truncate ml-2">
-                      <div class="text-body-2 text-truncate">
-                      {{ consultation.typeName }}
-                    </div>
-                    <div class="text-caption text-grey-darken-1 text-truncate mt-1">
-                      {{ consultation.reason || $t('consultations.fields.reason') }}
-                      <v-tooltip activator="parent" location="bottom" max-width="350px">
-                        <span style="white-space: normal; word-break: break-word">
-                          {{ $t('consultations.fields.reason') }}: {{ consultation.reason }}
-                        </span>
-                      </v-tooltip>
-                    </div>
-                    </div>
-                    <div style="width: 20%" class="text-body-2 text-truncate">
-                      {{ consultation.professional }}
-                      <v-tooltip activator="parent" location="bottom" max-width="350px">
-                        <span style="white-space: normal; word-break: break-word">
-                          {{ $t('consultations.fields.profesional') }}: {{ consultation.professional }}
-                        </span>
-                      </v-tooltip>
+                    <!-- Ícono de expansión AL FINAL (solo si tiene consultas) -->
+                    <div
+                      style="
+                        width: 5%;
+                        min-width: 0;
+                        display: flex;
+                        justify-content: center;
+                      "
+                    >
+                      <v-btn
+                        v-if="item.hasConsultations"
+                        icon
+                        size="small"
+                        variant="text"
+                        @click.stop="toggleExpand(item.id)"
+                        :class="{ 'rotate-180': isExpanded(item.id) }"
+                        style="transition: transform 0.2s"
+                      >
+                        <v-icon size="small">mdi-chevron-down</v-icon>
+                      </v-btn>
                     </div>
                   </v-card-text>
                 </v-card>
-              </div>
-            </td>
-          </tr>
-        </template>
-      </v-data-table>
+              </td>
+            </tr>
+
+            <!-- Fila expandida -->
+            <tr v-if="isExpanded(item.id) && item.hasConsultations">
+              <td colspan="100%" class="pa-0" style="background: #fafafa">
+                <div class="px-2 pb-4">
+                  <v-card
+                    v-for="consultation in item.consultations"
+                    :key="consultation.id"
+                    class="mb-2 mx-1 rounded-lg"
+                    elevation="1"
+                    density="comfortable"
+                    flat
+                  >
+                    <v-card-text
+                      class="d-flex flex-wrap align-center pa-2"
+                      style="width: 100%"
+                    >
+                      <div style="width: 7%" class="text-body-2">
+                        <v-avatar
+                          class="mr-2 icono-concavo"
+                          :class="`bg-${getTypeColor(consultation.typeName)}`"
+                          :style="{
+                            'min-height': '48px',
+                            'min-width': '48px',
+                            'border-radius': '8px',
+                            'font-size': '0.90em',
+                          }"
+                        >
+                          <div class="text-body-3 font-weight-medium">
+                            {{ formatIntuitiveDate(consultation.date) }}
+                          </div>
+                        </v-avatar>
+                      </div>
+                      <div style="width: 63%" class="text-body-2 text-truncate ml-2">
+                        <div class="text-body-2 text-truncate">
+                          {{ consultation.typeName }}
+                        </div>
+                        <div class="text-caption text-grey-darken-1 text-truncate mt-1">
+                          {{ consultation.reason || $t("consultations.fields.reason") }}
+                          <v-tooltip
+                            activator="parent"
+                            location="bottom"
+                            max-width="350px"
+                          >
+                            <span style="white-space: normal; word-break: break-word">
+                              {{ $t("consultations.fields.reason") }}:
+                              {{ consultation.reason }}
+                            </span>
+                          </v-tooltip>
+                        </div>
+                      </div>
+                      <div style="width: 20%" class="text-body-2 text-truncate">
+                        {{ consultation.professional }}
+                        <v-tooltip activator="parent" location="bottom" max-width="350px">
+                          <span style="white-space: normal; word-break: break-word">
+                            {{ $t("consultations.fields.profesional") }}:
+                            {{ consultation.professional }}
+                          </span>
+                        </v-tooltip>
+                      </div>
+                    </v-card-text>
+                  </v-card>
+                </div>
+              </td>
+            </tr>
+          </template>
+        </v-data-table>
+        </div>
       </v-card-text>
 
       <v-card-actions class="d-flex justify-end">
@@ -1198,7 +1236,8 @@
   </v-dialog>
   <v-dialog
     v-model="dialogVaccination"
-    max-width="45%"
+    :fullscreen="!isFullscreen"
+    :max-width="isMobile ? 'none' : '45%'"
     persistent
     transition="dialog-bottom-transition"
   >
@@ -1224,126 +1263,141 @@
             ></v-text-field>
           </div>
         </v-card-title>
-
-        <v-data-table
-        :headers="headersVaccination"
-        :items="vaccinationData"
-        :search="searchVaccination"
-        :items-per-page-text="$t('dataTable.itemsPerPageText')"
-        :no-data-text="$t('dataTable.noDataText')"
-        :loading-text="$t('dataTable.loadingText')"
-        :loading="loading"
-        :hide-default-header="true"
-        style="
-          max-height: 68vh;
-          overflow-y: auto;
-          background: transparent;
-          border: none !important;
-          outline: none !important;
-          box-shadow: none !important;
-          padding: 0;
-        "
+        <div
+        class="ma-0 pa-0 responsive-data-table-wrapper"
+        :class="isMobile ? 'mobile-scroll' : ''"
       >
-        <!-- Encabezado fijo (sin cambios) -->
-        <template v-slot:top>
-          <v-card
-            :elevation="1"
-            flat
-            class="mb-2 mx-1 rounded-lg"
-            style="
-              border: 1px solid #eceff1;
-              height: 40px;
-              min-height: 40px;
-              display: flex;
-              align-items: center;
-              transition: none !important;
-            "
-          >
-            <v-card-text
-              class="d-flex pa-2 font-weight-bold"
+        <v-data-table
+          :headers="headersVaccination"
+          :items="vaccinationData"
+          :search="searchVaccination"
+          :items-per-page-text="$t('dataTable.itemsPerPageText')"
+          :no-data-text="$t('dataTable.noDataText')"
+          :loading-text="$t('dataTable.loadingText')"
+          :loading="loading"
+          :hide-default-header="true"
+          style="
+            max-height: 68vh;
+            overflow-y: auto;
+            overflow-x: hidden;
+            background: transparent;
+            border: none !important;
+            outline: none !important;
+            box-shadow: none !important;
+          "
+        >
+          <!-- Encabezado fijo (sin cambios) -->
+          <template v-slot:top>
+            <v-card
+              :elevation="1"
+              flat
+              class="mb-2 mx-1 rounded-lg"
               style="
-                width: 100%;
-                min-width: 0;
-                height: 100%;
-                padding: 0 16px !important;
+                border: 1px solid #eceff1;
+                height: 40px;
+                min-height: 40px;
                 display: flex;
                 align-items: center;
+                transition: none !important;
               "
             >
-              <div style="width: 75%; min-width: 0" class="text-left">
-                {{ $t("home.membersTable.name") }}
-              </div>
-              <div style="width: 20%; min-width: 0" class="text-center">
-                {{ $t("taskForm.fields.status") }}
-              </div>
-              <div style="width: 5%; min-width: 0" class="text-left">
-                
-              </div>
-            </v-card-text>
-          </v-card>
-        </template>
-
-        <!-- Fila principal -->
-        <template v-slot:item="{ item }">
-        <tr>
-          <td colspan="100%" style="padding: 0; border: none">
-            <v-card
-              class="mb-2 mx-1 rounded-lg"
-              elevation="1"
-              density="comfortable"
-              flat
-            >
-              <v-card-text class="d-flex align-center pa-2" style="width: 100%; min-width: 0">
-                <!-- Nombre + imagen -->
-                <div style="width: 75%; min-width: 0" class="d-flex align-center">
-                  <v-avatar
-                    size="48"
-                    class="mr-1 icono-concavo"
-                    color="grey-lighten-4"
-                    style="flex-shrink: 0"
-                  >
-                    <v-img
-                      :src="getImageUrl(item.image)"
-                      cover
-                      class="icono-concavo"
-                    />
-                  </v-avatar>
-
-                  <div class="d-flex flex-column justify-center" style="min-width: 0">
-                    <div class="text-body-2 text-truncate">
-                      <span>{{ item.name }}</span>
-                      <v-tooltip activator="parent" location="bottom" max-width="350px">
-                        <span style="white-space: normal; word-break: break-word">
-                          {{ item.name }}
-                        </span>
-                      </v-tooltip>
-                    </div>
-                    <div class="text-caption text--secondary">
-                      {{ item.totalVaccinations }} vacuna{{ item.totalVaccinations !== 1 ? 's' : '' }}
-                    </div>
-                  </div>
+              <v-card-text
+                class="d-flex pa-2 font-weight-bold"
+                style="
+                  width: 100%;
+                  min-width: 0;
+                  height: 100%;
+                  padding: 0 16px !important;
+                  display: flex;
+                  align-items: center;
+                "
+              >
+                <div style="width: 75%; min-width: 0" class="text-left">
+                  {{ $t("home.membersTable.name") }}
                 </div>
+                <div style="width: 20%; min-width: 0" class="text-center">
+                  {{ $t("taskForm.fields.status") }}
+                </div>
+                <div style="width: 5%; min-width: 0" class="text-left"></div>
+              </v-card-text>
+            </v-card>
+          </template>
 
-                <!-- Switch de estado -->
-                <div
-                  style="width: 20%; min-width: 0; display: flex; align-items: center; justify-content: center"
+          <!-- Fila principal -->
+          <template v-slot:item="{ item }">
+            <tr
+          style="display: table; width: 100%;"
+          :class="isMobile ? 'mobile-table' : 'desktop-table'"
+        >
+          <td colspan="100%" style="padding: 0; border: none"> 
+                <v-card
+                  class="mb-2 mx-1 rounded-lg"
+                  elevation="1"
+                  density="comfortable"
+                  flat
                 >
-                <v-icon
+                  <v-card-text
+                    class="d-flex align-center pa-2"
+                    style="width: 100%; min-width: 0"
+                  >
+                    <!-- Nombre + imagen -->
+                    <div style="width: 75%; min-width: 0" class="d-flex align-center">
+                      <v-avatar
+                        size="48"
+                        class="mr-1 icono-concavo"
+                        color="grey-lighten-4"
+                        style="flex-shrink: 0"
+                      >
+                        <v-img
+                          :src="getImageUrl(item.image)"
+                          cover
+                          class="icono-concavo"
+                        />
+                      </v-avatar>
+
+                      <div class="d-flex flex-column justify-center" style="min-width: 0">
+                        <div class="text-body-2 text-truncate">
+                          <span>{{ item.name }}</span>
+                          <v-tooltip
+                            activator="parent"
+                            location="bottom"
+                            max-width="350px"
+                          >
+                            <span style="white-space: normal; word-break: break-word">
+                              {{ item.name }}
+                            </span>
+                          </v-tooltip>
+                        </div>
+                        <div class="text-caption text--secondary">
+                          {{ item.totalVaccinations }} vacuna{{
+                            item.totalVaccinations !== 1 ? "s" : ""
+                          }}
+                        </div>
+                      </div>
+                    </div>
+
+                    <!-- Switch de estado -->
+                    <div
+                      style="
+                        width: 20%;
+                        min-width: 0;
+                        display: flex;
+                        align-items: center;
+                        justify-content: center;
+                      "
+                    >
+                      <v-icon
                         :color="!item.hasPendingVaccines ? 'success' : 'red'"
                         size="25"
                         class="mr-1"
                       >
                         {{
                           !item.hasPendingVaccines
-                            ? 'mdi-check-circle-outline'
-                            : 'mdi-alert-circle-outline'
+                            ? "mdi-check-circle-outline"
+                            : "mdi-alert-circle-outline"
                         }}
                       </v-icon>
-                      <v-tooltip
-                        activator="parent"
-                        location="bottom"
-                        max-width="350px"
-                      >
+                      <v-tooltip activator="parent" location="bottom" max-width="350px">
                         <span style="white-space: normal; word-break: break-word">
                           {{
                             item.hasPendingVaccines
@@ -1352,84 +1406,101 @@
                           }}
                         </span>
                       </v-tooltip>
-                </div>
+                    </div>
 
-                <!-- Ícono de expansión AL FINAL (solo si tiene consultas) -->
-                <div style="width: 5%; min-width: 0; display: flex; justify-content: center">
-                  <v-btn
-                    v-if="item.hasPendingVaccines"
-                    icon
-                    size="small"
-                    variant="text"
-                    @click.stop="toggleExpand(item.id)"
-                    :class="{ 'rotate-180': isExpanded(item.id) }"
-                    style="transition: transform 0.2s"
-                  >
-                    <v-icon size="small">mdi-chevron-down</v-icon>
-                  </v-btn>
-                </div>
-              </v-card-text>
-            </v-card>
-          </td>
-        </tr>
-
-          <!-- Fila expandida -->
-          <tr v-if="isExpanded(item.id) && item.hasPendingVaccines">
-            <td colspan="100%" class="pa-0" style="background: #fafafa">
-              <div class="px-2 pb-4">
-                <v-card
-                  v-for="vaccination in item.vaccinations"
-                  :key="vaccination.id"
-                  class="mb-2 mx-1 rounded-lg"
-                  elevation="1"
-                  density="comfortable"
-                  flat
-                >
-                  <v-card-text class="d-flex flex-wrap align-center pa-2" style="width: 100%">
-                    <div style="width: 7%" class="text-body-2">
-                      <v-avatar
-                            class="mr-2 icono-concavo"
-                            :class="`bg-${getTypeColor(vaccination.typeName)}`"
-                            :style="{
-                              'min-height': '48px',
-                              'min-width': '48px',
-                              'border-radius': '8px',
-                              'font-size': '0.90em'
-                            }"
-                          >
-                            <div class="text-body-3 font-weight-medium">
-                              {{ formatIntuitiveDate(vaccination.startDate) }}
-                            </div>
-                          </v-avatar>
-                    </div>
-                    <div style="width: 60%" class="text-body-2 text-truncate ml-2">
-                      <div class="text-body-2 text-truncate">
-                      {{ vaccination.description }}
-                    </div>
-                    <div class="text-caption text-grey-darken-1 text-truncate mt-1">
-                      {{ vaccination.severity }}
-                      <v-tooltip activator="parent" location="bottom" max-width="350px">
-                        <span style="white-space: normal; word-break: break-word">
-                          {{ $t('personalBackground.fields.severity') }}: {{ vaccination.severity }}
-                        </span>
-                      </v-tooltip>
-                    </div>
-                    </div>
-                    <div style="width: 30%" class="text-body-2 text-truncate">
-                      {{ vaccination.details }}
-                      <v-tooltip activator="parent" location="bottom" max-width="350px">
-                        <span style="white-space: normal; word-break: break-word">
-                          {{ $t('personalBackground.fields.details') }}: {{ vaccination.details }}
-                        </span>
-                      </v-tooltip>
+                    <!-- Ícono de expansión AL FINAL (solo si tiene consultas) -->
+                    <div
+                      style="
+                        width: 5%;
+                        min-width: 0;
+                        display: flex;
+                        justify-content: center;
+                      "
+                    >
+                      <v-btn
+                        v-if="item.hasPendingVaccines"
+                        icon
+                        size="small"
+                        variant="text"
+                        @click.stop="toggleExpand(item.id)"
+                        :class="{ 'rotate-180': isExpanded(item.id) }"
+                        style="transition: transform 0.2s"
+                      >
+                        <v-icon size="small">mdi-chevron-down</v-icon>
+                      </v-btn>
                     </div>
                   </v-card-text>
                 </v-card>
-              </div>
-            </td>
-          </tr>
-        </template>
-      </v-data-table>
+              </td>
+            </tr>
+
+            <!-- Fila expandida -->
+            <tr v-if="isExpanded(item.id) && item.hasPendingVaccines">
+              <td colspan="100%" class="pa-0" style="background: #fafafa">
+                <div class="px-2 pb-4">
+                  <v-card
+                    v-for="vaccination in item.vaccinations"
+                    :key="vaccination.id"
+                    class="mb-2 mx-1 rounded-lg"
+                    elevation="1"
+                    density="comfortable"
+                    flat
+                  >
+                    <v-card-text
+                      class="d-flex flex-wrap align-center pa-2"
+                      style="width: 100%"
+                    >
+                      <div style="width: 7%" class="text-body-2">
+                        <v-avatar
+                          class="mr-2 icono-concavo"
+                          :class="`bg-${getTypeColor(vaccination.typeName)}`"
+                          :style="{
+                            'min-height': '48px',
+                            'min-width': '48px',
+                            'border-radius': '8px',
+                            'font-size': '0.90em',
+                          }"
+                        >
+                          <div class="text-body-3 font-weight-medium">
+                            {{ formatIntuitiveDate(vaccination.startDate) }}
+                          </div>
+                        </v-avatar>
+                      </div>
+                      <div style="width: 60%" class="text-body-2 text-truncate ml-2">
+                        <div class="text-body-2 text-truncate">
+                          {{ vaccination.description }}
+                        </div>
+                        <div class="text-caption text-grey-darken-1 text-truncate mt-1">
+                          {{ vaccination.severity }}
+                          <v-tooltip
+                            activator="parent"
+                            location="bottom"
+                            max-width="350px"
+                          >
+                            <span style="white-space: normal; word-break: break-word">
+                              {{ $t("personalBackground.fields.severity") }}:
+                              {{ vaccination.severity }}
+                            </span>
+                          </v-tooltip>
+                        </div>
+                      </div>
+                      <div style="width: 30%" class="text-body-2 text-truncate">
+                        {{ vaccination.details }}
+                        <v-tooltip activator="parent" location="bottom" max-width="350px">
+                          <span style="white-space: normal; word-break: break-word">
+                            {{ $t("personalBackground.fields.details") }}:
+                            {{ vaccination.details }}
+                          </span>
+                        </v-tooltip>
+                      </div>
+                    </v-card-text>
+                  </v-card>
+                </div>
+              </td>
+            </tr>
+          </template>
+        </v-data-table>
+        </div>
       </v-card-text>
 
       <v-card-actions class="d-flex justify-end">
@@ -1460,6 +1531,7 @@ export default {
     MedicalInformation,
   },
   data: () => ({
+    isFullscreen: false,
     dialogPerson: false,
     dialogVitalSigns: false,
     dialogComplementaryData: false,
@@ -1577,7 +1649,14 @@ export default {
   }),
   computed: {
     healthStatus() {
-      return this.healthStatusData || { level: 'Crítico', message: 'Sin datos', icon: 'mdi-alert', color: 'grey' };
+      return (
+        this.healthStatusData || {
+          level: "Crítico",
+          message: "Sin datos",
+          icon: "mdi-alert",
+          color: "grey",
+        }
+      );
     },
     healthStatusIcon() {
       return this.healthStatus.icon;
@@ -1585,169 +1664,171 @@ export default {
     healthStatusColor() {
       return this.healthStatus.color;
     },
-      // --- Colores dinámicos ---
-  healthyWeightColor() {
-    if (this.type === 'Personal') {      
-      return this.healthMetrics.healthyWeightMembers[0].isHealthyWeight
-        ? 'green'   // Bien → verde
-        : 'red';    // Mal → rojo
-    }
-    // Modo Hogar: usa un color neutro o proporcional (ej. indigo como antes)
-    return 'indigo';
-  },
-
-  bloodPressureColor() {
-    if (this.type === 'Personal') {
-      return this.healthMetrics.normalBloodPressureMembers[0].isNormalBloodPressure
-        ? 'green'   // Bien → verde
-        : 'red';    // Mal → rojo
-    }
-    return 'red'; // o 'indigo' si prefieres neutro en modo hogar
-  },
-
-  vaccinationColor() {
-    if (this.type === 'Personal') {      
-      const hasPending = this.householdVaccination.data[0]?.hasPendingVaccines;
-      return hasPending
-        ? 'red'     // Pendientes → rojo
-        : 'green';  // Al día → verde
-    }
-    // Modo Hogar: si hay pendientes, usar amarillo/rojo; si no, verde
-    const pending = this.householdVaccination.totalPeopleWithPendingVaccines;
-    const total = this.healthMetrics.totalMembers;
-    if (pending === 0) return 'green';
-    if (pending === total) return 'red';
-    return 'amber'; // mixto
-  },
-
-  consultationColor() {
-    if (this.type === 'Personal') {
-      return this.totalMembersWithConsultations > 0
-        ? 'amber'   // Tiene cita → amarillo (advertencia/acción)
-        : 'green';  // Sin citas → verde (todo en orden)
-    }
-    // Modo Hogar: si hay citas, usar amarillo; si no, verde
-    return this.totalMembersWithConsultations > 0
-      ? 'amber'
-      : 'green';
-  },
-    consultationAlertMessage() {
-    if (this.type === 'Personal') {
-      if (this.totalMembersWithConsultations > 0) {
-        return 'Tienes un control pendiente. Revisa la alerta.';
-      } else {
-        return 'No tienes controles médicos pendientes esta semana.';
+    // --- Colores dinámicos ---
+    healthyWeightColor() {
+      if (this.type === "Personal") {
+        return this.healthMetrics.healthyWeightMembers[0].isHealthyWeight
+          ? "green" // Bien → verde
+          : "red"; // Mal → rojo
       }
-    } else {
-      // type === 'Home'
-      const members = this.totalMembersWithConsultations;
-      const plural = members !== 1;
-      const memberWord = plural ? 'miembros' : 'miembro';
-      const controlWord = plural ? 'controles' : 'control';
-      const pendingWord = plural ? 'pendientes' : 'pendiente';
-      
-      return `${members} ${memberWord} con ${controlWord} ${pendingWord}. Revisa la alerta.`;
-    }
-  },  // --- Peso saludable ---
-  healthyWeightTooltip() {
-    if (this.type === 'Personal') {
-      const person = this.healthMetrics.healthyWeightMembers[0];
-      return person?.isHealthyWeight
-        ? 'Tienes un peso saludable.'
-        : 'Tu peso no está en el rango saludable.';
-    } else {
-      return `${this.healthMetrics.countHealthyWeight} de ${this.healthMetrics.totalMembers} miembros tienen peso saludable.`;
-    }
-  },
-  healthyWeightDisplay() {
-  if (this.type === 'Personal') {
-    return this.healthMetrics.healthyWeightMembers[0]?.isHealthyWeight ? '0' : '1';
-  } else {
-    return `${this.healthMetrics.countHealthyWeight}/${this.healthMetrics.totalMembers}`;
-  }
-  },
+      // Modo Hogar: usa un color neutro o proporcional (ej. indigo como antes)
+      return "indigo";
+    },
 
-  // --- Presión arterial ---
-  bloodPressureTooltip() {
-    if (this.type === 'Personal') {
-      const person = this.healthMetrics.normalBloodPressureMembers[0];
-      return person?.isNormalBloodPressure
-        ? 'Tu presión arterial está en rango normal.'
-        : 'Tu presión arterial está fuera del rango normal.';
-    } else {
-      return `${this.healthMetrics.countNormalBloodPressure} de ${this.healthMetrics.totalMembers} miembros tienen presión arterial dentro del rango normal.`;
-    }
-  },
-  bloodPressureDisplay() {
-  if (this.type === 'Personal') {
-    return this.healthMetrics.normalBloodPressureMembers[0]?.isNormalBloodPressure ? '0' : '1';
-  } else {
-    return `${this.healthMetrics.countNormalBloodPressure}/${this.healthMetrics.totalMembers}`;
-  }
-  },
+    bloodPressureColor() {
+      if (this.type === "Personal") {
+        return this.healthMetrics.normalBloodPressureMembers[0].isNormalBloodPressure
+          ? "green" // Bien → verde
+          : "red"; // Mal → rojo
+      }
+      return "red"; // o 'indigo' si prefieres neutro en modo hogar
+    },
 
-  // --- Vacunas ---
-  vaccinationTooltip() {
-    if (this.type === 'Personal') {
-      const person = this.householdVaccination.data[0]; // asumiendo que está en un array
-      const hasPending = person?.hasPendingVaccines;
-      return hasPending
-        ? 'Tienes vacunas pendientes.'
-        : 'Tus vacunas están al día.';
-    } else {
-      return `${this.householdVaccination.totalPeopleWithPendingVaccines} de ${this.healthMetrics.totalMembers} miembros tienen vacunas pendientes.`;
-    }
-  },
-  vaccinationDisplay() {
-  if (this.type === 'Personal') {
-    const hasPending = this.householdVaccination.data[0]?.hasPendingVaccines;
-    // Si quieres mostrar "1" cuando hay pendientes (como el progreso actual), o "0" si está al día
-    return hasPending ? '1' : '0';
-  } else {
-    return `${this.householdVaccination.totalPeopleWithPendingVaccines}/${this.healthMetrics.totalMembers}`;
-  }
-  },
+    vaccinationColor() {
+      if (this.type === "Personal") {
+        const hasPending = this.householdVaccination.data[0]?.hasPendingVaccines;
+        return hasPending
+          ? "red" // Pendientes → rojo
+          : "green"; // Al día → verde
+      }
+      // Modo Hogar: si hay pendientes, usar amarillo/rojo; si no, verde
+      const pending = this.householdVaccination.totalPeopleWithPendingVaccines;
+      const total = this.healthMetrics.totalMembers;
+      if (pending === 0) return "green";
+      if (pending === total) return "red";
+      return "amber"; // mixto
+    },
 
-  // --- Consultas médicas ---
-  consultationTooltip() {
-    if (this.type === 'Personal') {
-      return this.totalMembersWithConsultations > 0
-        ? 'Tienes una consulta médica esta semana.'
-        : 'No tienes consultas médicas esta semana.';
-    } else {
-      return `${this.totalMembersWithConsultations} de ${this.healthMetrics.totalMembers} miembros tienen consultas médicas esta semana.`;
-    }
-  },
-  consultationDisplay() {
-  if (this.type === 'Personal') {
-    return this.totalMembersWithConsultations > 0 ? '1' : '0';
-  } else {
-    return `${this.totalMembersWithConsultations}/${this.healthMetrics.totalMembers}`;
-  }
-},
+    consultationColor() {
+      if (this.type === "Personal") {
+        return this.totalMembersWithConsultations > 0
+          ? "amber" // Tiene cita → amarillo (advertencia/acción)
+          : "green"; // Sin citas → verde (todo en orden)
+      }
+      // Modo Hogar: si hay citas, usar amarillo; si no, verde
+      return this.totalMembersWithConsultations > 0 ? "amber" : "green";
+    },
+    consultationAlertMessage() {
+      if (this.type === "Personal") {
+        if (this.totalMembersWithConsultations > 0) {
+          return "Tienes un control pendiente. Revisa la alerta.";
+        } else {
+          return "No tienes controles médicos pendientes esta semana.";
+        }
+      } else {
+        // type === 'Home'
+        const members = this.totalMembersWithConsultations;
+        const plural = members !== 1;
+        const memberWord = plural ? "miembros" : "miembro";
+        const controlWord = plural ? "controles" : "control";
+        const pendingWord = plural ? "pendientes" : "pendiente";
 
-  // --- Valores para el progreso circular (porcentajes) ---
-  healthyWeightProgress() {
-    return this.healthMetrics.totalMembers
-      ? (this.healthMetrics.countHealthyWeight / this.healthMetrics.totalMembers) * 100
-      : 0;
-  },
-  bloodPressureProgress() {
-    return this.healthMetrics.totalMembers
-      ? (this.healthMetrics.countNormalBloodPressure / this.healthMetrics.totalMembers) * 100
-      : 0;
-  },
-  vaccinationProgress() {
-    // Nota: esto muestra % con vacunas PENDIENTES → quizás quieras invertirlo
-    return this.healthMetrics.totalMembers
-      ? (this.householdVaccination.totalPeopleWithPendingVaccines / this.healthMetrics.totalMembers) * 100
-      : 0;
-  },
-  consultationProgress() {
-    return this.healthMetrics.totalMembers
-      ? (this.totalMembersWithConsultations / this.healthMetrics.totalMembers) * 100
-      : 0;
-  },
+        return `${members} ${memberWord} con ${controlWord} ${pendingWord}. Revisa la alerta.`;
+      }
+    }, // --- Peso saludable ---
+    healthyWeightTooltip() {
+      if (this.type === "Personal") {
+        const person = this.healthMetrics.healthyWeightMembers[0];
+        return person?.isHealthyWeight
+          ? "Tienes un peso saludable."
+          : "Tu peso no está en el rango saludable.";
+      } else {
+        return `${this.healthMetrics.countHealthyWeight} de ${this.healthMetrics.totalMembers} miembros tienen peso saludable.`;
+      }
+    },
+    healthyWeightDisplay() {
+      if (this.type === "Personal") {
+        return this.healthMetrics.healthyWeightMembers[0]?.isHealthyWeight ? "0" : "1";
+      } else {
+        return `${this.healthMetrics.countHealthyWeight}/${this.healthMetrics.totalMembers}`;
+      }
+    },
+
+    // --- Presión arterial ---
+    bloodPressureTooltip() {
+      if (this.type === "Personal") {
+        const person = this.healthMetrics.normalBloodPressureMembers[0];
+        return person?.isNormalBloodPressure
+          ? "Tu presión arterial está en rango normal."
+          : "Tu presión arterial está fuera del rango normal.";
+      } else {
+        return `${this.healthMetrics.countNormalBloodPressure} de ${this.healthMetrics.totalMembers} miembros tienen presión arterial dentro del rango normal.`;
+      }
+    },
+    bloodPressureDisplay() {
+      if (this.type === "Personal") {
+        return this.healthMetrics.normalBloodPressureMembers[0]?.isNormalBloodPressure
+          ? "0"
+          : "1";
+      } else {
+        return `${this.healthMetrics.countNormalBloodPressure}/${this.healthMetrics.totalMembers}`;
+      }
+    },
+
+    // --- Vacunas ---
+    vaccinationTooltip() {
+      if (this.type === "Personal") {
+        const person = this.householdVaccination.data[0]; // asumiendo que está en un array
+        const hasPending = person?.hasPendingVaccines;
+        return hasPending ? "Tienes vacunas pendientes." : "Tus vacunas están al día.";
+      } else {
+        return `${this.householdVaccination.totalPeopleWithPendingVaccines} de ${this.healthMetrics.totalMembers} miembros tienen vacunas pendientes.`;
+      }
+    },
+    vaccinationDisplay() {
+      if (this.type === "Personal") {
+        const hasPending = this.householdVaccination.data[0]?.hasPendingVaccines;
+        // Si quieres mostrar "1" cuando hay pendientes (como el progreso actual), o "0" si está al día
+        return hasPending ? "1" : "0";
+      } else {
+        return `${this.householdVaccination.totalPeopleWithPendingVaccines}/${this.healthMetrics.totalMembers}`;
+      }
+    },
+
+    // --- Consultas médicas ---
+    consultationTooltip() {
+      if (this.type === "Personal") {
+        return this.totalMembersWithConsultations > 0
+          ? "Tienes una consulta médica esta semana."
+          : "No tienes consultas médicas esta semana.";
+      } else {
+        return `${this.totalMembersWithConsultations} de ${this.healthMetrics.totalMembers} miembros tienen consultas médicas esta semana.`;
+      }
+    },
+    consultationDisplay() {
+      if (this.type === "Personal") {
+        return this.totalMembersWithConsultations > 0 ? "1" : "0";
+      } else {
+        return `${this.totalMembersWithConsultations}/${this.healthMetrics.totalMembers}`;
+      }
+    },
+
+    // --- Valores para el progreso circular (porcentajes) ---
+    healthyWeightProgress() {
+      return this.healthMetrics.totalMembers
+        ? (this.healthMetrics.countHealthyWeight / this.healthMetrics.totalMembers) * 100
+        : 0;
+    },
+    bloodPressureProgress() {
+      return this.healthMetrics.totalMembers
+        ? (this.healthMetrics.countNormalBloodPressure /
+            this.healthMetrics.totalMembers) *
+            100
+        : 0;
+    },
+    vaccinationProgress() {
+      // Nota: esto muestra % con vacunas PENDIENTES → quizás quieras invertirlo
+      return this.healthMetrics.totalMembers
+        ? (this.householdVaccination.totalPeopleWithPendingVaccines /
+            this.healthMetrics.totalMembers) *
+            100
+        : 0;
+    },
+    consultationProgress() {
+      return this.healthMetrics.totalMembers
+        ? (this.totalMembersWithConsultations / this.healthMetrics.totalMembers) * 100
+        : 0;
+    },
     tools() {
       return [
         {
@@ -1789,6 +1870,12 @@ export default {
       const type = this.types.find((t) => t.id === this.type);
       return type ? type.name : this.type;
     },
+     isMobile() {
+      return this.$vuetify.display.xs || this.$vuetify.display.sm;
+    },
+    isDesktop() {
+      return !this.isMobile;
+    },
   },
   mounted() {
     this.name = JSON.parse(LocalStorageService.getItem("name"));
@@ -1804,8 +1891,19 @@ export default {
       // Llama al método de inicialización
       this.initialize();
     },
+    dialog(val) {
+      if (val) this.updateFullscreenMode();
+    },
+    isDesktop() {
+      this.updateFullscreenMode();
+    },
   },
   methods: {
+     updateFullscreenMode() {
+      this.$nextTick(() => {
+        this.isFullscreen = this.isDesktop;
+      });
+    },
     openModal(type) {
       if (type === "weight") {
         this.weightData = this.healthMetrics.healthyWeightMembers;
@@ -1813,9 +1911,9 @@ export default {
       } else if (type === "bloodpresure") {
         this.bloodPresureData = this.healthMetrics.normalBloodPressureMembers;
         this.dialogBloodPresure = true;
-      }else if (type === "consultation") {
+      } else if (type === "consultation") {
         this.dialogConsultation = true;
-      }else if (type === "vaccination") {
+      } else if (type === "vaccination") {
         this.vaccinationData = this.householdVaccination.data;
         this.dialogVaccination = true;
       }
@@ -1827,18 +1925,18 @@ export default {
       this.dialogVaccination = false;
     },
     toggleExpand(id) {
-    const index = this.expandedConsultationRows.indexOf(id);
-    if (index > -1) {
-      this.expandedConsultationRows.splice(index, 1);
-    } else {
-      this.expandedConsultationRows.push(id);
-    }
-  },
+      const index = this.expandedConsultationRows.indexOf(id);
+      if (index > -1) {
+        this.expandedConsultationRows.splice(index, 1);
+      } else {
+        this.expandedConsultationRows.push(id);
+      }
+    },
 
-  isExpanded(id) {
-    return this.expandedConsultationRows.includes(id);
-  },
-  formatIntuitiveDate(dateString) {
+    isExpanded(id) {
+      return this.expandedConsultationRows.includes(id);
+    },
+    formatIntuitiveDate(dateString) {
       if (!dateString) return "Sin fecha";
       // 1. Parsear la fecha de entrada (formato YYYY-MM-DD)
       const [year, month, day] = dateString.split("-");
@@ -1874,7 +1972,7 @@ export default {
             .replace(/\./g, "");
       }
     },
-     getTypeColor(type) {
+    getTypeColor(type) {
       const colorMap = {
         Tarea: "warning",
         Meta: "purple",
@@ -1883,7 +1981,9 @@ export default {
       return colorMap[type] || "warning"; // Color por defecto
     },
     getImageUrl(imagePath) {
-      return `${this.$axios.defaults.baseURL}images/${imagePath}`;
+      return `${
+        this.$axios.defaults.baseURL
+      }images/${imagePath}?t=${this.getCacheTimestamp()}`;
     },
     getCacheTimestamp() {
       // Usamos medianoche (00:00:00) del día actual
@@ -2027,6 +2127,47 @@ export default {
 };
 </script>
 <style scoped>
+.fullscreen-dialog {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  overflow-y: auto;
+}
+.desktop-table {
+  table-layout: fixed;
+}
+
+.mobile-table {
+  table-layout: auto;
+}
+.responsive-data-table-wrapper {
+  width: 100%;
+}
+
+/* Solo en móvil: activar scroll horizontal */
+.responsive-data-table-wrapper.mobile-scroll {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* En móvil: forzar ancho mínimo para que haya algo que scrollear */
+.responsive-data-table-wrapper.mobile-scroll :deep(.v-data-table) {
+  min-width: 800px;
+}
+
+/* En desktop: asegurar que no haya scroll innecesario */
+@media (min-width: 960px) {
+  .responsive-data-table-wrapper :deep(.v-data-table) {
+    min-width: auto;
+    overflow-x: hidden;
+  }
+}
+
+.tools-bar {
+  overflow-x: auto;
+  white-space: nowrap;
+  gap: 8px;
+}
 .icon-wrapper {
   width: 80px;
   height: 80px;

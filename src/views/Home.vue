@@ -350,35 +350,25 @@
                           </span>
                         </div>
                         <div style="min-width: 12%; max-width: 12%; align-self: center">
-                          <v-dialog v-model="slotProps.item.statusDialog" width="500">
+                          <v-dialog v-model="slotProps.item.statusDialog" width="400">
                             <template v-slot:activator="{ props }">
                               <v-btn
                                 v-bind="props"
-                                :color="
-                                  '#' +
-                                  (getStatusById(slotProps.item.status_id)?.colorStatus ||
-                                    'grey')
-                                "
-                                variant="outlined"
+                                :color="'#' + (getStatusById(slotProps.item.status_id)?.colorStatus || 'grey')"
+                                variant="text"
                                 size="small"
+                                :prepend-icon="getStatusById(slotProps.item.status_id)?.iconStatus || 'mdi-help-circle'"
                                 class="text-body-2"
-                                :prepend-icon="
-                                  getStatusById(slotProps.item.status_id)?.iconStatus ||
-                                  'mdi-help-circle'
-                                "
                               >
-                                {{
-                                  getStatusById(slotProps.item.status_id)?.nameStatus ||
-                                  "Desconocido"
-                                }}
+                                {{ getStatusById(slotProps.item.status_id)?.nameStatus || "Desconocido" }}
                               </v-btn>
                             </template>
                             <v-card>
-                              <v-card-title class="pa-4 text-center text-subtitle-2">
+                              <v-card-title class="pa-4 text-center">
                                 {{ $t("taskForm.updateStatus") }}
                               </v-card-title>
                               <v-divider></v-divider>
-                              <v-card-text class="pa-4 text-center text-subtitle-2">
+                              <v-card-text class="pa-0">
                                 <v-row class="px-2 pb-1" dense>
                                   <v-col
                                     cols="12"
@@ -387,32 +377,23 @@
                                     class="py-1"
                                   >
                                     <v-card
-                                      @click="
-                                        changeTaskStatus(slotProps.item, statusOption.id)
-                                      "
+                                      @click="changeTaskStatus(slotProps.item, statusOption.id)"
+                                      :disabled="isTaskCompleted(slotProps.item.status_id)"
                                       :class="[
-                                        'mx-1',
-                                        {
-                                          'current-status':
-                                            slotProps.item.status_id === statusOption.id,
-                                        },
+                                        'status-option mx-1',
+                                        { 'current-status': slotProps.item.status_id === statusOption.id },
                                       ]"
                                       :style="
                                         slotProps.item.status_id === statusOption.id
                                           ? {
                                               'background-color': `#${statusOption.colorStatus}`,
                                               'border-color': `#${statusOption.colorStatus}`,
+                                              color: 'white',
                                             }
-                                          : {
-                                              'border-color': '#9e9e9e',
-                                            }
+                                          : {}
                                       "
-                                      vvariant="outlined"
-                                      :elevation="
-                                        slotProps.item.status_id === statusOption.id
-                                          ? 2
-                                          : 0
-                                      "
+                                      variant="outlined"
+                                      :elevation="slotProps.item.status_id === statusOption.id ? 2 : 0"
                                       style="border-radius: 12px; cursor: pointer"
                                     >
                                       <v-card-item class="pa-2">
@@ -428,22 +409,19 @@
                                             class="mr-3"
                                           ></v-icon>
                                           <v-card-title
-                                            class="pa-4 text-center text-subtitle-2"
                                             :style="{
                                               color:
-                                                slotProps.item.status_id ===
-                                                statusOption.id
+                                                slotProps.item.status_id === statusOption.id
                                                   ? 'white'
                                                   : 'inherit',
+                                              'font-size': '1rem',
                                             }"
                                           >
                                             {{ statusOption.nameStatus }}
                                           </v-card-title>
                                           <v-spacer></v-spacer>
                                           <v-icon
-                                            v-if="
-                                              slotProps.item.status_id === statusOption.id
-                                            "
+                                            v-if="slotProps.item.status_id === statusOption.id"
                                             color="white"
                                             icon="mdi-check-circle"
                                           ></v-icon>
@@ -457,8 +435,8 @@
                               <v-card-actions>
                                 <v-spacer></v-spacer>
                                 <v-btn
-                                  variant="outline"
-                                  color="default"
+                                  variant="flat"
+                                  color="#03626C"
                                   @click="slotProps.item.statusDialog = false"
                                 >
                                   {{ $t("buttons.cancel") }}
@@ -1078,6 +1056,14 @@ export default {
     ];
   },
   methods: {
+     isTaskCompleted(statusId) {
+    const status = this.getStatusById(statusId);
+    // Opción A: por nombre (case-insensitive)
+    return status?.nameStatus?.toLowerCase() === 'completada';
+    
+    // Opción B: por ID (más robusto)
+    // return statusId === 3; // reemplaza 3 con el ID real de "Completada"
+  },
     getImageUrl(imagePath) {
       return `${
         this.$axios.defaults.baseURL

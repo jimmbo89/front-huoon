@@ -20,21 +20,19 @@
     </v-row>
   </v-snackbar>
   
-  <v-container>
-  <v-card class="pa-4" elevation="4" rounded="lg">
-    <!-- Vista de Chat para Onboarding -->
-    <v-row justify="center" class="mx-2">
-      <v-col cols="12">
+  <v-container :fluid="isMobile">
+  <v-card elevation="4" rounded="lg">
+
         <v-card-title class="d-flex justify-space-between" color="#03626C" dark>
           <span class="font-weight-bold text-body-2">Configuración de tu hogar</span>
         </v-card-title>
         <v-card-text>
-            <div ref="chatBody" class="chat-body px-4 py-2">
+            <div ref="chatBody" class="chat-body py-2" :class="isMobile ? 'px-0' : 'px-4'">
               <!-- Mensajes del chat -->
               <div
                 v-for="(message, index) in chatMessages"
                 :key="index"
-                class="d-flex mb-4"
+                class="d-flex mb-2"
                 :class="message.from === 'user' ? 'justify-end' : 'justify-start'"
               >
                 <!-- Contenedor principal alineado al centro -->
@@ -50,10 +48,12 @@
                   
                   <!-- Contenido del mensaje -->
                   <div
-                    class="chat-bubble px-4 py-3 rounded-xl w-100"
+                    class="chat-bubble py-3 rounded-xl w-100"
                     :class="{
                       'bg-primary text-white': message.from === 'user',
-                      'bg-grey-lighten-2 text-black': message.from === 'ai'
+                      'bg-grey-lighten-2 text-black': message.from === 'ai',
+                      'px-4': !isMobile,
+                      'px-2': isMobile  // 👈 menos padding en móvil
                     }"
                   >
                     <div v-if="message.text">
@@ -62,7 +62,8 @@
                     <component
                       v-if="message.component"
                       :is="message.component"
-                      class="w-100"
+                      class="w-100 onboarding-content"
+                      :class="isMobile ? 'mobile-full-width' : ''"
                       v-bind="message.props"
                       :loading="isLoading"
                       @next-step="nextStep"
@@ -111,8 +112,6 @@
               </div>
             </div>
         </v-card-text>
-      </v-col>
-    </v-row>
   </v-card>
 </v-container>
 </template>
@@ -145,6 +144,7 @@ export default {
   data() {
     return {
       currentStep: 0,
+      isFullscreen: false,
       steps: [
         { component: "WelcomeStep", props: {} },
         { component: "HomeOptionsStep", props: {} },
@@ -178,7 +178,21 @@ export default {
   computed: {
     imgedit() {
       return `${this.$axios.defaults.baseURL}images/${this.imageUrl}`;
-    }
+    },
+      isMobile() {
+      return this.$vuetify.display.xs || this.$vuetify.display.sm;
+    },
+    isDesktop() {
+      return !this.isMobile;
+    },
+  },
+   watch: {
+    dialog(val) {
+      if (val) this.updateFullscreenMode();
+    },
+    isDesktop() {
+      this.updateFullscreenMode();
+    },
   },
   mounted() {
     this.imageUrl = LocalStorageService.getItem("image")?.replace(/['"]+/g, "") || "";
@@ -187,6 +201,11 @@ export default {
     this.startOnboarding();
   },
   methods: {
+     updateFullscreenMode() {
+      this.$nextTick(() => {
+        this.isFullscreen = this.isDesktop;
+      });
+    },
     handleInviteAdult() {
     this.addMessage({
       from: "ai",
@@ -316,7 +335,6 @@ export default {
           return; // Evita duplicado consecutivo
         }
       }
-
       // Agregar el mensaje y hacer scroll
       this.chatMessages.push(message);
       this.scrollToBottom();
@@ -818,5 +836,41 @@ max-width: 100%;
 
 .onboarding-button {
   margin-top: 16px;
+}
+.desktop-table {
+  table-layout: fixed;
+}
+
+.mobile-table {
+  table-layout: auto;
+}
+.responsive-data-table-wrapper {
+  width: 100%;
+}
+.onboarding-content.mobile-full-width {
+  width: 100% !important;
+  max-width: 100% !important;
+  margin-left: 0 !important;
+  margin-right: 0 !important;
+  padding-left: 0 !important;
+  padding-right: 0 !important;
+}
+
+/* Si usan v-container, forzar fluid en móvil */
+.onboarding-content.mobile-full-width .v-container {
+  padding-left: 0 !important;
+  padding-right: 0 !important;
+  max-width: 100% !important;
+}
+
+/* Si usan v-row con gutters, eliminarlos en móvil */
+.onboarding-content.mobile-full-width .v-row {
+  margin-left: 0 !important;
+  margin-right: 0 !important;
+}
+
+.onboarding-content.mobile-full-width .v-col {
+  padding-left: 0 !important;
+  padding-right: 0 !important;
 }
 </style>
