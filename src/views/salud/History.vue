@@ -134,6 +134,7 @@
                                 height="130"
                                 cover
                                 class="rounded-lg"
+                                style="object-fit: cover; width: 100%; height: 100%; display: block;"
                               />
                             </div>
 
@@ -1871,17 +1872,18 @@ export default {
       return type ? type.name : this.type;
     },
      isMobile() {
-      return this.$vuetify.display.xs || this.$vuetify.display.sm;
-    },
-    isDesktop() {
-      return !this.isMobile;
-    },
+			return this.$vuetify.display.xs || this.$vuetify.display.sm;
+		},
+		isDesktop() {
+			return !this.isMobile;
+		},
   },
   mounted() {
     this.name = JSON.parse(LocalStorageService.getItem("name"));
     this.imageUrl = LocalStorageService.getItem("image").replace(/['"]+/g, "");
     this.home_id = JSON.parse(LocalStorageService.getItem("home_id"));
     this.initialize();
+    this.updateFullscreenMode();
   },
   watch: {
     type(newVal) {
@@ -1891,9 +1893,9 @@ export default {
       // Llama al método de inicialización
       this.initialize();
     },
-    dialog(val) {
+     dialog(val) {
       if (val) this.updateFullscreenMode();
-    },
+      },
     isDesktop() {
       this.updateFullscreenMode();
     },
@@ -2168,9 +2170,17 @@ export default {
   white-space: nowrap;
   gap: 8px;
 }
+.store-card {
+  border-radius: 20px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  background: #ffffff;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  padding: 5px;
+}
 .icon-wrapper {
-  width: 80px;
-  height: 80px;
+  width: 55px;
+  height: 55px;
   margin: 0 auto;
   border-radius: 12px;
   display: flex;

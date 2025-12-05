@@ -133,7 +133,7 @@
             <!-- Botón de dictado -->
             <v-btn
               color="primary"
-              @click="this.statusOnboarding && toggleDictado"
+              @click="toggleDictado"
               :disabled="!compatible || !this.statusOnboarding"
               :loading="cargando"
               :icon="escuchando ? 'mdi-microphone-off' : 'mdi-microphone'"
@@ -952,13 +952,16 @@ export default {
     },
   },
   mounted() {
+    console.log('SpeechRecognition:', window.SpeechRecognition || window.webkitSpeechRecognition);
+
     const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
 
     if (!SpeechRecognition) {
       this.compatible = false;
       return;
     }
-
+    console.log('this.compatible, this.statusOnboarding');
+    console.log(this.compatible, this.statusOnboarding);
     this.recognition = new SpeechRecognition();
     this.recognition.lang = "es-ES";
     this.recognition.continuous = true;
@@ -1008,11 +1011,18 @@ export default {
     this.approvalData = JSON.parse(LocalStorageService.getItem("approvalData"));
     const allowedStatuses = [0, 1];
 
+    console.log('this.onboarding_status antes');
+    console.log(this.onboarding_status);
+
     if (allowedStatuses.includes(parseInt(this.onboarding_status, 10))) {
       this.statusOnboarding = false;
     } else {
       this.statusOnboarding = true;
     }
+    console.log('this.onboarding_status despues');
+    console.log(this.onboarding_status);
+
+
     this.messages = [
       {
         text: `Hola 👋 ${this.name}, ¿En qué te puedo ayudar hoy?`,
@@ -1187,12 +1197,15 @@ export default {
       return `${hours}:${minutes}`;
     },
     toggleDictado() {
+       console.log("toggleDictado llamado. escuchando:", this.escuchando);
       if (!this.recognition) return;
 
       if (this.escuchando) {
+        console.log("Deteniendo reconocimiento...");
         this.recognition.stop();
       } else {
         this.cargando = true;
+        console.log("Iniciando reconocimiento...");
         this.recognition.start();
       }
     },
